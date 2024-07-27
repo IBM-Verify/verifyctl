@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
-	"github.com/vivshankar/verifyctl/pkg/cmd/login"
+	"github.com/vivshankar/verifyctl/pkg/cmd/auth"
 	"github.com/vivshankar/verifyctl/pkg/config"
 	"github.com/vivshankar/verifyctl/pkg/i18n"
 )
@@ -24,7 +24,7 @@ func NewRootCmd(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 	cmd.SetIn(streams)
 
 	// add commands
-	cmd.AddCommand(login.NewCommand(config, streams))
+	cmd.AddCommand(auth.NewCommand(config, streams))
 
 	return cmd
 }

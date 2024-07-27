@@ -1,4 +1,4 @@
-package login
+package auth
 
 import (
 	"context"
@@ -15,32 +15,36 @@ import (
 )
 
 const (
-	usage = "login [hostname] [flags]"
+	usage = "auth [hostname] [flags]"
 )
 
 var (
-	longDesc = templates.LongDesc(i18n.TranslateWithCode(i18n.LoginLongDesc, `
+	longDesc = templates.LongDesc(i18n.TranslateWithCode(i18n.AuthLongDesc, `
 		Log in to your tenant and save the connection for subsequent use until the security token expires.
 		
-		First-time users of the client should run this command to connect to a tenant, establish an authenticated session, and
-save the connection details to the configuration file. The configuration will be saved to your home directory under
-".verify/config".
+First-time users of the client should run this command to connect to a tenant to establish an authorized session. 
+The issued OAuth 2.0 security token is saved to the configuration file at your home directory under ".verify/config".
 
-		There are two methods to login - as a user providing credentials and as an API client. This information is provided through flags.`))
+There are two methods to generate the authorized token, based on flags:
+		
+  - As a user providing credentials
+  - As an API client
+		
+In both cases, an OAuth token is generated with specific entitlements.`))
 
-	examples = templates.Examples(i18n.TranslateWithCode(i18n.LoginExamples, `
+	examples = templates.Examples(i18n.TranslateWithCode(i18n.AuthExamples, `
 		# Login interactively as a user. This uses a valid OAuth client registered on the tenant
 		# that is enabled with device flow grant type.
 		#
 		# The connection created is permitted to perform actions based on the entitlements that
 		# are configured on the OAuth client and the entitlements of the user based on assigned groups and roles.
-		verifyctl login abc.verify.ibm.com -u --clientId=cli_user_client --clientSecret=cli_user_secret
+		verifyctl auth abc.verify.ibm.com -u --clientId=cli_user_client --clientSecret=cli_user_secret
 
-		# Login using an API client.
+		# Authenticate an API client to get an authorized token.
 		#
 		# The connection created is permitted to perform actions based on the entitlements that
 		# are configured on the API client.
-		verifyctl login abc.verify.ibm.com --clientId=cli_api_client --clientSecret=cli_api_secret`))
+		verifyctl auth abc.verify.ibm.com --clientId=cli_api_client --clientSecret=cli_api_secret`))
 )
 
 type options struct {
@@ -59,7 +63,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 
 	cmd := &cobra.Command{
 		Use:                   usage,
-		Short:                 i18n.TranslateWithCode(i18n.LoginShortDesc, "Log in to your tenant and save the connection for subsequent use."),
+		Short:                 i18n.TranslateWithCode(i18n.AuthShortDesc, "Log in to your tenant and save the connection for subsequent use."),
 		Long:                  longDesc,
 		Example:               examples,
 		DisableFlagsInUseLine: true,
