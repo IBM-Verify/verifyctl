@@ -1,15 +1,18 @@
 package cmd
 
 import (
-	"fmt"
+	"io"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
-func ExitOnError(err error) {
+func ExitOnError(cmd *cobra.Command, err error) {
 	if err == nil {
 		return
 	}
 
-	fmt.Println(err.Error())
+	_, _ = io.WriteString(cmd.ErrOrStderr(), err.Error())
+	_ = cmd.Usage()
 	os.Exit(1)
 }

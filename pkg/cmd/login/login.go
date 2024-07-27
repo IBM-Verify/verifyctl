@@ -3,8 +3,10 @@ package login
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/spf13/cobra"
+	"github.com/vivshankar/verifyctl/pkg/config"
 	"github.com/vivshankar/verifyctl/pkg/i18n"
 	cmdutil "github.com/vivshankar/verifyctl/pkg/util/cmd"
 	"github.com/vivshankar/verifyctl/pkg/util/templates"
@@ -18,7 +20,7 @@ const (
 
 var (
 	longDesc = templates.LongDesc(i18n.TranslateWithCode(i18n.LoginLongDesc, `
-		Log in to your tenant and save the connection for subsequent use.
+		Log in to your tenant and save the connection for subsequent use until the security token expires.
 		
 		First-time users of the client should run this command to connect to a tenant, establish an authenticated session, and
 save the connection details to the configuration file. The configuration will be saved to your home directory under
@@ -32,13 +34,13 @@ save the connection details to the configuration file. The configuration will be
 		#
 		# The connection created is permitted to perform actions based on the entitlements that
 		# are configured on the OAuth client and the entitlements of the user based on assigned groups and roles.
-		verifyctl login -u --clientId=cli_user_client --clientSecret=cli_user_secret
+		verifyctl login abc.verify.ibm.com -u --clientId=cli_user_client --clientSecret=cli_user_secret
 
 		# Login using an API client.
 		#
 		# The connection created is permitted to perform actions based on the entitlements that
 		# are configured on the API client.
-		verifyctl login --clientId=cli_api_client --clientSecret=cli_api_secret`))
+		verifyctl login abc.verify.ibm.com --clientId=cli_api_client --clientSecret=cli_api_secret`))
 )
 
 type options struct {
@@ -46,10 +48,15 @@ type options struct {
 	ClientID       string
 	ClientSecret   string
 	TenantHostname string
+
+	config *config.CLIConfig
 }
 
-func NewCommand() *cobra.Command {
-	o := &options{}
+func NewCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
+	o := &options{
+		config: config,
+	}
+
 	cmd := &cobra.Command{
 		Use:                   usage,
 		Short:                 i18n.TranslateWithCode(i18n.LoginShortDesc, "Log in to your tenant and save the connection for subsequent use."),
@@ -57,11 +64,15 @@ func NewCommand() *cobra.Command {
 		Example:               examples,
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
-			cmdutil.ExitOnError(o.Complete(cmd, args))
-			cmdutil.ExitOnError(o.Validate(cmd, args))
-			cmdutil.ExitOnError(o.Run(cmd, args))
+			cmdutil.ExitOnError(cmd, o.Complete(cmd, args))
+			cmdutil.ExitOnError(cmd, o.Validate(cmd, args))
+			cmdutil.ExitOnError(cmd, o.Run(cmd, args))
 		},
 	}
+
+	cmd.SetOut(streams)
+	cmd.SetErr(streams)
+	cmd.SetIn(streams)
 
 	o.AddFlags(cmd)
 
@@ -70,22 +81,24 @@ func NewCommand() *cobra.Command {
 
 func (o *options) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&o.User, "user", "u", o.User, i18n.Translate("Specify if a user login should be initiated."))
-	cmd.Flags().StringVar(&o.TenantHostname, "tenant", o.TenantHostname, i18n.Translate("Specify the tenant hostname. For example, 'abc.verify.ibm.com'."))
 	cmd.Flags().StringVar(&o.ClientID, "clientId", o.ClientID, i18n.Translate("Client ID of the application that is enabled for device flow grant type."))
 	cmd.Flags().StringVar(&o.ClientSecret, "clientSecret", o.ClientSecret, i18n.Translate("Client Secret of the application that is enabled for device flow grant type. This is optional if the application is configured as a public client."))
 }
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return fmt.Errorf(i18n.Translate("Tenant is required."))
+	}
+
+	o.TenantHostname = args[0]
 	o.User = cmd.Flag("user").Changed
+
 	return nil
 }
 
 func (o *options) Validate(cmd *cobra.Command, args []string) error {
-	if len(o.TenantHostname) == 0 {
-		return fmt.Errorf("tenant is required.")
-	}
 	if len(o.ClientID) == 0 {
-		return fmt.Errorf("clientId is required.")
+		return fmt.Errorf(i18n.Translate("'clientId' is required."))
 	}
 
 	return nil
@@ -110,7 +123,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		fmt.Println("Complete login by accessing the URL:", deviceAuthResponse.VerificationURIComplete)
+		_, _ = io.WriteString(cmd.OutOrStdout(), fmt.Sprintf("Complete login by accessing the URL: %s\n", deviceAuthResponse.VerificationURIComplete))
 
 		tokenResponse, err := oauthConfig.DeviceAccessToken(ctx, deviceAuthResponse)
 		if err != nil {
@@ -133,6 +146,21 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		token = tokenResponse.AccessToken
 	}
 
-	fmt.Println("DEBUG: token=", token)
+	// add token to config
+	if _, err := o.config.LoadFromFile(); err != nil {
+		return err
+	}
+
+	o.config.AddAuth(&config.AuthConfig{
+		Tenant: o.TenantHostname,
+		Token:  token,
+		User:   o.User,
+	})
+
+	// persist contents
+	if _, err := o.config.PersistFile(); err != nil {
+		return err
+	}
+
 	return nil
 }

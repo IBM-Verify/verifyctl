@@ -3,6 +3,7 @@ package i18n
 type TextCode string
 
 const (
+	RootLongDesc   TextCode = "RootLongDesc"
 	LoginShortDesc TextCode = "LoginShortDesc"
 	LoginLongDesc  TextCode = "LoginLongDesc"
 	LoginExamples  TextCode = "LoginExamples"

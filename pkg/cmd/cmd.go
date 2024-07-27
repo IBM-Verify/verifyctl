@@ -1,30 +1,30 @@
 package cmd
 
 import (
-	"os"
+	"io"
 
 	"github.com/spf13/cobra"
 	"github.com/vivshankar/verifyctl/pkg/cmd/login"
+	"github.com/vivshankar/verifyctl/pkg/config"
+	"github.com/vivshankar/verifyctl/pkg/i18n"
 )
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "verifyctl",
-	Short: "verifyctl controls the IBM Security Verify tenant.",
-	Long: `verifyctl controls the IBM Security Verify tenant.
+func NewRootCmd(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
+	// cmd represents the base command when called without any subcommands
+	cmd := &cobra.Command{
+		Use:   "verifyctl",
+		Short: i18n.Translate("verifyctl controls the IBM Security Verify tenant."),
+		Long: i18n.TranslateWithCode(i18n.RootLongDesc, `verifyctl controls the IBM Security Verify tenant.
 
-  Find more information at: https://github.com/vivshankar/verifyctl`,
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+  Find more information at: https://github.com/vivshankar/verifyctl`),
 	}
-}
 
-func init() {
-	rootCmd.AddCommand(login.NewCommand())
+	cmd.SetOut(streams)
+	cmd.SetErr(streams)
+	cmd.SetIn(streams)
+
+	// add commands
+	cmd.AddCommand(login.NewCommand(config, streams))
+
+	return cmd
 }
