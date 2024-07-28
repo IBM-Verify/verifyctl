@@ -15,11 +15,12 @@ import (
 )
 
 const (
-	usage = "auth [hostname] [flags]"
+	usage         = "auth [hostname] [flags]"
+	messagePrefix = "Auth"
 )
 
 var (
-	longDesc = templates.LongDesc(i18n.TranslateWithCode(i18n.AuthLongDesc, `
+	longDesc = templates.LongDesc(cmdutil.TranslateLongDesc(messagePrefix, `
 		Log in to your tenant and save the connection for subsequent use until the security token expires.
 		
 First-time users of the client should run this command to connect to a tenant to establish an authorized session. 
@@ -32,7 +33,7 @@ There are two methods to generate the authorized token, based on flags:
 		
 In both cases, an OAuth token is generated with specific entitlements.`))
 
-	examples = templates.Examples(i18n.TranslateWithCode(i18n.AuthExamples, `
+	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Login interactively as a user. This uses a valid OAuth client registered on the tenant
 		# that is enabled with device flow grant type.
 		#
@@ -63,10 +64,11 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 
 	cmd := &cobra.Command{
 		Use:                   usage,
-		Short:                 i18n.TranslateWithCode(i18n.AuthShortDesc, "Log in to your tenant and save the connection for subsequent use."),
+		Short:                 cmdutil.TranslateShortDesc(messagePrefix, "Log in to your tenant and save the connection for subsequent use."),
 		Long:                  longDesc,
 		Example:               examples,
 		DisableFlagsInUseLine: true,
+		Aliases:               []string{"auth", "login"},
 		Run: func(cmd *cobra.Command, args []string) {
 			cmdutil.ExitOnError(cmd, o.Complete(cmd, args))
 			cmdutil.ExitOnError(cmd, o.Validate(cmd, args))
@@ -127,7 +129,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		_, _ = io.WriteString(cmd.OutOrStdout(), fmt.Sprintf("Complete login by accessing the URL: %s\n", deviceAuthResponse.VerificationURIComplete))
+		cmdutil.WriteString(cmd, fmt.Sprintf("Complete login by accessing the URL: %s", deviceAuthResponse.VerificationURIComplete))
 
 		tokenResponse, err := oauthConfig.DeviceAccessToken(ctx, deviceAuthResponse)
 		if err != nil {
@@ -160,6 +162,9 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		Token:  token,
 		User:   o.User,
 	})
+
+	// set current tenant
+	o.config.SetCurrentTenant(o.TenantHostname)
 
 	// persist contents
 	if _, err := o.config.PersistFile(); err != nil {

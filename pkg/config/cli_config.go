@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -17,9 +18,10 @@ const (
 )
 
 type CLIConfig struct {
-	APIVersion string        `yaml:"apiVersion"`
-	Kind       string        `yaml:"kind"`
-	Auth       []*AuthConfig `yaml:"auth"`
+	APIVersion    string        `yaml:"apiVersion"`
+	Kind          string        `yaml:"kind"`
+	CurrentTenant string        `yaml:"tenant"`
+	Auth          []*AuthConfig `yaml:"auth"`
 }
 
 type AuthConfig struct {
@@ -48,6 +50,10 @@ func (o *CLIConfig) AddAuth(config *AuthConfig) {
 
 	// add it to the auth list
 	o.Auth = append(o.Auth, config)
+}
+
+func (o *CLIConfig) SetCurrentTenant(tenant string) {
+	o.CurrentTenant = tenant
 }
 
 func (o *CLIConfig) LoadFromFile() (*CLIConfig, error) {
@@ -91,6 +97,16 @@ func (o *CLIConfig) PersistFile() (*CLIConfig, error) {
 	}
 
 	return o, nil
+}
+
+func (o *CLIConfig) GetCurrentAuth() (*AuthConfig, error) {
+	for _, c := range o.Auth {
+		if c.Tenant == o.CurrentTenant {
+			return c, nil
+		}
+	}
+
+	return nil, fmt.Errorf("No login session available. Use:\n  verifyctl login -h")
 }
 
 func (o *CLIConfig) createOrGetDir() (string, error) {
