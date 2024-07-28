@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"fmt"
 	"io"
 
@@ -111,7 +110,7 @@ func (o *options) Validate(cmd *cobra.Command, args []string) error {
 }
 
 func (o *options) Run(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
+	ctx := cmd.Context()
 
 	token := ""
 	if o.User {

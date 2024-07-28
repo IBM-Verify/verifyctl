@@ -6,13 +6,13 @@ import (
 	"os"
 	"path/filepath"
 
+	cmdutil "github.com/vivshankar/verifyctl/pkg/util/cmd"
 	"gopkg.in/yaml.v3"
 )
 
 const (
 	apiVersion  = "1.0"
 	kind        = "Config"
-	defaultDir  = ".verify"
 	fileName    = "config"
 	defaultPerm = os.ModePerm
 )
@@ -57,7 +57,7 @@ func (o *CLIConfig) SetCurrentTenant(tenant string) {
 }
 
 func (o *CLIConfig) LoadFromFile() (*CLIConfig, error) {
-	configDir, err := o.createOrGetDir()
+	configDir, err := cmdutil.CreateOrGetDir()
 	if err != nil {
 		return o, err
 	}
@@ -86,7 +86,7 @@ func (o *CLIConfig) PersistFile() (*CLIConfig, error) {
 		return o, err
 	}
 
-	configDir, err := o.createOrGetDir()
+	configDir, err := cmdutil.CreateOrGetDir()
 	if err != nil {
 		return o, err
 	}
@@ -107,24 +107,6 @@ func (o *CLIConfig) GetCurrentAuth() (*AuthConfig, error) {
 	}
 
 	return nil, fmt.Errorf("No login session available. Use:\n  verifyctl login -h")
-}
-
-func (o *CLIConfig) createOrGetDir() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	configDir := os.Getenv("VERIFY_CONFIG")
-	if configDir == "" {
-		configDir = filepath.Join(homeDir, defaultDir)
-	}
-
-	if err := os.MkdirAll(configDir, defaultPerm); err != nil {
-		return "", err
-	}
-
-	return configDir, nil
 }
 
 func (o *AuthConfig) Merge(c *AuthConfig) {

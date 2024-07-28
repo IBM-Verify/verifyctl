@@ -1,7 +1,6 @@
 package get
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"os"
@@ -121,7 +120,7 @@ func (o *attributesOptions) Run(cmd *cobra.Command, args []string) error {
 	var dataObj interface{}
 	if calledAs == "attribute" {
 		// deal with single attribute
-		attr, err := c.GetAttribute(context.Background(), auth, o.ID)
+		attr, err := c.GetAttribute(cmd.Context(), auth, o.ID)
 		if err != nil {
 			return err
 		}

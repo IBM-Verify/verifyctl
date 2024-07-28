@@ -4,9 +4,15 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
+)
+
+const (
+	defaultDir  = ".verify"
+	defaultPerm = os.ModePerm
 )
 
 func ExitOnError(cmd *cobra.Command, err error) {
@@ -36,4 +42,22 @@ func WriteAsJSON(cmd *cobra.Command, obj interface{}, writer io.Writer) {
 	b, err := json.MarshalIndent(obj, "", "  ")
 	ExitOnError(cmd, err)
 	_, _ = writer.Write(b)
+}
+
+func CreateOrGetDir() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	configDir := os.Getenv("VERIFY_HOME")
+	if configDir == "" {
+		configDir = filepath.Join(homeDir, defaultDir)
+	}
+
+	if err := os.MkdirAll(configDir, defaultPerm); err != nil {
+		return "", err
+	}
+
+	return configDir, nil
 }
