@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/vivshankar/verifyctl/pkg/config"
+	"github.com/ibm-security-verify/verifyctl/pkg/config"
 )
 
 const (

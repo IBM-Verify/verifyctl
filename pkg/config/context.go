@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	cmdutil "github.com/vivshankar/verifyctl/pkg/util/cmd"
+	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 )
 
 type ContextKey string

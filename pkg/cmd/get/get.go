@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/ibm-security-verify/verifyctl/pkg/config"
+	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
+	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
-	"github.com/vivshankar/verifyctl/pkg/config"
-	"github.com/vivshankar/verifyctl/pkg/i18n"
-	cmdutil "github.com/vivshankar/verifyctl/pkg/util/cmd"
-	"github.com/vivshankar/verifyctl/pkg/util/templates"
 )
 
 const (

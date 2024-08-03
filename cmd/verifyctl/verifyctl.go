@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/vivshankar/verifyctl/pkg/cmd"
-	"github.com/vivshankar/verifyctl/pkg/config"
-	cmdutil "github.com/vivshankar/verifyctl/pkg/util/cmd"
+	"github.com/ibm-security-verify/verifyctl/pkg/cmd"
+	"github.com/ibm-security-verify/verifyctl/pkg/config"
+	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 )
 
 func main() {

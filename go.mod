@@ -1,4 +1,4 @@
-module github.com/vivshankar/verifyctl
+module github.com/ibm-security-verify/verifyctl
 
 go 1.22.5
 

@@ -3,12 +3,12 @@ package cmd
 import (
 	"io"
 
+	"github.com/ibm-security-verify/verifyctl/pkg/cmd/auth"
+	"github.com/ibm-security-verify/verifyctl/pkg/cmd/get"
+	"github.com/ibm-security-verify/verifyctl/pkg/config"
+	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
-	"github.com/vivshankar/verifyctl/pkg/cmd/auth"
-	"github.com/vivshankar/verifyctl/pkg/cmd/get"
-	"github.com/vivshankar/verifyctl/pkg/config"
-	cmdutil "github.com/vivshankar/verifyctl/pkg/util/cmd"
-	"github.com/vivshankar/verifyctl/pkg/util/templates"
 )
 
 const (
@@ -22,7 +22,7 @@ func NewRootCmd(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 		Short: cmdutil.TranslateShortDesc(messagePrefix, "verifyctl controls the IBM Security Verify tenant."),
 		Long: templates.LongDesc(cmdutil.TranslateLongDesc(messagePrefix, `verifyctl controls the IBM Security Verify tenant.
 
-  Find more information at: https://github.com/vivshankar/verifyctl`)),
+  Find more information at: https://github.com/ibm-security-verify/verifyctl`)),
 	}
 
 	cmd.SetOut(streams)
