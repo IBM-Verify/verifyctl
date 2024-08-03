@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"io"
 
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 )
@@ -15,14 +14,19 @@ const (
 )
 
 type VerifyContext struct {
-	Logger io.Writer
+	Logger *cmdutil.Logger
 }
 
 func NewContextWithVerifyContext(parentContext context.Context, logger *cmdutil.Logger) (context.Context, error) {
 	vc := &VerifyContext{
-		Logger: logger.Writer(),
+		Logger: logger,
 	}
 
 	ctx := context.WithValue(parentContext, VerifyCtxKey, vc)
 	return ctx, nil
+}
+
+func GetVerifyContext(ctx context.Context) *VerifyContext {
+	vc, _ := ctx.Value(VerifyCtxKey).(*VerifyContext)
+	return vc
 }

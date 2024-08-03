@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
+	"github.com/ibm-security-verify/verifyctl/pkg/module"
+	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
 
 const (
@@ -15,7 +17,7 @@ const (
 )
 
 type AttributeClient struct {
-	client *http.Client
+	client xhttp.Clientx
 }
 
 // SchemaAttribute is the domain model defining the properties of schema attribute
@@ -50,42 +52,36 @@ type Attribute struct {
 
 func NewAttributeClient() *AttributeClient {
 	return &AttributeClient{
-		client: http.DefaultClient,
+		client: xhttp.NewDefaultClient(),
 	}
 }
 
 func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthConfig, id string) (*Attribute, error) {
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiAttributes, id), nil)
-	if err != nil {
-		return nil, err
+	vc := config.GetVerifyContext(ctx)
+	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiAttributes, id))
+	headers := http.Header{
+		"Accept":        []string{"application/json"},
+		"Authorization": []string{"Bearer " + auth.Token},
 	}
 
-	request.Header.Add("Accept", "application/json")
-	request.Header.Add("Authorization", "Bearer "+auth.Token)
-
-	response, err := c.client.Do(request)
+	response, err := c.client.Get(ctx, u, headers)
 	if err != nil {
+		vc.Logger.Errorf("unable to get the attribute; err=%s", err.Error())
 		return nil, err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode == http.StatusUnauthorized {
-		return nil, fmt.Errorf("Login again.")
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Unable to get the attributes")
-	}
+		if err := module.HandleCommonErrors(ctx, response, "unable to get attribute"); err != nil {
+			vc.Logger.Errorf("unable to get the attribute; err=%s", err.Error())
+			return nil, err
+		}
 
-	resBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to get the attributes")
+		return nil, fmt.Errorf("unable to get the attribute")
 	}
 
 	attribute := &Attribute{}
-	if err = json.Unmarshal(resBody, attribute); err != nil {
-		return nil, fmt.Errorf("Unable to get the attributes")
+	if err = json.Unmarshal(response.Body, attribute); err != nil {
+		return nil, fmt.Errorf("unable to get the attribute")
 	}
 
 	return attribute, nil
