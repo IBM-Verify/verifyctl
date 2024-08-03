@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/vivshankar/verifyctl/pkg/client"
 	"github.com/vivshankar/verifyctl/pkg/config"
 	"github.com/vivshankar/verifyctl/pkg/i18n"
+	"github.com/vivshankar/verifyctl/pkg/module/directory"
 	cmdutil "github.com/vivshankar/verifyctl/pkg/util/cmd"
 	"github.com/vivshankar/verifyctl/pkg/util/templates"
 )
@@ -116,7 +116,7 @@ func (o *attributesOptions) Run(cmd *cobra.Command, args []string) error {
 
 	// invoke the operation
 	calledAs := cmd.CalledAs()
-	c := client.NewAttributeClient()
+	c := directory.NewAttributeClient()
 	var dataObj interface{}
 	if calledAs == "attribute" {
 		// deal with single attribute
