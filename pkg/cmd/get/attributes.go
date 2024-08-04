@@ -42,8 +42,8 @@ You can identify the entitlement required by running:
 
 type attributesOptions struct {
 	options
-	ID     string
-	Filter string
+	id     string
+	filter string
 
 	config *config.CLIConfig
 }
@@ -77,17 +77,17 @@ func NewAttributesCommand(config *config.CLIConfig, streams io.ReadWriter) *cobr
 }
 
 func (o *attributesOptions) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&o.ID, "id", "", i18n.Translate("Attribute identifier or name."))
-	cmd.Flags().StringVar(&o.Filter, "filter", "", i18n.Translate("Search filter when fetching multiple attributes."))
+	cmd.Flags().StringVar(&o.id, "id", "", i18n.Translate("Attribute identifier or name."))
+	cmd.Flags().StringVar(&o.filter, "filter", "", i18n.Translate("Search filter when fetching multiple attributes."))
 }
 
 func (o *attributesOptions) Complete(cmd *cobra.Command, args []string) error {
-	o.Entitlements = cmd.Flag("entitlements").Changed
-	o.OutputType = cmd.Flag("output").Value.String()
-	o.OutputFile = cmd.Flag("outfile").Value.String()
-	if len(o.OutputType) == 0 && len(o.OutputFile) > 0 {
-		if strings.HasSuffix(o.OutputFile, ".json") {
-			o.OutputType = "json"
+	o.entitlements = cmd.Flag("entitlements").Changed
+	o.outputType = cmd.Flag("output").Value.String()
+	o.outputFile = cmd.Flag("outfile").Value.String()
+	if len(o.outputType) == 0 && len(o.outputFile) > 0 {
+		if strings.HasSuffix(o.outputFile, ".json") {
+			o.outputType = "json"
 		}
 	}
 	return nil
@@ -95,14 +95,14 @@ func (o *attributesOptions) Complete(cmd *cobra.Command, args []string) error {
 
 func (o *attributesOptions) Validate(cmd *cobra.Command, args []string) error {
 	calledAs := cmd.CalledAs()
-	if calledAs == "attribute" && o.ID == "" {
+	if calledAs == "attribute" && o.id == "" {
 		return fmt.Errorf(i18n.Translate("'id' flag is required."))
 	}
 	return nil
 }
 
 func (o *attributesOptions) Run(cmd *cobra.Command, args []string) error {
-	if o.Entitlements {
+	if o.entitlements {
 		cmdutil.WriteString(cmd, entitlementsMessage+"  "+attributesEntitlements)
 		return nil
 	}
@@ -118,7 +118,7 @@ func (o *attributesOptions) Run(cmd *cobra.Command, args []string) error {
 	var dataObj interface{}
 	if calledAs == "attribute" {
 		// deal with single attribute
-		attr, err := c.GetAttribute(cmd.Context(), auth, o.ID)
+		attr, err := c.GetAttribute(cmd.Context(), auth, o.id)
 		if err != nil {
 			return err
 		}
@@ -129,28 +129,28 @@ func (o *attributesOptions) Run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no data found.")
 	}
 
-	if len(o.OutputFile) == 0 {
-		if o.OutputType == "json" {
+	if len(o.outputFile) == 0 {
+		if o.outputType == "json" {
 			cmdutil.WriteAsJSON(cmd, dataObj, cmd.OutOrStdout())
 		} else {
 			cmdutil.WriteAsYAML(cmd, dataObj, cmd.OutOrStdout())
 		}
 	} else {
-		of, err := os.Create(o.OutputFile)
+		of, err := os.Create(o.outputFile)
 		if err != nil {
 			return err
 		}
 
 		defer of.Close()
-		if o.OutputType == "json" {
+		if o.outputType == "json" {
 			cmdutil.WriteAsJSON(cmd, dataObj, of)
 		} else {
 			cmdutil.WriteAsYAML(cmd, dataObj, of)
 		}
 
-		fullPath, err := filepath.Abs(o.OutputFile)
+		fullPath, err := filepath.Abs(o.outputFile)
 		if err != nil {
-			fullPath = o.OutputFile
+			fullPath = o.outputFile
 		}
 		cmdutil.WriteString(cmd, fmt.Sprintf("File written: %s", fullPath))
 	}

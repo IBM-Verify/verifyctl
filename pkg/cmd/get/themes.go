@@ -97,12 +97,12 @@ func (o *themesOptions) AddFlags(cmd *cobra.Command) {
 }
 
 func (o *themesOptions) Complete(cmd *cobra.Command, args []string) error {
-	o.Entitlements = cmd.Flag("entitlements").Changed
-	o.OutputType = cmd.Flag("output").Value.String()
-	o.OutputFile = cmd.Flag("outfile").Value.String()
-	if len(o.OutputType) == 0 && len(o.OutputFile) > 0 {
-		if strings.HasSuffix(o.OutputFile, ".json") {
-			o.OutputType = "json"
+	o.entitlements = cmd.Flag("entitlements").Changed
+	o.outputType = cmd.Flag("output").Value.String()
+	o.outputFile = cmd.Flag("outfile").Value.String()
+	if len(o.outputType) == 0 && len(o.outputFile) > 0 {
+		if strings.HasSuffix(o.outputFile, ".json") {
+			o.outputType = "json"
 		}
 	}
 	return nil
@@ -115,7 +115,7 @@ func (o *themesOptions) Validate(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf(i18n.Translate("'id' flag is required."))
 		}
 
-		if len(o.outputDirectory) == 0 && len(o.OutputFile) == 0 {
+		if len(o.outputDirectory) == 0 && len(o.outputFile) == 0 {
 			return fmt.Errorf(i18n.Translate("Either 'outdir' or 'outfile' flag is required when downloading a single theme."))
 		}
 
@@ -127,7 +127,7 @@ func (o *themesOptions) Validate(cmd *cobra.Command, args []string) error {
 }
 
 func (o *themesOptions) Run(cmd *cobra.Command, args []string) error {
-	if o.Entitlements {
+	if o.entitlements {
 		cmdutil.WriteString(cmd, entitlementsMessage+"  "+themesEntitlements)
 		return nil
 	}
@@ -151,28 +151,28 @@ func (o *themesOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if len(o.OutputFile) == 0 {
-		if o.OutputType == "json" {
+	if len(o.outputFile) == 0 {
+		if o.outputType == "json" {
 			cmdutil.WriteAsJSON(cmd, themes.Themes, cmd.OutOrStdout())
 		} else {
 			cmdutil.WriteAsYAML(cmd, themes.Themes, cmd.OutOrStdout())
 		}
 	} else {
-		of, err := os.Create(o.OutputFile)
+		of, err := os.Create(o.outputFile)
 		if err != nil {
 			return err
 		}
 
 		defer of.Close()
-		if o.OutputType == "json" {
+		if o.outputType == "json" {
 			cmdutil.WriteAsJSON(cmd, themes.Themes, of)
 		} else {
 			cmdutil.WriteAsYAML(cmd, themes.Themes, of)
 		}
 
-		fullPath, err := filepath.Abs(o.OutputFile)
+		fullPath, err := filepath.Abs(o.outputFile)
 		if err != nil {
-			fullPath = o.OutputFile
+			fullPath = o.outputFile
 		}
 		cmdutil.WriteString(cmd, fmt.Sprintf("File written: %s", fullPath))
 	}
@@ -200,7 +200,7 @@ func (o *themesOptions) handleSingleThemeCommand(cmd *cobra.Command, auth *confi
 	}
 
 	// write the file
-	of, err := os.Create(o.OutputFile)
+	of, err := os.Create(o.outputFile)
 	if err != nil {
 		return err
 	}
@@ -208,9 +208,9 @@ func (o *themesOptions) handleSingleThemeCommand(cmd *cobra.Command, auth *confi
 	defer of.Close()
 	cmdutil.WriteAsBinary(cmd, b, of)
 
-	fullPath, err := filepath.Abs(o.OutputFile)
+	fullPath, err := filepath.Abs(o.outputFile)
 	if err != nil {
-		fullPath = o.OutputFile
+		fullPath = o.outputFile
 	}
 	cmdutil.WriteString(cmd, fmt.Sprintf("File written: %s", fullPath))
 	return nil

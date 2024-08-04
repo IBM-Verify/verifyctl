@@ -42,10 +42,10 @@ The flags supported by each resource type may differ and can be determined using
 )
 
 type options struct {
-	ResourceType string
-	OutputType   string
-	OutputFile   string
-	Entitlements bool
+	resourceType string
+	outputType   string
+	outputFile   string
+	entitlements bool
 
 	config *config.CLIConfig
 }
@@ -81,9 +81,9 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 }
 
 func (o *options) AddFlags(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringVarP(&o.OutputType, "output", "o", "", i18n.Translate("Select the format of the output. The values supported are 'json' and 'yaml'. Default: yaml"))
-	cmd.PersistentFlags().StringVar(&o.OutputFile, "outfile", "", i18n.Translate("Persist the output to the specified file path. The default directory is local. If the file has an appropriate extension, the format of the output can be determined without needing to provide the '--output' flag."))
-	cmd.PersistentFlags().BoolVar(&o.Entitlements, "entitlements", o.Entitlements, i18n.Translate("List the entitlements that can be configured to grant access to the resource. This is useful to know what to configure on the application or API client used to generate the login token. When this flag is used, the others are ignored."))
+	cmd.PersistentFlags().StringVarP(&o.outputType, "output", "o", "", i18n.Translate("Select the format of the output. The values supported are 'json' and 'yaml'. Default: yaml"))
+	cmd.PersistentFlags().StringVar(&o.outputFile, "outfile", "", i18n.Translate("Persist the output to the specified file path. The default directory is local. If the file has an appropriate extension, the format of the output can be determined without needing to provide the '--output' flag."))
+	cmd.PersistentFlags().BoolVar(&o.entitlements, "entitlements", o.entitlements, i18n.Translate("List the entitlements that can be configured to grant access to the resource. This is useful to know what to configure on the application or API client used to generate the login token. When this flag is used, the others are ignored."))
 }
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
@@ -91,7 +91,7 @@ func (o *options) Complete(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf(i18n.Translate("Resource type is required."))
 	}
 
-	o.ResourceType = args[0]
+	o.resourceType = args[0]
 	return nil
 }
 
