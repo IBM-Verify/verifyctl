@@ -75,6 +75,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 
 	// add sub commands
 	cmd.AddCommand(NewAttributesCommand(config, streams))
+	cmd.AddCommand(NewThemesCommand(config, streams))
 
 	return cmd
 }

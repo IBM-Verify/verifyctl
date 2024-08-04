@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"io"
 	"os"
@@ -42,6 +44,68 @@ func WriteAsJSON(cmd *cobra.Command, obj interface{}, writer io.Writer) {
 	b, err := json.MarshalIndent(obj, "", "  ")
 	ExitOnError(cmd, err)
 	_, _ = writer.Write(b)
+}
+
+func WriteAsBinary(cmd *cobra.Command, b []byte, writer io.Writer) {
+	_, _ = writer.Write(b)
+}
+
+func UnpackZipToDirectory(cmd *cobra.Command, zipBuffer []byte, outputDirectory string) error {
+	if err := os.MkdirAll(outputDirectory, defaultPerm); err != nil {
+		return err
+	}
+
+	zipReader, err := zip.NewReader(bytes.NewReader(zipBuffer), int64(len(zipBuffer)))
+	if err != nil {
+		return err
+	}
+
+	// Read all the files from zip archive
+	for _, zipFile := range zipReader.File {
+		filePath := filepath.Join(outputDirectory, zipFile.Name)
+		WriteString(cmd, "Reading file: "+zipFile.Name)
+		// if the file is an empty directory, create a directory
+		if zipFile.FileInfo().IsDir() {
+			// create the directory
+			if err := os.MkdirAll(filePath, defaultPerm); err != nil {
+				WriteString(cmd, err.Error())
+			}
+			continue
+		}
+
+		// extract the file contents
+		unzippedFileBytes, err := readZipFile(zipFile)
+		if err != nil {
+			WriteString(cmd, err.Error())
+			continue
+		}
+
+		// create the directory, if it does not exist
+		fileDir := filepath.Dir(filePath)
+		if err := os.MkdirAll(fileDir, defaultPerm); err != nil {
+			WriteString(cmd, err.Error())
+		}
+
+		of, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+		if err != nil {
+			WriteString(cmd, err.Error())
+			continue
+		}
+		defer of.Close()
+
+		WriteAsBinary(cmd, unzippedFileBytes, of)
+	}
+
+	return nil
+}
+
+func readZipFile(zf *zip.File) ([]byte, error) {
+	f, err := zf.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return io.ReadAll(f)
 }
 
 func CreateOrGetDir() (string, error) {

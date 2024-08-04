@@ -41,11 +41,9 @@ You can identify the entitlement required by running:
 )
 
 type attributesOptions struct {
-	OutputType   string
-	OutputFile   string
-	Entitlements bool
-	ID           string
-	Filter       string
+	options
+	ID     string
+	Filter string
 
 	config *config.CLIConfig
 }
@@ -57,10 +55,10 @@ func NewAttributesCommand(config *config.CLIConfig, streams io.ReadWriter) *cobr
 
 	cmd := &cobra.Command{
 		Use:                   attributesUsage,
-		Short:                 cmdutil.TranslateShortDesc(messagePrefix, "Get Verify attributes based on an optional filter or a specific attribute."),
+		Short:                 cmdutil.TranslateShortDesc(attributesMessagePrefix, "Get Verify attributes based on an optional filter or a specific attribute."),
 		Long:                  attributesLongDesc,
 		Example:               attributesExamples,
-		Aliases:               []string{"attribute", "attributes"},
+		Aliases:               []string{"attribute"},
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
 			cmdutil.ExitOnError(cmd, o.Complete(cmd, args))

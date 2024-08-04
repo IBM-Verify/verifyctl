@@ -16,7 +16,11 @@ type VerifyError struct {
 
 func HandleCommonErrors(ctx context.Context, response *xhttp.Response, defaultError string) error {
 	if response.StatusCode == http.StatusUnauthorized {
-		return fmt.Errorf("login again.")
+		return fmt.Errorf("Login again.")
+	}
+
+	if response.StatusCode == http.StatusForbidden {
+		return fmt.Errorf("You are not allowed to make this request. Check the client or application entitlements.")
 	}
 
 	if response.StatusCode == http.StatusBadRequest {
@@ -29,7 +33,7 @@ func HandleCommonErrors(ctx context.Context, response *xhttp.Response, defaultEr
 	}
 
 	if response.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("resource not found")
+		return fmt.Errorf("Resource not found")
 	}
 
 	return nil
