@@ -50,6 +50,24 @@ func WriteAsBinary(cmd *cobra.Command, b []byte, writer io.Writer) {
 	_, _ = writer.Write(b)
 }
 
+func CreateOrGetDir() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	configDir := os.Getenv("VERIFY_HOME")
+	if configDir == "" {
+		configDir = filepath.Join(homeDir, defaultDir)
+	}
+
+	if err := os.MkdirAll(configDir, defaultPerm); err != nil {
+		return "", err
+	}
+
+	return configDir, nil
+}
+
 func UnpackZipToDirectory(cmd *cobra.Command, zipBuffer []byte, outputDirectory string) error {
 	if err := os.MkdirAll(outputDirectory, defaultPerm); err != nil {
 		return err
@@ -99,6 +117,22 @@ func UnpackZipToDirectory(cmd *cobra.Command, zipBuffer []byte, outputDirectory 
 	return nil
 }
 
+func CreateZipFromDirectory(cmd *cobra.Command, sourceDirectory string) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	w := zip.NewWriter(buf)
+	// Add some files to the archive.
+	if err := addFilesToZip(cmd, w, sourceDirectory+"/", ""); err != nil {
+		w.Close()
+		return nil, err
+	}
+
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
 func readZipFile(zf *zip.File) ([]byte, error) {
 	f, err := zf.Open()
 	if err != nil {
@@ -108,20 +142,46 @@ func readZipFile(zf *zip.File) ([]byte, error) {
 	return io.ReadAll(f)
 }
 
-func CreateOrGetDir() (string, error) {
-	homeDir, err := os.UserHomeDir()
+func addFilesToZip(cmd *cobra.Command, w *zip.Writer, basePath string, baseInZip string) error {
+	// Open the Directory
+	files, err := os.ReadDir(basePath)
 	if err != nil {
-		return "", err
+		WriteString(cmd, err.Error())
+		return err
 	}
 
-	configDir := os.Getenv("VERIFY_HOME")
-	if configDir == "" {
-		configDir = filepath.Join(homeDir, defaultDir)
+	for _, file := range files {
+		zipFileName := baseInZip + file.Name()
+		if !file.IsDir() {
+			dat, err := os.ReadFile(basePath + file.Name())
+			if err != nil {
+				WriteString(cmd, err.Error())
+				return err
+			}
+
+			// Add file to archive
+			f, err := w.Create(zipFileName)
+			if err != nil {
+				WriteString(cmd, err.Error())
+				return err
+			}
+			_, err = f.Write(dat)
+			if err != nil {
+				WriteString(cmd, err.Error())
+				return err
+			}
+
+			WriteString(cmd, "File added: "+zipFileName)
+		} else {
+			// Recurse
+			newBase := basePath + file.Name() + "/"
+			WriteString(cmd, "Sub-directory added: "+zipFileName)
+
+			if err := addFilesToZip(cmd, w, newBase, baseInZip+file.Name()+"/"); err != nil {
+				return err
+			}
+		}
 	}
 
-	if err := os.MkdirAll(configDir, defaultPerm); err != nil {
-		return "", err
-	}
-
-	return configDir, nil
+	return nil
 }

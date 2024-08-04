@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"time"
@@ -99,6 +100,64 @@ func (c *defaultClientx) Post(ctx context.Context, url *url.URL, headers http.He
 	return respObj, nil
 }
 
+// PostMultipart makes a HTTP POST call with content-type set to multipart/form-data and returns the response
+func (c *defaultClientx) PostMultipart(ctx context.Context, url *url.URL, headers http.Header, files map[string][]byte, fields map[string]string) (*Response, error) {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	defer writer.Close()
+
+	for fileName, data := range files {
+		part, err := writer.CreateFormFile(fileName, fileName)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = io.Copy(part, bytes.NewReader(data))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	for name, value := range fields {
+		if err := writer.WriteField(name, value); err != nil {
+			return nil, err
+		}
+	}
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Add("content-type", "multipart/form-data")
+	for k, v := range headers {
+		request.Header.Add(k, v[0])
+	}
+
+	response, err := c.client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	respObj := &Response{
+		StatusCode: response.StatusCode,
+		Headers:    response.Header,
+	}
+
+	if response.Body != nil {
+		resBody, err := io.ReadAll(response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("unable to extract the body")
+		}
+
+		respObj.Body = resBody
+	}
+
+	return respObj, nil
+}
+
 // Put makes a HTTP PUT call and returns the response
 func (c *defaultClientx) Put(ctx context.Context, url *url.URL, headers http.Header, body []byte) (*Response, error) {
 	bodyReader := bytes.NewReader([]byte(body))
@@ -107,6 +166,64 @@ func (c *defaultClientx) Put(ctx context.Context, url *url.URL, headers http.Hea
 		return nil, err
 	}
 
+	for k, v := range headers {
+		request.Header.Add(k, v[0])
+	}
+
+	response, err := c.client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	respObj := &Response{
+		StatusCode: response.StatusCode,
+		Headers:    response.Header,
+	}
+
+	if response.Body != nil {
+		resBody, err := io.ReadAll(response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("unable to extract the body")
+		}
+
+		respObj.Body = resBody
+	}
+
+	return respObj, nil
+}
+
+// PutMultipart makes a HTTP PUT call with content-type set to multipart/form-data and returns the response
+func (c *defaultClientx) PutMultipart(ctx context.Context, url *url.URL, headers http.Header, files map[string][]byte, fields map[string]string) (*Response, error) {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	defer writer.Close()
+
+	for fileName, data := range files {
+		part, err := writer.CreateFormFile(fileName, fileName)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = io.Copy(part, bytes.NewReader(data))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	for name, value := range fields {
+		if err := writer.WriteField(name, value); err != nil {
+			return nil, err
+		}
+	}
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodPut, url.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Add("content-type", "multipart/form-data")
 	for k, v := range headers {
 		request.Header.Add(k, v[0])
 	}

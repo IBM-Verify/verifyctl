@@ -94,6 +94,10 @@ func (o *attributesOptions) Complete(cmd *cobra.Command, args []string) error {
 }
 
 func (o *attributesOptions) Validate(cmd *cobra.Command, args []string) error {
+	if o.entitlements {
+		return nil
+	}
+
 	calledAs := cmd.CalledAs()
 	if calledAs == "attribute" && o.id == "" {
 		return fmt.Errorf(i18n.Translate("'id' flag is required."))

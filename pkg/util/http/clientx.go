@@ -16,8 +16,14 @@ type Clientx interface {
 	// Post makes a HTTP POST call and returns the response
 	Post(ctx context.Context, url *url.URL, headers http.Header, body []byte) (*Response, error)
 
+	// PostMultipart makes a HTTP POST call with content-type set to multipart/form-data and returns the response
+	PostMultipart(ctx context.Context, url *url.URL, headers http.Header, files map[string][]byte, fields map[string]string) (*Response, error)
+
 	// Put makes a HTTP PUT call and returns the response
 	Put(ctx context.Context, url *url.URL, headers http.Header, body []byte) (*Response, error)
+
+	// PutMultipart makes a HTTP PUT call with content-type set to multipart/form-data and returns the response
+	PutMultipart(ctx context.Context, url *url.URL, headers http.Header, files map[string][]byte, fields map[string]string) (*Response, error)
 
 	// Patch makes a HTTP PATCH call and returns the response
 	Patch(ctx context.Context, url *url.URL, headers http.Header, body []byte) (*Response, error)

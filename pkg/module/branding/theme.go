@@ -150,3 +150,68 @@ func (c *ThemeClient) GetFile(ctx context.Context, auth *config.AuthConfig, them
 
 	return response.Body, nil
 }
+
+func (c *ThemeClient) UpdateFile(ctx context.Context, auth *config.AuthConfig, themeID string, path string, data []byte) error {
+	vc := config.GetVerifyContext(ctx)
+	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s/%s", auth.Tenant, apiThemes, themeID, path))
+
+	headers := http.Header{
+		"Authorization": []string{"Bearer " + auth.Token},
+	}
+
+	response, err := c.client.PutMultipart(ctx, u, headers, map[string][]byte{
+		"file": data,
+	}, nil)
+	if err != nil {
+		vc.Logger.Errorf("unable to update the file; err=%s", err.Error())
+		return err
+	}
+
+	if response.StatusCode != http.StatusNoContent {
+		if err := module.HandleCommonErrors(ctx, response, "unable to update the file"); err != nil {
+			vc.Logger.Errorf("unable to update the theme with ID %s and path %s; err=%s", themeID, path, err.Error())
+			return err
+		}
+
+		vc.Logger.Errorf("unable to update the theme with ID %s and path %s; responseCode=%d, responseBody=%s", themeID, path, response.StatusCode, string(response.Body))
+		return fmt.Errorf("unable to update the file")
+	}
+
+	return nil
+}
+
+func (c *ThemeClient) UpdateTheme(ctx context.Context, auth *config.AuthConfig, themeID string, data []byte, metadata map[string]interface{}) error {
+	vc := config.GetVerifyContext(ctx)
+	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiThemes, themeID))
+
+	headers := http.Header{
+		"Authorization": []string{"Bearer " + auth.Token},
+	}
+
+	fields := map[string]string{}
+	if len(metadata) > 0 {
+		if configBytes, err := json.Marshal(metadata); err == nil {
+			fields["configuration"] = string(configBytes)
+		}
+	}
+
+	response, err := c.client.PutMultipart(ctx, u, headers, map[string][]byte{
+		"files": data,
+	}, fields)
+	if err != nil {
+		vc.Logger.Errorf("unable to update the theme; err=%s", err.Error())
+		return err
+	}
+
+	if response.StatusCode != http.StatusNoContent {
+		if err := module.HandleCommonErrors(ctx, response, "unable to update the theme"); err != nil {
+			vc.Logger.Errorf("unable to update the theme with ID %s; err=%s", themeID, err.Error())
+			return err
+		}
+
+		vc.Logger.Errorf("unable to update the theme with ID %s; responseCode=%d, responseBody=%s", themeID, response.StatusCode, string(response.Body))
+		return fmt.Errorf("unable to update the theme")
+	}
+
+	return nil
+}

@@ -109,6 +109,10 @@ func (o *themesOptions) Complete(cmd *cobra.Command, args []string) error {
 }
 
 func (o *themesOptions) Validate(cmd *cobra.Command, args []string) error {
+	if o.entitlements {
+		return nil
+	}
+
 	calledAs := cmd.CalledAs()
 	if calledAs == "theme" {
 		if o.id == "" {
