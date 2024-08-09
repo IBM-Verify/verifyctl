@@ -5,6 +5,7 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/auth"
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/get"
+	"github.com/ibm-security-verify/verifyctl/pkg/cmd/logs"
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/set"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
@@ -34,6 +35,7 @@ func NewRootCmd(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 	cmd.AddCommand(auth.NewCommand(config, streams))
 	cmd.AddCommand(get.NewCommand(config, streams))
 	cmd.AddCommand(set.NewCommand(config, streams))
+	cmd.AddCommand(logs.NewCommand(config, streams))
 
 	return cmd
 }
