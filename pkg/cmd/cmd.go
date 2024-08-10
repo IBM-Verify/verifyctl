@@ -8,13 +8,17 @@ import (
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/logs"
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/set"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
+	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 )
 
 const (
-	messagePrefix = "Root"
+	messagePrefix   = "Root"
+	basicGroupID    = "basic"
+	resourceGroupID = "resource"
+	debugGroupID    = "debug"
 )
 
 func NewRootCmd(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -32,10 +36,28 @@ func NewRootCmd(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 	cmd.SetIn(streams)
 
 	// add commands
-	cmd.AddCommand(auth.NewCommand(config, streams))
-	cmd.AddCommand(get.NewCommand(config, streams))
-	cmd.AddCommand(set.NewCommand(config, streams))
-	cmd.AddCommand(logs.NewCommand(config, streams))
+	cmd.AddCommand(auth.NewCommand(config, streams, basicGroupID))
+	cmd.AddCommand(get.NewCommand(config, streams, resourceGroupID))
+	cmd.AddCommand(set.NewCommand(config, streams, resourceGroupID))
+	cmd.AddCommand(logs.NewCommand(config, streams, debugGroupID))
+
+	// add groups
+	groups := []*cobra.Group{
+		{
+			ID:    basicGroupID,
+			Title: i18n.Translate("Basic Commands"),
+		},
+		{
+			ID:    resourceGroupID,
+			Title: i18n.Translate("Configuration Management Commands"),
+		},
+		{
+			ID:    debugGroupID,
+			Title: i18n.Translate("Troubleshooting and Debugging Commands"),
+		},
+	}
+
+	cmd.AddGroup(groups...)
 
 	return cmd
 }

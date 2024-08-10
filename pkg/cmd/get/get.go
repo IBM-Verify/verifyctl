@@ -50,7 +50,7 @@ type options struct {
 	config *config.CLIConfig
 }
 
-func NewCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
+func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string) *cobra.Command {
 	o := &options{
 		config: config,
 	}
@@ -65,6 +65,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 			cmdutil.ExitOnError(cmd, o.Complete(cmd, args))
 			cmdutil.ExitOnError(cmd, o.Validate(cmd, args))
 		},
+		GroupID: groupID,
 	}
 
 	cmd.SetOut(streams)
