@@ -50,13 +50,21 @@ type Attribute struct {
 	Function          Function          `json:"function" yaml:"function"`
 }
 
+type AttributeListResponse struct {
+	Limit      int          `json:"limit,omitempty" yaml:"limit,omitempty"`
+	Page       int          `json:"page,omitempty" yaml:"page,omitempty"`
+	Total      int          `json:"total,omitempty" yaml:"total,omitempty"`
+	Count      int          `json:"count,omitempty" yaml:"count,omitempty"`
+	Attributes []*Attribute `json:"attributes" yaml:"attributes"`
+}
+
 func NewAttributeClient() *AttributeClient {
 	return &AttributeClient{
 		client: xhttp.NewDefaultClient(),
 	}
 }
 
-func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthConfig, id string) (*Attribute, error) {
+func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthConfig, id string) (*Attribute, string, error) {
 	vc := config.GetVerifyContext(ctx)
 	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiAttributes, id))
 	headers := http.Header{
@@ -67,22 +75,84 @@ func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthCon
 	response, err := c.client.Get(ctx, u, headers)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the attribute; err=%s", err.Error())
-		return nil, err
+		return nil, "", err
 	}
 
 	if response.StatusCode != http.StatusOK {
 		if err := module.HandleCommonErrors(ctx, response, "unable to get attribute"); err != nil {
 			vc.Logger.Errorf("unable to get the attribute; err=%s", err.Error())
-			return nil, err
+			return nil, "", err
 		}
 
-		return nil, fmt.Errorf("unable to get the attribute")
+		vc.Logger.Errorf("unable to get the attribute; code=%d, body=%s", response.StatusCode, string(response.Body))
+		return nil, "", fmt.Errorf("unable to get the attribute")
 	}
 
 	attribute := &Attribute{}
 	if err = json.Unmarshal(response.Body, attribute); err != nil {
-		return nil, fmt.Errorf("unable to get the attribute")
+		return nil, "", fmt.Errorf("unable to get the attribute")
 	}
 
-	return attribute, nil
+	return attribute, u.String(), nil
+}
+
+func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (
+	*AttributeListResponse, string, error) {
+
+	vc := config.GetVerifyContext(ctx)
+	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiAttributes))
+	headers := http.Header{
+		"Accept":        []string{"application/json"},
+		"Authorization": []string{"Bearer " + auth.Token},
+	}
+
+	q := u.Query()
+	if len(search) > 0 {
+		q.Set("search", search)
+	}
+
+	if len(sort) > 0 {
+		q.Set("sort", sort)
+	}
+
+	pagination := url.Values{}
+	if page > 0 {
+		pagination.Set("page", fmt.Sprintf("%d", page))
+	}
+
+	if limit > 0 {
+		pagination.Set("limit", fmt.Sprintf("%d", limit))
+	}
+
+	if len(pagination) > 0 {
+		q.Set("pagination", pagination.Encode())
+	}
+
+	if len(q) > 0 {
+		u.RawQuery = q.Encode()
+	}
+
+	response, err := c.client.Get(ctx, u, headers)
+	if err != nil {
+		vc.Logger.Errorf("unable to get the attributes; err=%s", err.Error())
+		return nil, "", err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		if err := module.HandleCommonErrors(ctx, response, "unable to get attributes"); err != nil {
+			vc.Logger.Errorf("unable to get the attributes; err=%s", err.Error())
+			return nil, "", err
+		}
+
+		vc.Logger.Errorf("unable to get the attributes; code=%d, body=%s", response.StatusCode, string(response.Body))
+		return nil, "", fmt.Errorf("unable to get the attributes")
+	}
+
+	attributesResponse := &AttributeListResponse{}
+	if err = json.Unmarshal(response.Body, &attributesResponse); err != nil {
+		vc.Logger.Errorf("unable to get the attributes; err=%s, body=%s", err, string(response.Body))
+		return nil, "", fmt.Errorf("unable to get the attributes")
+	}
+
+	return attributesResponse, u.String(), nil
 }

@@ -32,8 +32,8 @@ The flags supported by each resource type may differ and can be determined using
   verifyctl get [resource-type] -h`))
 
 	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
-		# Get an application and write it to a file
-		verifyctl get application --outfile ./app-1098012.yaml --id=1098012
+		# Get an application
+		verifyctl get application -o=yaml --id=1098012
 
 		# Get all users that match department "2A". There may be limits introduced by the API.
 		verifyctl get users --filter="urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department eq \"2A\"" --attributes="userName,emails,urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager" -o yaml`))
@@ -42,10 +42,15 @@ The flags supported by each resource type may differ and can be determined using
 )
 
 type options struct {
-	resourceType string
-	outputType   string
-	outputFile   string
+	resource     string
 	entitlements bool
+	output       string
+	limit        int
+	page         int
+	sort         string
+	search       string
+	properties   string
+	id           string
 
 	config *config.CLIConfig
 }
@@ -72,8 +77,6 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.SetErr(streams)
 	cmd.SetIn(streams)
 
-	o.AddFlags(cmd)
-
 	// add sub commands
 	cmd.AddCommand(NewAttributesCommand(config, streams))
 	cmd.AddCommand(NewThemesCommand(config, streams))
@@ -81,10 +84,27 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	return cmd
 }
 
-func (o *options) AddFlags(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringVarP(&o.outputType, "output", "o", "", i18n.Translate("Select the format of the output. The values supported are 'json' and 'yaml'. Default: yaml"))
-	cmd.PersistentFlags().StringVar(&o.outputFile, "outfile", "", i18n.Translate("Persist the output to the specified file path. The default directory is local. If the file has an appropriate extension, the format of the output can be determined without needing to provide the '--output' flag."))
-	cmd.PersistentFlags().BoolVar(&o.entitlements, "entitlements", o.entitlements, i18n.Translate("List the entitlements that can be configured to grant access to the resource. This is useful to know what to configure on the application or API client used to generate the login token. When this flag is used, the others are ignored."))
+func (o *options) addCommonFlags(cmd *cobra.Command, resourceName string) {
+	cmd.Flags().BoolVar(&o.entitlements, "entitlements", o.entitlements, i18n.TranslateWithArgs("List the entitlements that can be configured to grant access to the %s. This is useful to know what to configure on the application or API client used to generate the login token. When this flag is used, the others are ignored.", resourceName))
+	cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Select the format of the output. The values supported are 'json' , 'yaml' and 'raw'. Default: 'yaml'."))
+	cmd.Flags().StringVar(&o.id, "id", "", i18n.TranslateWithArgs("Identifier of the %s.", resourceName))
+}
+
+func (o *options) addPaginationFlags(cmd *cobra.Command, _ string) {
+	cmd.Flags().IntVar(&o.limit, "limit", 0, i18n.Translate("Return large lists in chunks."))
+	cmd.Flags().IntVar(&o.page, "page", 0, i18n.Translate("Return a specific page of results. This is relevant for large lists and is usually paired with the 'limit' flag."))
+}
+
+func (o *options) addSortFlags(cmd *cobra.Command, _ string) {
+	cmd.Flags().StringVar(&o.sort, "sort", "", i18n.Translate("Choose the property by which lists should be sorted."))
+}
+
+func (o *options) addSearchFlags(cmd *cobra.Command, _ string) {
+	cmd.Flags().StringVar(&o.search, "search", "", i18n.Translate("Specify the search criteria to fetch lists."))
+}
+
+func (o *options) addPropertiesFlags(cmd *cobra.Command, _ string) {
+	cmd.Flags().StringVar(&o.properties, "props", "", i18n.Translate("Request for specific resource properties, rather than the entire resource object."))
 }
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
@@ -92,7 +112,7 @@ func (o *options) Complete(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf(i18n.Translate("Resource type is required."))
 	}
 
-	o.resourceType = args[0]
+	o.resource = args[0]
 	return nil
 }
 

@@ -1,12 +1,11 @@
 package get
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
-	"strings"
 
+	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/branding"
@@ -19,6 +18,7 @@ const (
 	themesUsage         = `themes [flags]`
 	themesMessagePrefix = "GetThemes"
 	themesEntitlements  = "manageTemplates (Manage templates and themes) or readTemplates (Read templates and themes)"
+	themeResourceName   = "theme"
 )
 
 var (
@@ -45,10 +45,6 @@ You can identify the entitlement required by running:
 
 type themesOptions struct {
 	options
-	page            int
-	limit           int
-	count           int
-	id              string
 	path            string
 	outputDirectory string
 	unpack          bool
@@ -86,25 +82,16 @@ func NewThemesCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Co
 }
 
 func (o *themesOptions) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().IntVar(&o.count, "count", 0, i18n.Translate("Define the total number of results that are returned from the data store. The maximum allowed value is 1000."))
-	cmd.Flags().IntVar(&o.limit, "limit", 0, i18n.Translate("Define the total number of results that are returned per page. The maximum allowed value is 1000."))
-	cmd.Flags().IntVar(&o.page, "page", 0, i18n.Translate("Identify the requested page, or the offset."))
-	cmd.Flags().StringVar(&o.id, "id", "", i18n.Translate("Identifier of the theme."))
-	cmd.Flags().StringVar(&o.path, "path", "", i18n.Translate("Template file path, including the locale if relevant. This is only meant to be used when downloading a single file."))
-	cmd.Flags().StringVar(&o.outputDirectory, "outdir", "", i18n.Translate("Path to the directory where the theme will be unpacked, if requested. This is paired with 'unpack' flag."))
+	o.addCommonFlags(cmd, themeResourceName)
+	o.addPaginationFlags(cmd, themeResourceName)
+
+	cmd.Flags().BoolVar(&o.customizedOnly, "customizedOnly", false, i18n.Translate("Use the flag if you only want customized template files. This is only used for single theme downloads."))
 	cmd.Flags().BoolVar(&o.unpack, "unpack", false, i18n.Translate("Uncompress the downloaded zip. This is only used for single theme download commands."))
-	cmd.Flags().BoolVar(&o.customizedOnly, "customizedOnly", false, i18n.Translate("Use the flag if you only want customized template files. This is only used for single theme download commands."))
+	cmd.Flags().StringVar(&o.outputDirectory, "dir", "", i18n.Translate("Path to the directory where the theme will be unpacked, if requested. This is paired with 'unpack' flag."))
+	cmd.Flags().StringVarP(&o.path, "template", "T", "", i18n.Translate("Template path, including the locale if relevant. This is only meant to be used when downloading a single file. Example: 'authentication/oidc/consent/default/user_consent.html'."))
 }
 
 func (o *themesOptions) Complete(cmd *cobra.Command, args []string) error {
-	o.entitlements = cmd.Flag("entitlements").Changed
-	o.outputType = cmd.Flag("output").Value.String()
-	o.outputFile = cmd.Flag("outfile").Value.String()
-	if len(o.outputType) == 0 && len(o.outputFile) > 0 {
-		if strings.HasSuffix(o.outputFile, ".json") {
-			o.outputType = "json"
-		}
-	}
 	return nil
 }
 
@@ -119,12 +106,8 @@ func (o *themesOptions) Validate(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf(i18n.Translate("'id' flag is required."))
 		}
 
-		if len(o.outputDirectory) == 0 && len(o.outputFile) == 0 {
-			return fmt.Errorf(i18n.Translate("Either 'outdir' or 'outfile' flag is required when downloading a single theme."))
-		}
-
 		if len(o.outputDirectory) == 0 && o.unpack {
-			return fmt.Errorf(i18n.Translate("'outdir' flag is required when 'unpack' flag is used."))
+			return fmt.Errorf(i18n.Translate("'dir' flag is required when 'unpack' flag is used."))
 		}
 	}
 	return nil
@@ -142,43 +125,52 @@ func (o *themesOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// invoke the operation
-	calledAs := cmd.CalledAs()
-	c := branding.NewThemeClient()
-
-	if calledAs == "theme" {
+	if cmd.CalledAs() == "theme" || len(o.id) > 0 {
 		return o.handleSingleThemeCommand(cmd, auth, args)
 	}
 
 	// deal with themes
-	themes, err := c.ListThemes(cmd.Context(), auth, o.count, o.page, o.limit)
+	c := branding.NewThemeClient()
+	themes, uri, err := c.ListThemes(cmd.Context(), auth, 0, o.page, o.limit)
 	if err != nil {
 		return err
 	}
 
-	if len(o.outputFile) == 0 {
-		if o.outputType == "json" {
-			cmdutil.WriteAsJSON(cmd, themes.Themes, cmd.OutOrStdout())
-		} else {
-			cmdutil.WriteAsYAML(cmd, themes.Themes, cmd.OutOrStdout())
-		}
+	if o.output == "raw" {
+		cmdutil.WriteAsJSON(cmd, themes, cmd.OutOrStdout())
+		return nil
+	}
+
+	items := []*resource.ResourceObject{}
+	for _, theme := range themes.Themes {
+		items = append(items, &resource.ResourceObject{
+			Kind:       resource.ResourceTypePrefix + "Theme",
+			APIVersion: "1.0",
+			Metadata: &resource.ResourceObjectMetadata{
+				UID:  theme.ThemeID,
+				Name: theme.Name,
+			},
+			Data: theme,
+		})
+	}
+
+	resourceObj := &resource.ResourceObjectList{
+		Kind:       resource.ResourceTypePrefix + "List",
+		APIVersion: "1.0",
+		Metadata: &resource.ResourceObjectMetadata{
+			URI:   uri,
+			Limit: themes.Limit,
+			Count: themes.Count,
+			Total: themes.Total,
+			Page:  themes.Page,
+		},
+		Items: items,
+	}
+
+	if o.output == "json" {
+		cmdutil.WriteAsJSON(cmd, resourceObj, cmd.OutOrStdout())
 	} else {
-		of, err := os.Create(o.outputFile)
-		if err != nil {
-			return err
-		}
-
-		defer of.Close()
-		if o.outputType == "json" {
-			cmdutil.WriteAsJSON(cmd, themes.Themes, of)
-		} else {
-			cmdutil.WriteAsYAML(cmd, themes.Themes, of)
-		}
-
-		fullPath, err := filepath.Abs(o.outputFile)
-		if err != nil {
-			fullPath = o.outputFile
-		}
-		cmdutil.WriteString(cmd, fmt.Sprintf("File written: %s", fullPath))
+		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
 	}
 
 	return nil
@@ -188,34 +180,45 @@ func (o *themesOptions) handleSingleThemeCommand(cmd *cobra.Command, auth *confi
 	c := branding.NewThemeClient()
 	var b []byte
 	var err error
+	uri := ""
+	uid := o.id
+	resourceName := "Theme"
 	if len(o.path) > 0 {
 		// get a single file
-		b, err = c.GetFile(cmd.Context(), auth, o.id, o.path)
+		if b, uri, err = c.GetFile(cmd.Context(), auth, o.id, o.path); err != nil {
+			return err
+		}
+		resourceName = "ThemeFile"
 	} else {
-		b, err = c.GetTheme(cmd.Context(), auth, o.id, o.customizedOnly)
-	}
-
-	if err != nil {
-		return err
+		if b, uri, err = c.GetTheme(cmd.Context(), auth, o.id, o.customizedOnly); err != nil {
+			return err
+		}
 	}
 
 	if len(o.path) == 0 && o.unpack {
 		return cmdutil.UnpackZipToDirectory(cmd, b, o.outputDirectory)
 	}
 
-	// write the file
-	of, err := os.Create(o.outputFile)
-	if err != nil {
-		return err
+	if o.output == "raw" {
+		cmdutil.WriteAsBinary(cmd, b, cmd.OutOrStdout())
+		return nil
 	}
 
-	defer of.Close()
-	cmdutil.WriteAsBinary(cmd, b, of)
-
-	fullPath, err := filepath.Abs(o.outputFile)
-	if err != nil {
-		fullPath = o.outputFile
+	obj := &resource.ResourceObject{
+		Kind:       string(resource.ResourceTypePrefix) + resourceName,
+		APIVersion: "1.0",
+		Metadata: &resource.ResourceObjectMetadata{
+			UID: uid,
+			URI: uri,
+		},
+		Data: base64.StdEncoding.EncodeToString(b),
 	}
-	cmdutil.WriteString(cmd, fmt.Sprintf("File written: %s", fullPath))
+
+	if o.output == "json" {
+		cmdutil.WriteAsJSON(cmd, obj, cmd.OutOrStdout())
+	} else {
+		cmdutil.WriteAsYAML(cmd, obj, cmd.OutOrStdout())
+	}
+
 	return nil
 }

@@ -3,10 +3,8 @@ package get
 import (
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
-	"strings"
 
+	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/directory"
@@ -19,6 +17,7 @@ const (
 	attributesUsage         = `attributes [flags]`
 	attributesMessagePrefix = "GetAttributes"
 	attributesEntitlements  = "Manage attributes"
+	attributeResourceName   = "attribute"
 )
 
 var (
@@ -33,17 +32,15 @@ You can identify the entitlement required by running:
   verifyctl get attributes --entitlements`))
 
 	attributesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
-		# Get an attribute and write it to a file
-		verifyctl get attribute --outfile ./work_email.yaml --id=work_email
+		# Get an attribute and print the output in yaml
+		verifyctl get attribute -o=yaml --id=work_email
 
-		# Get all attributes that match department "2A". There may be limits introduced by the API.
-		verifyctl get users --filter="urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department eq \"2A\"" --attributes="userName,emails,urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager" -o yaml`))
+		# Get 10 attributes based on a given search criteria and sort it in the ascending order by name.
+		verifyctl get attributes --search="tags=\"sso\"" --limit=10 --page=1 --sort=+name -o=yaml`))
 )
 
 type attributesOptions struct {
 	options
-	id     string
-	filter string
 
 	config *config.CLIConfig
 }
@@ -77,19 +74,13 @@ func NewAttributesCommand(config *config.CLIConfig, streams io.ReadWriter) *cobr
 }
 
 func (o *attributesOptions) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&o.id, "id", "", i18n.Translate("Attribute identifier or name."))
-	cmd.Flags().StringVar(&o.filter, "filter", "", i18n.Translate("Search filter when fetching multiple attributes."))
+	o.addCommonFlags(cmd, attributeResourceName)
+	o.addPaginationFlags(cmd, attributeResourceName)
+	o.addSearchFlags(cmd, attributeResourceName)
+	o.addSortFlags(cmd, attributeResourceName)
 }
 
 func (o *attributesOptions) Complete(cmd *cobra.Command, args []string) error {
-	o.entitlements = cmd.Flag("entitlements").Changed
-	o.outputType = cmd.Flag("output").Value.String()
-	o.outputFile = cmd.Flag("outfile").Value.String()
-	if len(o.outputType) == 0 && len(o.outputFile) > 0 {
-		if strings.HasSuffix(o.outputFile, ".json") {
-			o.outputType = "json"
-		}
-	}
 	return nil
 }
 
@@ -117,46 +108,90 @@ func (o *attributesOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// invoke the operation
-	calledAs := cmd.CalledAs()
-	c := directory.NewAttributeClient()
-	var dataObj interface{}
-	if calledAs == "attribute" {
+	if cmd.CalledAs() == "attribute" || len(o.id) > 0 {
 		// deal with single attribute
-		attr, err := c.GetAttribute(cmd.Context(), auth, o.id)
-		if err != nil {
-			return err
-		}
-		dataObj = attr
+		return o.handleSingleAttribute(cmd, auth, args)
 	}
 
-	if dataObj == nil {
-		return fmt.Errorf("no data found.")
+	return o.handleAttributeList(cmd, auth, args)
+}
+
+func (o *attributesOptions) handleSingleAttribute(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+
+	c := directory.NewAttributeClient()
+	attr, uri, err := c.GetAttribute(cmd.Context(), auth, o.id)
+	if err != nil {
+		return err
 	}
 
-	if len(o.outputFile) == 0 {
-		if o.outputType == "json" {
-			cmdutil.WriteAsJSON(cmd, dataObj, cmd.OutOrStdout())
-		} else {
-			cmdutil.WriteAsYAML(cmd, dataObj, cmd.OutOrStdout())
-		}
+	if o.output == "raw" {
+		cmdutil.WriteAsJSON(cmd, attr, cmd.OutOrStdout())
+		return nil
+	}
+
+	resourceObj := &resource.ResourceObject{
+		Kind:       resource.ResourceTypePrefix + "Attribute",
+		APIVersion: "1.0",
+		Metadata: &resource.ResourceObjectMetadata{
+			UID:  attr.ID,
+			Name: attr.Name,
+			URI:  uri,
+		},
+		Data: attr,
+	}
+
+	if o.output == "json" {
+		cmdutil.WriteAsJSON(cmd, resourceObj, cmd.OutOrStdout())
 	} else {
-		of, err := os.Create(o.outputFile)
-		if err != nil {
-			return err
-		}
+		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
+	}
 
-		defer of.Close()
-		if o.outputType == "json" {
-			cmdutil.WriteAsJSON(cmd, dataObj, of)
-		} else {
-			cmdutil.WriteAsYAML(cmd, dataObj, of)
-		}
+	return nil
+}
 
-		fullPath, err := filepath.Abs(o.outputFile)
-		if err != nil {
-			fullPath = o.outputFile
-		}
-		cmdutil.WriteString(cmd, fmt.Sprintf("File written: %s", fullPath))
+func (o *attributesOptions) handleAttributeList(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+
+	c := directory.NewAttributeClient()
+	attrs, uri, err := c.GetAttributes(cmd.Context(), auth, o.search, o.sort, o.page, o.limit)
+	if err != nil {
+		return err
+	}
+
+	if o.output == "raw" {
+		cmdutil.WriteAsJSON(cmd, attrs, cmd.OutOrStdout())
+		return nil
+	}
+
+	items := []*resource.ResourceObject{}
+	for _, attr := range attrs.Attributes {
+		items = append(items, &resource.ResourceObject{
+			Kind:       resource.ResourceTypePrefix + "Attribute",
+			APIVersion: "1.0",
+			Metadata: &resource.ResourceObjectMetadata{
+				UID:  attr.ID,
+				Name: attr.Name,
+			},
+			Data: attr,
+		})
+	}
+
+	resourceObj := &resource.ResourceObjectList{
+		Kind:       resource.ResourceTypePrefix + "List",
+		APIVersion: "1.0",
+		Metadata: &resource.ResourceObjectMetadata{
+			URI:   uri,
+			Limit: attrs.Limit,
+			Count: attrs.Count,
+			Total: attrs.Total,
+			Page:  attrs.Page,
+		},
+		Items: items,
+	}
+
+	if o.output == "json" {
+		cmdutil.WriteAsJSON(cmd, resourceObj, cmd.OutOrStdout())
+	} else {
+		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
 	}
 
 	return nil
