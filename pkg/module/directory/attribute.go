@@ -156,3 +156,12 @@ func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthCo
 
 	return attributesResponse, u.String(), nil
 }
+
+// CreateAttribute creates an attribute and returns the resource URI.
+func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) (string, error) {
+	return "", fmt.Errorf("not implemented")
+}
+
+func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) error {
+	return fmt.Errorf("not implemented")
+}
