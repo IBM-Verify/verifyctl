@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/auth"
+	"github.com/ibm-security-verify/verifyctl/pkg/cmd/create"
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/get"
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/logs"
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/set"
@@ -38,6 +39,7 @@ func NewRootCmd(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 	// add commands
 	cmd.AddCommand(auth.NewCommand(config, streams, basicGroupID))
 	cmd.AddCommand(get.NewCommand(config, streams, resourceGroupID))
+	cmd.AddCommand(create.NewCommand(config, streams, resourceGroupID))
 	cmd.AddCommand(set.NewCommand(config, streams, resourceGroupID))
 	cmd.AddCommand(logs.NewCommand(config, streams, debugGroupID))
 

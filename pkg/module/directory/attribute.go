@@ -10,10 +10,11 @@ import (
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
+	typesx "github.com/ibm-security-verify/verifyctl/pkg/util/types"
 )
 
 const (
-	apiAttributes string = "attrservice.mgt/v1.0/attributes"
+	apiAttributes string = "v1.0/attributes"
 )
 
 type AttributeClient struct {
@@ -36,17 +37,17 @@ type Function struct {
 
 // Attribute is the domain model defining an attribute
 type Attribute struct {
-	ID                string            `json:"id" yaml:"id"`
+	ID                string            `json:"id,omitempty" yaml:"id,omitempty"`
 	Name              string            `json:"name" yaml:"name"`
 	Description       string            `json:"description" yaml:"description"`
-	Scope             string            `json:"scope" yaml:"scope"`
+	Scope             string            `json:"scope,omitempty" yaml:"scope,omitempty"`
 	SourceType        string            `json:"sourceType" yaml:"sourceType"`
 	DataType          string            `json:"datatype" yaml:"datatype"`
 	Tags              []string          `json:"tags" yaml:"tags"`
 	Value             string            `json:"value" yaml:"value"`
 	CredName          string            `json:"credName" yaml:"credName"`
 	CredNameOverrides map[string]string `json:"credNameOverrides" yaml:"credNameOverrides"`
-	SchemaAttribute   SchemaAttribute   `json:"schemaAttribute" yaml:"schemaAttribute"`
+	SchemaAttribute   *SchemaAttribute  `json:"schemaAttribute" yaml:"schemaAttribute"`
 	Function          Function          `json:"function" yaml:"function"`
 }
 
@@ -149,9 +150,16 @@ func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthCo
 	}
 
 	attributesResponse := &AttributeListResponse{}
-	if err = json.Unmarshal(response.Body, &attributesResponse); err != nil {
-		vc.Logger.Errorf("unable to get the attributes; err=%s, body=%s", err, string(response.Body))
-		return nil, "", fmt.Errorf("unable to get the attributes")
+	if len(pagination) > 0 {
+		if err = json.Unmarshal(response.Body, &attributesResponse); err != nil {
+			vc.Logger.Errorf("unable to get the attributes; err=%s, body=%s", err, string(response.Body))
+			return nil, "", fmt.Errorf("unable to get the attributes")
+		}
+	} else {
+		if err = json.Unmarshal(response.Body, &attributesResponse.Attributes); err != nil {
+			vc.Logger.Errorf("unable to get the attributes; err=%s, body=%s", err, string(response.Body))
+			return nil, "", fmt.Errorf("unable to get the attributes")
+		}
 	}
 
 	return attributesResponse, u.String(), nil
@@ -159,9 +167,85 @@ func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthCo
 
 // CreateAttribute creates an attribute and returns the resource URI.
 func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) (string, error) {
-	return "", fmt.Errorf("not implemented")
+	vc := config.GetVerifyContext(ctx)
+	defaultErr := fmt.Errorf("unable to create attribute.")
+	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiAttributes))
+	headers := http.Header{
+		"Accept":        []string{"application/json"},
+		"Conent-Type":   []string{"application/json"},
+		"Authorization": []string{"Bearer " + auth.Token},
+	}
+
+	// set some defaults
+	if attribute.SchemaAttribute != nil && len(attribute.SchemaAttribute.AttributeName) == 0 && attribute.SchemaAttribute.CustomAttribute {
+		attribute.SchemaAttribute.AttributeName = attribute.SchemaAttribute.ScimName
+	}
+
+	b, err := json.Marshal(attribute)
+	if err != nil {
+		vc.Logger.Errorf("unable to marshal the attribute; err=%v", err)
+		return "", defaultErr
+	}
+
+	response, err := c.client.Post(ctx, u, headers, b)
+	if err != nil {
+		vc.Logger.Errorf("unable to create attribute; err=%v", err)
+		return "", defaultErr
+	}
+	if response.StatusCode != http.StatusCreated {
+		if err := module.HandleCommonErrors(ctx, response, "unable to get attributes"); err != nil {
+			vc.Logger.Errorf("unable to create the attribute; err=%s", err.Error())
+			return "", err
+		}
+
+		vc.Logger.Errorf("unable to create the attribute; code=%d, body=%s", response.StatusCode, string(response.Body))
+		return "", defaultErr
+	}
+
+	// unmarshal the response body to get the ID
+	m := map[string]interface{}{}
+	resourceURI := ""
+	if err := json.Unmarshal(response.Body, &m); err != nil {
+		vc.Logger.Warnf("unable to unmarshal the response body to get the 'id'")
+		resourceURI = response.Headers.Get("Location")
+	} else {
+		id := typesx.Map(m).SafeString("id", "")
+		resourceURI = fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiAttributes, id)
+	}
+
+	return resourceURI, nil
 }
 
 func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) error {
-	return fmt.Errorf("not implemented")
+	vc := config.GetVerifyContext(ctx)
+	defaultErr := fmt.Errorf("unable to update attribute.")
+	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiAttributes, attribute.ID))
+	headers := http.Header{
+		"Accept":        []string{"application/json"},
+		"Conent-Type":   []string{"application/json"},
+		"Authorization": []string{"Bearer " + auth.Token},
+	}
+
+	b, err := json.Marshal(attribute)
+	if err != nil {
+		vc.Logger.Errorf("unable to marshal the attribute; err=%v", err)
+		return defaultErr
+	}
+
+	response, err := c.client.Put(ctx, u, headers, b)
+	if err != nil {
+		vc.Logger.Errorf("unable to create attribute; err=%v", err)
+		return defaultErr
+	}
+	if response.StatusCode != http.StatusOK {
+		if err := module.HandleCommonErrors(ctx, response, "unable to get attributes"); err != nil {
+			vc.Logger.Errorf("unable to create the attribute; err=%s", err.Error())
+			return err
+		}
+
+		vc.Logger.Errorf("unable to create the attribute; code=%d, body=%s", response.StatusCode, string(response.Body))
+		return defaultErr
+	}
+
+	return nil
 }
