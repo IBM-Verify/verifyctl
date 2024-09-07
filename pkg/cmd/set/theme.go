@@ -81,7 +81,7 @@ func newThemesCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Co
 
 func (o *themesOptions) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&o.id, "id", "", i18n.Translate("Identifier of the theme."))
-	cmd.Flags().StringVar(&o.path, "path", "", i18n.Translate("Template file path, including the locale. This is only meant to be used when updating a single file."))
+	cmd.Flags().StringVarP(&o.path, "template", "T", "", i18n.Translate("Template file path, including the locale. This is only meant to be used when updating a single file."))
 	cmd.Flags().StringVar(&o.directory, "dir", "", i18n.Translate("Path to the directory where the theme is unpacked. The contents of the directory will be compressed and uploaded as the theme."))
 }
 
