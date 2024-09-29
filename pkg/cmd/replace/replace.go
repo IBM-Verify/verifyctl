@@ -1,4 +1,4 @@
-package create
+package replace
 
 import (
 	"encoding/json"
@@ -17,39 +17,36 @@ import (
 )
 
 const (
-	usage         = "create -f=FILENAME [options]"
-	messagePrefix = "Create"
+	usage         = "replace -f=FILENAME [options]"
+	messagePrefix = "Replace"
 )
 
 var (
-	shortDesc = cmdutil.TranslateShortDesc(messagePrefix, "Create a Verify resource.")
+	shortDesc = cmdutil.TranslateShortDesc(messagePrefix, "Update a Verify resource.")
 
 	longDesc = templates.LongDesc(cmdutil.TranslateLongDesc(messagePrefix, `
-		Create a Verify resource from a file.
+		Update a Verify resource from a file.
 
 JSON or YAML formats are accepted and determined based on the file extension.
 
 An empty resource file can be generated using:
 
-  verifyctl create [resource-type] --boilerplate
+  verifyctl replace [resource-type] --boilerplate
 		
 Resources managed on Verify require specific entitlements, so ensure that the application or API client used
 with the 'auth' command is configured with the appropriate entitlements.
 
 You can identify the entitlement required by running:
   
-  verifyctl create [resource-type] --entitlements
+  verifyctl replace [resource-type] --entitlements
 
 Certain resources may offer additional options and can be determined using:
 
-  verifyctl create [resource-type] -h`))
+  verifyctl update [resource-type] -h`))
 
 	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
-		# Create an application
-		verifyctl create -f=./app-1098012.json`))
-
-	// # Create and get an attribute
-	// verifyctl create -f=./attribute.yml -o=yaml
+		# Update an application
+		verifyctl replace -f=./app-1098012.json`))
 
 	entitlementsMessage = i18n.Translate("Choose any of the following entitlements to configure your application or API client:\n")
 )
@@ -135,7 +132,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	switch resourceObject.Kind {
 	case resource.ResourceTypePrefix + "Attribute":
 		options := &attributeOptions{}
-		err = options.createAttributeFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.updateAttributeFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err

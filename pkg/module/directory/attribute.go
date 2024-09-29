@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
+	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 	typesx "github.com/ibm-security-verify/verifyctl/pkg/util/types"
@@ -219,6 +220,11 @@ func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.Auth
 func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) error {
 	vc := config.GetVerifyContext(ctx)
 	defaultErr := fmt.Errorf("unable to update attribute.")
+
+	if len(attribute.ID) == 0 {
+		return fmt.Errorf(i18n.TranslateWithArgs("'%s' is required", "id"))
+	}
+
 	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiAttributes, attribute.ID))
 	headers := http.Header{
 		"Accept":        []string{"application/json"},
@@ -234,16 +240,16 @@ func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.Auth
 
 	response, err := c.client.Put(ctx, u, headers, b)
 	if err != nil {
-		vc.Logger.Errorf("unable to create attribute; err=%v", err)
+		vc.Logger.Errorf("unable to update attribute; err=%v", err)
 		return defaultErr
 	}
-	if response.StatusCode != http.StatusOK {
+	if response.StatusCode != http.StatusNoContent {
 		if err := module.HandleCommonErrors(ctx, response, "unable to get attributes"); err != nil {
-			vc.Logger.Errorf("unable to create the attribute; err=%s", err.Error())
+			vc.Logger.Errorf("unable to update the attribute; err=%s", err.Error())
 			return err
 		}
 
-		vc.Logger.Errorf("unable to create the attribute; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to update the attribute; code=%d, body=%s", response.StatusCode, string(response.Body))
 		return defaultErr
 	}
 
