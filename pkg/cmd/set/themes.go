@@ -18,6 +18,7 @@ const (
 	themesUsage         = `theme [flags]`
 	themesMessagePrefix = "SetTheme"
 	themesEntitlements  = "manageTemplates (Manage templates and themes)"
+	themeResourceName   = "theme"
 )
 
 var (
@@ -45,9 +46,8 @@ You can identify the entitlement required by running:
 
 type themesOptions struct {
 	options
-	id        string
-	path      string
 	directory string
+	path      string
 
 	config *config.CLIConfig
 }
@@ -80,8 +80,8 @@ func newThemesCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Co
 }
 
 func (o *themesOptions) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&o.id, "id", "", i18n.Translate("Identifier of the theme."))
-	cmd.Flags().StringVarP(&o.path, "template", "T", "", i18n.Translate("Template file path, including the locale. This is only meant to be used when updating a single file."))
+	o.addCommonFlags(cmd, themeResourceName)
+	cmd.Flags().StringVarP(&o.path, "template", "T", "", i18n.Translate("Template file path, including the locale. This is only meant to be used when updating a single file. The 'format' flag is assumed to be 'raw' in this case."))
 	cmd.Flags().StringVar(&o.directory, "dir", "", i18n.Translate("Path to the directory where the theme is unpacked. The contents of the directory will be compressed and uploaded as the theme."))
 }
 

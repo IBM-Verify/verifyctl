@@ -43,6 +43,7 @@ type options struct {
 	format       string
 	file         string
 	entitlements bool
+	id           string
 
 	config *config.CLIConfig
 }
@@ -70,18 +71,17 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.SetErr(streams)
 	cmd.SetIn(streams)
 
-	o.AddFlags(cmd)
-
 	// add sub commands
 	cmd.AddCommand(newThemesCommand(config, streams))
 
 	return cmd
 }
 
-func (o *options) AddFlags(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringVar(&o.format, "format", "", i18n.Translate("Select the format of the input data. The values supported are 'json' and 'yaml'. Default: yaml"))
-	cmd.PersistentFlags().StringVar(&o.file, "file", "", i18n.Translate("Path to the file that contains the input data. If the file has an appropriate extension, the format of the output can be determined without needing to provide the '--format' flag."))
-	cmd.PersistentFlags().BoolVar(&o.entitlements, "entitlements", o.entitlements, i18n.Translate("List the entitlements that can be configured to grant access to the resource. This is useful to know what to configure on the application or API client used to generate the login token. When this flag is used, the others are ignored."))
+func (o *options) addCommonFlags(cmd *cobra.Command, resourceName string) {
+	cmd.Flags().BoolVar(&o.entitlements, "entitlements", o.entitlements, i18n.Translate("List the entitlements that can be configured to grant access to the resource. This is useful to know what to configure on the application or API client used to generate the login token. When this flag is used, the others are ignored."))
+	cmd.Flags().StringVar(&o.format, "format", "", i18n.Translate("Select the format of the input data. The values supported are 'json',  'yaml' and 'raw'. Default: yaml"))
+	cmd.Flags().StringVarP(&o.file, "file", "f", "", i18n.Translate("Path to the file that contains the input data. If the file has an appropriate extension, the format of the output can be determined without needing to provide the '--format' flag."))
+	cmd.Flags().StringVar(&o.id, "id", "", i18n.TranslateWithArgs("Identifier of the %s.", resourceName))
 }
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
