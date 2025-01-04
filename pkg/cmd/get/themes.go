@@ -2,12 +2,12 @@ package get
 
 import (
 	"encoding/base64"
-	"fmt"
 	"io"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/branding"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
@@ -103,11 +103,11 @@ func (o *themesOptions) Validate(cmd *cobra.Command, args []string) error {
 	calledAs := cmd.CalledAs()
 	if calledAs == "theme" {
 		if o.id == "" {
-			return fmt.Errorf("%s", i18n.Translate("'id' flag is required."))
+			return module.MakeSimpleError(i18n.Translate("'id' flag is required."))
 		}
 
 		if len(o.outputDirectory) == 0 && o.unpack {
-			return fmt.Errorf("%s", i18n.Translate("'dir' flag is required when 'unpack' flag is used."))
+			return module.MakeSimpleError(i18n.Translate("'dir' flag is required when 'unpack' flag is used."))
 		}
 	}
 	return nil
