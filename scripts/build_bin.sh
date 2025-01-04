@@ -16,3 +16,9 @@ if [ $? -ne 0 ]; then
 	echo 'Build failed!'
 	exit 1
 fi
+
+# copy to arch-less binary if requested
+archless=${1:-no}
+if [ "$archless" == "yes" ] || [ "$archless" == "true" ]; then
+	cp -f ./bin/$output_name ./bin/verifyctl
+fi
