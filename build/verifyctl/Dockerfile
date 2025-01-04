@@ -1,26 +1,15 @@
-FROM registry.redhat.io/rhel9/go-toolset AS builder
+FROM registry.access.redhat.com/ubi9/ubi-micro
 
 USER root
 
-RUN dnf install -y make
-
-WORKDIR /src
-
-COPY . .
-
-RUN make clean && \
-    make build && \
-    cp /src/bin/verifyctl-$(go env GOOS)-$(go env GOARCH) /src/bin/verifyctl && \
-    mkdir -p /ship/.verify
-
-FROM registry.access.redhat.com/ubi9/ubi-micro
+RUN mkdir .verify && \
+    chown -R 1001 .verify
 
 USER 1001
 
 ENV GOTRACEBACK=crash \
     GODEBUG=x509ignoreCN=0
 
-COPY --chown=1001:0 --from=builder /ship /
-COPY --from=builder /src/bin/verifyctl /usr/bin
+COPY bin/verifyctl /usr/bin
 
 ENTRYPOINT ["/bin/verifyctl"]
