@@ -26,7 +26,7 @@ func HandleCommonErrors(ctx context.Context, response *xhttp.Response, defaultEr
 	if response.StatusCode == http.StatusBadRequest {
 		errorMessage := &VerifyError{}
 		if err := json.Unmarshal(response.Body, errorMessage); err != nil {
-			return fmt.Errorf(defaultError)
+			return MakeSimpleError(defaultError)
 		} else {
 			return fmt.Errorf("%s %s", errorMessage.MessageID, errorMessage.MessageDescription)
 		}
