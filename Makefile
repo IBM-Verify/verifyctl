@@ -17,6 +17,10 @@ build-all:
 build-%:
 	GOOS=$$(echo $* | cut -d- -f 1) GOARCH=$$(echo $* | cut -d- -f 2) GO_BUILD_FLAGS="${GO_BUILD_FLAGS} -v -mod=readonly" ./scripts/build_bin.sh
 
+.PHONY: build-image
+build-image:
+	docker build -f build/verifyctl/Dockerfile -t verifyctl:latest .
+
 # Cleanup
 .PHONY: clean
 clean:
