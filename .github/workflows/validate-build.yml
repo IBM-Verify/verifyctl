@@ -1,0 +1,26 @@
+name: Validate successful build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [ opened, edited, reopened, review_requested ]
+    branches:
+      - main
+
+jobs:
+  successful-bin-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build verifyctl
+        run: make clean build
+      - name: Build all variants of verifyctl
+        run: make clean build-all
+  successful-image-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build verifyctl image
+        run: make clean build-image
