@@ -1,11 +1,11 @@
 package set
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -86,7 +86,7 @@ func (o *options) addCommonFlags(cmd *cobra.Command, resourceName string) {
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf(i18n.Translate("Resource type is required."))
+		return module.MakeSimpleError(i18n.Translate("Resource type is required."))
 	}
 
 	o.resourceType = args[0]

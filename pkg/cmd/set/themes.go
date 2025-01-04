@@ -1,13 +1,13 @@
 package set
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/branding"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
@@ -97,15 +97,15 @@ func (o *themesOptions) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if o.id == "" {
-		return fmt.Errorf(i18n.Translate("'id' flag is required."))
+		return module.MakeSimpleError(i18n.Translate("'id' flag is required."))
 	}
 
 	if len(o.path) > 0 && len(o.file) == 0 {
-		return fmt.Errorf(i18n.TranslateWithArgs("'%s' flag is required.", "file"))
+		return module.MakeSimpleError(i18n.TranslateWithArgs("'%s' flag is required.", "file"))
 	}
 
 	if len(o.directory) == 0 && len(o.file) == 0 {
-		return fmt.Errorf(i18n.Translate("Either 'dir' or 'file' flag is required."))
+		return module.MakeSimpleError(i18n.Translate("Either 'dir' or 'file' flag is required."))
 	}
 
 	return nil

@@ -2,13 +2,13 @@ package create
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
@@ -95,7 +95,7 @@ func (o *attributeOptions) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(o.file) == 0 {
-		return fmt.Errorf(i18n.Translate("'file' option is required if no other options are used."))
+		return module.MakeSimpleError(i18n.Translate("'file' option is required if no other options are used."))
 	}
 	return nil
 }

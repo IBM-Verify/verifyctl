@@ -6,6 +6,7 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -93,7 +94,7 @@ func (o *options) AddFlags(cmd *cobra.Command) {
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf(i18n.Translate("Tenant is required."))
+		return module.MakeSimpleError(i18n.Translate("Tenant is required."))
 	}
 
 	o.TenantHostname = args[0]
@@ -104,7 +105,7 @@ func (o *options) Complete(cmd *cobra.Command, args []string) error {
 
 func (o *options) Validate(cmd *cobra.Command, args []string) error {
 	if len(o.ClientID) == 0 {
-		return fmt.Errorf(i18n.Translate("'clientId' is required."))
+		return module.MakeSimpleError(i18n.Translate("'clientId' is required."))
 	}
 
 	return nil

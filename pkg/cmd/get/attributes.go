@@ -1,12 +1,12 @@
 package get
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
@@ -91,7 +91,7 @@ func (o *attributesOptions) Validate(cmd *cobra.Command, args []string) error {
 
 	calledAs := cmd.CalledAs()
 	if calledAs == "attribute" && o.id == "" {
-		return fmt.Errorf(i18n.Translate("'id' flag is required."))
+		return module.MakeSimpleError(i18n.Translate("'id' flag is required."))
 	}
 	return nil
 }

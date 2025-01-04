@@ -222,7 +222,7 @@ func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.Auth
 	defaultErr := fmt.Errorf("unable to update attribute.")
 
 	if len(attribute.ID) == 0 {
-		return fmt.Errorf(i18n.TranslateWithArgs("'%s' is required", "id"))
+		return module.MakeSimpleError(i18n.TranslateWithArgs("'%s' is required", "id"))
 	}
 
 	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiAttributes, attribute.ID))

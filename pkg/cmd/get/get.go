@@ -1,11 +1,11 @@
 package get
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -49,8 +49,8 @@ type options struct {
 	page         int
 	sort         string
 	search       string
-	properties   string
-	id           string
+	//properties   string
+	id string
 
 	config *config.CLIConfig
 }
@@ -103,13 +103,13 @@ func (o *options) addSearchFlags(cmd *cobra.Command, _ string) {
 	cmd.Flags().StringVar(&o.search, "search", "", i18n.Translate("Specify the search criteria to fetch lists."))
 }
 
-func (o *options) addPropertiesFlags(cmd *cobra.Command, _ string) {
-	cmd.Flags().StringVar(&o.properties, "props", "", i18n.Translate("Request for specific resource properties, rather than the entire resource object."))
-}
+//func (o *options) addPropertiesFlags(cmd *cobra.Command, _ string) {
+//	cmd.Flags().StringVar(&o.properties, "props", "", i18n.Translate("Request for specific resource properties, rather than the entire resource object."))
+//}
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf(i18n.Translate("Resource type is required."))
+		return module.MakeSimpleError(i18n.Translate("Resource type is required."))
 	}
 
 	o.resource = args[0]
