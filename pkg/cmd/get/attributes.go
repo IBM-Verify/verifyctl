@@ -91,7 +91,7 @@ func (o *attributesOptions) Validate(cmd *cobra.Command, args []string) error {
 
 	calledAs := cmd.CalledAs()
 	if calledAs == "attribute" && o.id == "" {
-		return fmt.Errorf(i18n.Translate("'id' flag is required."))
+		return fmt.Errorf("%s", i18n.Translate("'id' flag is required."))
 	}
 	return nil
 }
