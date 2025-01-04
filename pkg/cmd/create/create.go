@@ -124,7 +124,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(resourceObject.Kind) == 0 {
-		return fmt.Errorf(i18n.Translate("No 'kind' defined. Resource type cannot be identified."))
+		return fmt.Errorf("%s", i18n.Translate("No 'kind' defined. Resource type cannot be identified."))
 	}
 
 	auth, err := o.config.GetCurrentAuth()

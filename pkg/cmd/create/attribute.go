@@ -95,7 +95,7 @@ func (o *attributeOptions) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(o.file) == 0 {
-		return fmt.Errorf(i18n.Translate("'file' option is required if no other options are used."))
+		return fmt.Errorf("%s", i18n.Translate("'file' option is required if no other options are used."))
 	}
 	return nil
 }
