@@ -1,0 +1,19 @@
+name: release-artifacts
+
+on:
+  release:
+    types: [published]
+
+# Make sure the GITHUB_TOKEN has permission to upload to our releases
+permissions:
+  contents: write
+
+# Build the artifacts and upload
+- name: build-and-upload
+    run: |
+        cd ${{github.workspace}}
+        make clean build-all
+        find bin/verifyctl-* -type f -exec gh release upload --clobber ${{github.event.release.tag_name}} {} \;
+    env:
+      GITHUB_TOKEN: ${{ github.TOKEN }}
+    shell: bash
