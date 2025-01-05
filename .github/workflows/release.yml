@@ -8,12 +8,19 @@ on:
 permissions:
   contents: write
 
-# Build the artifacts and upload
-- name: build-and-upload
-    run: |
-        cd ${{github.workspace}}
-        make clean build-all
-        find bin/verifyctl-* -type f -exec gh release upload --clobber ${{github.event.release.tag_name}} {} \;
-    env:
-      GITHUB_TOKEN: ${{ github.TOKEN }}
-    shell: bash
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: build-verifyctl
+        run: make clean build-all
+      # Build the artifacts and upload
+      - name: build-and-upload
+        run: |
+          cd ${{github.workspace}}
+          make clean build-all
+          find bin/verifyctl-* -type f -exec gh release upload --clobber ${{github.event.release.tag_name}} {} \;
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}
+        shell: bash
