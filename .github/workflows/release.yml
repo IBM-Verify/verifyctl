@@ -18,7 +18,7 @@ jobs:
         run: |
           cd ${{github.workspace}}
           make clean build-all
-          find bin/verifyctl-* -type f -exec gh release upload --clobber ${{github.event.release.tag_name}} {}; echo {} uploaded to ${{github.event.release.tag_name}} \;
+          find bin/verifyctl-* -type f -exec gh release upload --clobber ${{github.event.release.tag_name}} {} \; echo {} uploaded to ${{github.event.release.tag_name}} \;
         env:
           GITHUB_TOKEN: ${{ github.TOKEN }}
         shell: bash
