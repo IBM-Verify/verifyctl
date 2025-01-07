@@ -53,6 +53,7 @@ type options struct {
 	ClientID       string
 	ClientSecret   string
 	TenantHostname string
+	PrintOnly      bool
 
 	config *config.CLIConfig
 }
@@ -88,8 +89,9 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 
 func (o *options) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&o.User, "user", "u", o.User, i18n.Translate("Specify if a user login should be initiated."))
-	cmd.Flags().StringVar(&o.ClientID, "clientId", o.ClientID, i18n.Translate("Client ID of the application that is enabled for device flow grant type."))
-	cmd.Flags().StringVar(&o.ClientSecret, "clientSecret", o.ClientSecret, i18n.Translate("Client Secret of the application that is enabled for device flow grant type. This is optional if the application is configured as a public client."))
+	cmd.Flags().StringVar(&o.ClientID, "clientId", o.ClientID, i18n.Translate("Client ID of the API client or application enabled the appropriate grant type."))
+	cmd.Flags().StringVar(&o.ClientSecret, "clientSecret", o.ClientSecret, i18n.Translate("Client Secret of the API client or application enabled the appropriate grant type. This is optional if the application is configured as a public client."))
+	cmd.Flags().BoolVar(&o.PrintOnly, "print", false, i18n.Translate("Specify if the OAuth 2.0 access token should only be displayed and not persisted. Note that this means subsequent commands will not be able to make use of this token."))
 }
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
@@ -153,6 +155,11 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		token = tokenResponse.AccessToken
 	}
 
+	if o.PrintOnly {
+		cmdutil.WriteString(cmd, token)
+		return nil
+	}
+
 	// add token to config
 	if _, err := o.config.LoadFromFile(); err != nil {
 		return err
@@ -171,6 +178,8 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	if _, err := o.config.PersistFile(); err != nil {
 		return err
 	}
+
+	cmdutil.WriteString(cmd, i18n.Translate("Login succeeded."))
 
 	return nil
 }
