@@ -57,7 +57,7 @@ func (o *CLIConfig) SetCurrentTenant(tenant string) {
 }
 
 func (o *CLIConfig) LoadFromFile() (*CLIConfig, error) {
-	configDir, err := cmdutil.CreateOrGetDir()
+	configDir, err := cmdutil.GetDir()
 	if err != nil {
 		return o, err
 	}

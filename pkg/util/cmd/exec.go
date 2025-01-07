@@ -51,6 +51,19 @@ func WriteAsBinary(cmd *cobra.Command, b []byte, writer io.Writer) {
 }
 
 func CreateOrGetDir() (string, error) {
+	configDir, err := GetDir()
+	if err != nil {
+		return "", err
+	}
+
+	if err := os.MkdirAll(configDir, defaultPerm); err != nil {
+		return "", err
+	}
+
+	return configDir, nil
+}
+
+func GetDir() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
@@ -59,10 +72,6 @@ func CreateOrGetDir() (string, error) {
 	configDir := os.Getenv("VERIFY_HOME")
 	if configDir == "" {
 		configDir = filepath.Join(homeDir, defaultDir)
-	}
-
-	if err := os.MkdirAll(configDir, defaultPerm); err != nil {
-		return "", err
 	}
 
 	return configDir, nil
