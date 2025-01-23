@@ -9,9 +9,8 @@ import (
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
+	oauth2x "github.com/ibm-security-verify/verifyctl/x/oauth2"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/clientcredentials"
 )
 
 const (
@@ -116,38 +115,31 @@ func (o *options) Validate(cmd *cobra.Command, args []string) error {
 func (o *options) Run(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
-	token := ""
-	if o.User {
-		oauthConfig := &oauth2.Config{
+	client := &oauth2x.Client{
+		Tenant: o.TenantHostname,
+		ClientAuth: &oauth2x.ClientSecretPost{
 			ClientID:     o.ClientID,
 			ClientSecret: o.ClientSecret,
-			Endpoint: oauth2.Endpoint{
-				DeviceAuthURL: fmt.Sprintf("https://%s/oauth2/device_authorization", o.TenantHostname),
-				TokenURL:      fmt.Sprintf("https://%s/oauth2/token", o.TenantHostname),
-			},
-		}
+		},
+	}
 
-		deviceAuthResponse, err := oauthConfig.DeviceAuth(ctx)
+	token := ""
+	if o.User {
+		deviceAuthResponse, err := client.AuthorizeWithDeviceFlow(cmd.Context(), nil)
 		if err != nil {
 			return err
 		}
 
 		cmdutil.WriteString(cmd, fmt.Sprintf("Complete login by accessing the URL: %s", deviceAuthResponse.VerificationURIComplete))
 
-		tokenResponse, err := oauthConfig.DeviceAccessToken(ctx, deviceAuthResponse)
+		tokenResponse, err := client.TokenWithDeviceFlow(ctx, deviceAuthResponse)
 		if err != nil {
 			return err
 		}
 
 		token = tokenResponse.AccessToken
 	} else {
-		oauthConfig := &clientcredentials.Config{
-			ClientID:     o.ClientID,
-			ClientSecret: o.ClientSecret,
-			TokenURL:     fmt.Sprintf("https://%s/oauth2/token", o.TenantHostname),
-		}
-
-		tokenResponse, err := oauthConfig.Token(ctx)
+		tokenResponse, err := client.TokenWithAPIClient(cmd.Context(), nil)
 		if err != nil {
 			return err
 		}

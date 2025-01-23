@@ -2,56 +2,41 @@ package cmd
 
 import (
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
+	"github.com/ibm-security-verify/verifyctl/x/logx"
 )
 
 const (
 	fileName = "trace.log"
 )
 
-type Logger = logrus.Entry
-
-func NewLoggerWithFileOutput() (*Logger, error) {
+func NewLogger() (*logx.Logger, io.Writer, error) {
 	path, err := CreateOrGetDir()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	logFile := filepath.Join(path, fileName)
 	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	contextID := uuid.NewString()
-	logger := NewLoggerWithOutput(contextID, file)
-	return logger, nil
-}
+	level := slog.LevelInfo
+	switch logLevel := os.Getenv("LOG_LEVEL"); logLevel {
+	case "error":
+		level = slog.LevelError
+	case "warn":
+		level = slog.LevelWarn
+	case "debug":
+		level = slog.LevelDebug
+	}
 
-// NewLoggerWithOutput returns a new logger instance with the
-// specified context ID and prints out to the
-// specified output
-func NewLoggerWithOutput(contextID string, output io.Writer) *Logger {
-
-	log := logrus.New()
-
-	// Log based on the requested formatter
-	log.SetFormatter(&logrus.JSONFormatter{})
-
-	// Set the output
-	log.SetOutput(output)
-
-	// Set the default log level.
-	log.SetLevel(logrus.InfoLevel)
-
-	// Include caller method name
-	log.SetReportCaller(true)
-
-	return log.WithFields(logrus.Fields{
-		"corr_id": contextID,
-	})
+	logger := logx.NewLoggerWithWriter(contextID, level, file)
+	return logger, file, nil
 }
