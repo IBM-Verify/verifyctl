@@ -1,20 +1,13 @@
 package auth
 
 import (
-	"encoding/json"
-	"fmt"
 	"io"
-	"os"
-	"strings"
 
-	"github.com/go-jose/go-jose/v4"
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
-	oauth2x "github.com/ibm-security-verify/verifyctl/x/oauth2"
 	"github.com/spf13/cobra"
 )
 
@@ -61,22 +54,6 @@ type options struct {
 	file         string
 
 	config *config.CLIConfig
-}
-
-type AuthResource struct {
-	ClientID string `yaml:"client_id" json:"client_id"`
-
-	ClientAuthType string `yaml:"auth_type" json:"auth_type"`
-
-	ClientSecret string `yaml:"client_secret" json:"client_secret"`
-
-	User bool `yaml:"user" json:"user"`
-
-	UserGrantType string `yaml:"grant_type" json:"grant_type"`
-
-	PrivateKeyRaw string `yaml:"key" json:"key"`
-
-	PrivateKeyJWK *jose.JSONWebKey `yaml:"-" json:"-"`
 }
 
 func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string) *cobra.Command {
@@ -137,95 +114,33 @@ func (o *options) Validate(cmd *cobra.Command, args []string) error {
 
 func (o *options) Run(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
+	vc := config.GetVerifyContext(ctx)
 
 	token := ""
+	var authResource *AuthResource
+	var err error
 
 	// preferred approach using file
 	if o.file != "" {
-		authResource, err := o.readFile(cmd)
+		authResource, err = o.readFile(cmd)
 		if err != nil {
 			return err
-		}
-
-		var clientAuth oauth2x.ClientAuth
-		if authResource.ClientAuthType == "private_key_jwt" {
-			clientAuth = &oauth2x.PrivateKeyJWT{
-				Tenant:        o.tenant,
-				ClientID:      authResource.ClientID,
-				PrivateKeyJWK: authResource.PrivateKeyJWK,
-			}
-		} else {
-			clientAuth = &oauth2x.ClientSecretPost{
-				ClientID:     authResource.ClientID,
-				ClientSecret: authResource.ClientSecret,
-			}
-		}
-
-		client := &oauth2x.Client{
-			Tenant:     o.tenant,
-			ClientAuth: clientAuth,
-		}
-
-		if authResource.User && authResource.UserGrantType == "auth_code" {
-
-		} else if authResource.User && authResource.UserGrantType == "jwt_bearer" {
-
-		} else if authResource.User {
-			deviceAuthResponse, err := client.AuthorizeWithDeviceFlow(cmd.Context(), nil)
-			if err != nil {
-				return err
-			}
-
-			cmdutil.WriteString(cmd, fmt.Sprintf("Complete login by accessing the URL: %s", deviceAuthResponse.VerificationURIComplete))
-
-			tokenResponse, err := client.TokenWithDeviceFlow(ctx, deviceAuthResponse)
-			if err != nil {
-				return err
-			}
-
-			token = tokenResponse.AccessToken
-		} else {
-			tokenResponse, err := client.TokenWithAPIClient(cmd.Context(), nil)
-			if err != nil {
-				return err
-			}
-
-			token = tokenResponse.AccessToken
 		}
 	} else {
 		// for backward compatibility
 		cmdutil.WriteString(cmd, "(deprecated) Use the '-f' argument to provide auth properties")
-
-		client := &oauth2x.Client{
-			Tenant: o.tenant,
-			ClientAuth: &oauth2x.ClientSecretPost{
-				ClientID:     o.clientID,
-				ClientSecret: o.clientSecret,
-			},
+		authResource = &AuthResource{
+			ClientID:     o.clientID,
+			ClientSecret: o.clientSecret,
+			User:         o.user,
 		}
+	}
 
-		if o.user {
-			deviceAuthResponse, err := client.AuthorizeWithDeviceFlow(cmd.Context(), nil)
-			if err != nil {
-				return err
-			}
-
-			cmdutil.WriteString(cmd, fmt.Sprintf("Complete login by accessing the URL: %s", deviceAuthResponse.VerificationURIComplete))
-
-			tokenResponse, err := client.TokenWithDeviceFlow(ctx, deviceAuthResponse)
-			if err != nil {
-				return err
-			}
-
-			token = tokenResponse.AccessToken
-		} else {
-			tokenResponse, err := client.TokenWithAPIClient(cmd.Context(), nil)
-			if err != nil {
-				return err
-			}
-
-			token = tokenResponse.AccessToken
-		}
+	if tokenResponse, err := o.authenticate(cmd, authResource); err != nil {
+		vc.Logger.Warn("authentication failed", "client", authResource.ClientID, "err", err)
+		return err
+	} else {
+		token = tokenResponse.AccessToken
 	}
 
 	if o.printOnly {
@@ -241,7 +156,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	o.config.AddAuth(&config.AuthConfig{
 		Tenant: o.tenant,
 		Token:  token,
-		User:   o.user,
+		User:   authResource.User,
 	})
 
 	// set current tenant
@@ -253,56 +168,5 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	cmdutil.WriteString(cmd, i18n.Translate("Login succeeded."))
-
 	return nil
-}
-
-func (o *options) readFile(cmd *cobra.Command) (*AuthResource, error) {
-	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
-
-	resourceObject := &resource.ResourceObject{}
-	if err := resourceObject.LoadFromFile(cmd, o.file, ""); err != nil {
-		vc.Logger.Errorf("unable to read file contents into resource object; err=%v", err)
-		return nil, err
-	}
-
-	if resourceObject.Kind != resource.ResourceTypePrefix+"Auth" {
-		vc.Logger.Error("invalid resource kind", "kind", resourceObject.Kind)
-		return nil, fmt.Errorf("invalid resource kind")
-	}
-
-	// populate authResource
-	b, err := json.Marshal(resourceObject.Data)
-	if err != nil {
-		return nil, err
-	}
-
-	authResource := &AuthResource{}
-	if err = json.Unmarshal(b, authResource); err != nil {
-		return nil, err
-	}
-
-	// if the private key is provided, extract the key
-	if authResource.PrivateKeyRaw == "" {
-		return authResource, nil
-	}
-
-	jwkAsString := authResource.PrivateKeyRaw
-	if strings.HasPrefix(authResource.PrivateKeyRaw, "@") {
-		// get the contents of the file
-		path, _ := strings.CutPrefix(authResource.PrivateKeyRaw, "@")
-		b, err := os.ReadFile(path)
-		if err != nil {
-			return nil, err
-		}
-
-		jwkAsString = string(b)
-	}
-
-	if err := json.Unmarshal([]byte(jwkAsString), authResource.PrivateKeyJWK); err != nil {
-		return nil, err
-	}
-
-	return authResource, nil
 }
