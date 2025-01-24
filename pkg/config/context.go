@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-security-verify/verifyctl/x/logx"
 )
 
 type ContextKey string
@@ -14,10 +14,10 @@ const (
 )
 
 type VerifyContext struct {
-	Logger *cmdutil.Logger
+	Logger *logx.Logger
 }
 
-func NewContextWithVerifyContext(parentContext context.Context, logger *cmdutil.Logger) (context.Context, error) {
+func NewContextWithVerifyContext(parentContext context.Context, logger *logx.Logger) (context.Context, error) {
 	vc := &VerifyContext{
 		Logger: logger,
 	}

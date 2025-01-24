@@ -1,5 +1,16 @@
 package resource
 
+import (
+	"encoding/json"
+	"io"
+	"os"
+	"strings"
+
+	"github.com/ibm-security-verify/verifyctl/pkg/config"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
+)
+
 const (
 	ResourceTypePrefix = "IBMVerify"
 )
@@ -26,4 +37,50 @@ type ResourceObjectMetadata struct {
 	Page  int    `json:"page,omitempty" yaml:"page,omitempty"`
 	Total int    `json:"total,omitempty" yaml:"total,omitempty"`
 	Count int    `json:"count,omitempty" yaml:"count,omitempty"`
+}
+
+func (r *ResourceObject) LoadFromFile(cmd *cobra.Command, file string, format string) error {
+	ctx := cmd.Context()
+	vc := config.GetVerifyContext(ctx)
+
+	var b []byte
+	var err error
+
+	if file == "-" {
+		// read from stdin
+		b, err = io.ReadAll(os.Stdin)
+	} else {
+		// get the contents of the file
+		b, err = os.ReadFile(file)
+	}
+
+	if err != nil {
+		vc.Logger.Errorf("unable to read file; filename=%s, err=%v", file, err)
+		return err
+	}
+
+	// determine format
+	if format == "" {
+		if strings.HasSuffix(file, ".json") {
+			format = "json"
+		} else {
+			format = "yaml"
+		}
+	}
+
+	// unmarshal to resource object
+	if format == "json" {
+		if err := json.Unmarshal(b, r); err != nil {
+			vc.Logger.Errorf("unable to unmarshal the object; err=%v", err)
+			return err
+		}
+
+	} else {
+		if err := yaml.Unmarshal(b, r); err != nil {
+			vc.Logger.Errorf("unable to unmarshal the object; err=%v", err)
+			return err
+		}
+	}
+
+	return nil
 }

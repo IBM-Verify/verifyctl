@@ -1,11 +1,8 @@
 package create
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
-	"os"
-	"strings"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
@@ -14,7 +11,6 @@ import (
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -146,26 +142,10 @@ func (o *options) readFile(cmd *cobra.Command) (*resource.ResourceObject, error)
 	ctx := cmd.Context()
 	vc := config.GetVerifyContext(ctx)
 
-	// get the contents of the file
-	b, err := os.ReadFile(o.file)
-	if err != nil {
-		vc.Logger.Errorf("unable to read file; filename=%s, err=%v", o.file, err)
-		return nil, err
-	}
-
-	// unmarshal to resource object
 	resourceObject := &resource.ResourceObject{}
-	if strings.HasSuffix(o.file, ".json") {
-		if err := json.Unmarshal(b, &resourceObject); err != nil {
-			vc.Logger.Errorf("unable to unmarshal the object; err=%v", err)
-			return nil, err
-		}
-
-	} else {
-		if err := yaml.Unmarshal(b, &resourceObject); err != nil {
-			vc.Logger.Errorf("unable to unmarshal the object; err=%v", err)
-			return nil, err
-		}
+	if err := resourceObject.LoadFromFile(cmd, o.file, ""); err != nil {
+		vc.Logger.Errorf("unable to read file contents into resource object; err=%v", err)
+		return nil, err
 	}
 
 	return resourceObject, nil

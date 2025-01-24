@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/oapi-codegen/oapi-codegen/HEAD/configuration-schema.json
+package: openapi
+output: ../../pkg/module/openapi/client.gen.go
+generate:
+  models: true
+  client: true
+compatibility:
+  disable-required-readonly-as-pointer: true
+  always-prefix-enum-values: true
+output-options:
+  nullable-type: false
+  name-normalizer: "ToCamelCaseWithInitialisms"
+  response-type-suffix: "Object"

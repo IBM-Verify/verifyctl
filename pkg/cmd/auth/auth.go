@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
@@ -10,8 +9,6 @@ import (
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/clientcredentials"
 )
 
 const (
@@ -49,11 +46,12 @@ In both cases, an OAuth token is generated with specific entitlements.`))
 )
 
 type options struct {
-	User           bool
-	ClientID       string
-	ClientSecret   string
-	TenantHostname string
-	PrintOnly      bool
+	user         bool
+	clientID     string
+	clientSecret string
+	tenant       string
+	printOnly    bool
+	file         string
 
 	config *config.CLIConfig
 }
@@ -88,10 +86,11 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 }
 
 func (o *options) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().BoolVarP(&o.User, "user", "u", o.User, i18n.Translate("Specify if a user login should be initiated."))
-	cmd.Flags().StringVar(&o.ClientID, "clientId", o.ClientID, i18n.Translate("Client ID of the API client or application enabled the appropriate grant type."))
-	cmd.Flags().StringVar(&o.ClientSecret, "clientSecret", o.ClientSecret, i18n.Translate("Client Secret of the API client or application enabled the appropriate grant type. This is optional if the application is configured as a public client."))
-	cmd.Flags().BoolVar(&o.PrintOnly, "print", false, i18n.Translate("Specify if the OAuth 2.0 access token should only be displayed and not persisted. Note that this means subsequent commands will not be able to make use of this token."))
+	cmd.Flags().BoolVarP(&o.user, "user", "u", o.user, i18n.Translate("Specify if a user login should be initiated."))
+	cmd.Flags().StringVar(&o.clientID, "clientId", o.clientID, i18n.Translate("Client ID of the API client or application enabled the appropriate grant type."))
+	cmd.Flags().StringVar(&o.clientSecret, "clientSecret", o.clientSecret, i18n.Translate("Client Secret of the API client or application enabled the appropriate grant type. This is optional if the application is configured as a public client."))
+	cmd.Flags().StringVarP(&o.file, "file", "f", "", i18n.Translate("Path to the file that contains the input data. JSON and YAML formats are supported and the files are expected to be named with the appropriate extension: json, yml or yaml."))
+	cmd.Flags().BoolVar(&o.printOnly, "print", false, i18n.Translate("Specify if the OAuth 2.0 access token should only be displayed and not persisted. Note that this means subsequent commands will not be able to make use of this token."))
 }
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
@@ -99,14 +98,14 @@ func (o *options) Complete(cmd *cobra.Command, args []string) error {
 		return module.MakeSimpleError(i18n.Translate("Tenant is required."))
 	}
 
-	o.TenantHostname = args[0]
-	o.User = cmd.Flag("user").Changed
+	o.tenant = args[0]
+	o.user = cmd.Flag("user").Changed
 
 	return nil
 }
 
 func (o *options) Validate(cmd *cobra.Command, args []string) error {
-	if len(o.ClientID) == 0 {
+	if len(o.clientID) == 0 && len(o.file) == 0 {
 		return module.MakeSimpleError(i18n.Translate("'clientId' is required."))
 	}
 
@@ -115,47 +114,36 @@ func (o *options) Validate(cmd *cobra.Command, args []string) error {
 
 func (o *options) Run(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
+	vc := config.GetVerifyContext(ctx)
 
 	token := ""
-	if o.User {
-		oauthConfig := &oauth2.Config{
-			ClientID:     o.ClientID,
-			ClientSecret: o.ClientSecret,
-			Endpoint: oauth2.Endpoint{
-				DeviceAuthURL: fmt.Sprintf("https://%s/oauth2/device_authorization", o.TenantHostname),
-				TokenURL:      fmt.Sprintf("https://%s/oauth2/token", o.TenantHostname),
-			},
-		}
+	var authResource *AuthResource
+	var err error
 
-		deviceAuthResponse, err := oauthConfig.DeviceAuth(ctx)
+	// preferred approach using file
+	if o.file != "" {
+		authResource, err = o.readFile(cmd)
 		if err != nil {
 			return err
 		}
-
-		cmdutil.WriteString(cmd, fmt.Sprintf("Complete login by accessing the URL: %s", deviceAuthResponse.VerificationURIComplete))
-
-		tokenResponse, err := oauthConfig.DeviceAccessToken(ctx, deviceAuthResponse)
-		if err != nil {
-			return err
-		}
-
-		token = tokenResponse.AccessToken
 	} else {
-		oauthConfig := &clientcredentials.Config{
-			ClientID:     o.ClientID,
-			ClientSecret: o.ClientSecret,
-			TokenURL:     fmt.Sprintf("https://%s/oauth2/token", o.TenantHostname),
+		// for backward compatibility
+		cmdutil.WriteString(cmd, "(deprecated) Use the '-f' argument to provide auth properties")
+		authResource = &AuthResource{
+			ClientID:     o.clientID,
+			ClientSecret: o.clientSecret,
+			User:         o.user,
 		}
+	}
 
-		tokenResponse, err := oauthConfig.Token(ctx)
-		if err != nil {
-			return err
-		}
-
+	if tokenResponse, err := o.authenticate(cmd, authResource); err != nil {
+		vc.Logger.Warn("authentication failed", "client", authResource.ClientID, "err", err)
+		return err
+	} else {
 		token = tokenResponse.AccessToken
 	}
 
-	if o.PrintOnly {
+	if o.printOnly {
 		cmdutil.WriteString(cmd, token)
 		return nil
 	}
@@ -166,13 +154,13 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	o.config.AddAuth(&config.AuthConfig{
-		Tenant: o.TenantHostname,
+		Tenant: o.tenant,
 		Token:  token,
-		User:   o.User,
+		User:   authResource.User,
 	})
 
 	// set current tenant
-	o.config.SetCurrentTenant(o.TenantHostname)
+	o.config.SetCurrentTenant(o.tenant)
 
 	// persist contents
 	if _, err := o.config.PersistFile(); err != nil {
@@ -180,6 +168,5 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	cmdutil.WriteString(cmd, i18n.Translate("Login succeeded."))
-
 	return nil
 }
