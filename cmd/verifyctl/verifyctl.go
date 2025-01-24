@@ -22,7 +22,7 @@ func main() {
 	//Close log writer when exit
 	defer func() {
 		if file, ok := w.(*os.File); ok {
-			file.Sync()
+			_ = file.Sync()
 			file.Close()
 		} else if handler, ok := w.(io.Closer); ok {
 			handler.Close()
