@@ -139,10 +139,10 @@ func (o *groupsOptions) handleSingleGroup(cmd *cobra.Command, auth *config.AuthC
 		Data: grp,
 	}
 
-	if o.output == "yaml" {
-		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
-	} else {
+	if o.output == "json" {
 		cmdutil.WriteAsJSON(cmd, resourceObj, cmd.OutOrStdout())
+	} else {
+		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
 	}
 
 	return nil
@@ -183,10 +183,10 @@ func (o *groupsOptions) handleGroupList(cmd *cobra.Command, auth *config.AuthCon
 		Items: items,
 	}
 
-	if o.output == "yaml" {
-		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
-	} else {
+	if o.output == "json" {
 		cmdutil.WriteAsJSON(cmd, resourceObj, cmd.OutOrStdout())
+	} else {
+		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
 	}
 
 	return nil

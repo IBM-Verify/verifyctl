@@ -140,10 +140,10 @@ func (o *usersOptions) handleSingleUser(cmd *cobra.Command, auth *config.AuthCon
 		Data: usr,
 	}
 
-	if o.output == "yaml" {
-		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
-	} else {
+	if o.output == "json" {
 		cmdutil.WriteAsJSON(cmd, resourceObj, cmd.OutOrStdout())
+	} else {
+		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
 	}
 
 	return nil
@@ -185,10 +185,10 @@ func (o *usersOptions) handleUserList(cmd *cobra.Command, auth *config.AuthConfi
 		Items: items,
 	}
 
-	if o.output == "yaml" {
-		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
-	} else {
+	if o.output == "json" {
 		cmdutil.WriteAsJSON(cmd, resourceObj, cmd.OutOrStdout())
+	} else {
+		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
 	}
 
 	return nil

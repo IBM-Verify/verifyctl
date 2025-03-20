@@ -31,13 +31,14 @@ type User struct {
 	UserName          string         `json:"userName,omitempty" yaml:"userName,omitempty"`
 	ExternalID        string         `json:"externalId,omitempty" yaml:"externalId,omitempty"`
 	Title             string         `json:"title,omitempty" yaml:"title,omitempty"`
+	Password          string         `json:"password,omitempty" yaml:"password,omitempty"`
 	DisplayName       string         `json:"displayName,omitempty" yaml:"displayName,omitempty"`
 	PreferredLanguage string         `json:"preferredLanguage,omitempty" yaml:"preferredLanguage,omitempty"`
 	Active            bool           `json:"active" yaml:"active"`
 	Emails            []Email        `json:"emails,omitempty" yaml:"emails,omitempty"`
 	Addresses         []Address      `json:"addresses,omitempty" yaml:"addresses,omitempty"`
 	PhoneNumbers      []PhoneNumber  `json:"phoneNumbers,omitempty" yaml:"phoneNumbers,omitempty"`
-	Meta              Meta           `json:"meta" yaml:"meta"`
+	Meta              Meta           `json:"meta,omitempty" yaml:"meta,omitempty"`
 	Name              Name           `json:"name" yaml:"name"`
 	Schemas           []string       `json:"schemas" yaml:"schemas"`
 	IBMUserExtension  IBMUser        `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:User,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:User,omitempty"`
@@ -65,6 +66,7 @@ type Address struct {
 	PostalCode    string `json:"postalCode,omitempty" yaml:"postalCode,omitempty"`
 	Type          string `json:"type,omitempty" yaml:"type,omitempty"`
 	Formatted     string `json:"formatted,omitempty" yaml:"formatted,omitempty"`
+	Primary       bool   `json:"primary,omitempty" yaml:"primary,omitempty"`
 }
 
 type PhoneNumber struct {
@@ -73,29 +75,53 @@ type PhoneNumber struct {
 }
 
 type Meta struct {
-	Created      string `json:"created" yaml:"created"`
-	LastModified string `json:"lastModified" yaml:"lastModified"`
+	Created      string `json:"created,omitempty" yaml:"created,omitempty"`
+	LastModified string `json:"lastModified,omitempty" yaml:"lastModified,omitempty"`
 }
 
 type IBMUser struct {
-	LastLogin               string `json:"lastLogin,omitempty" yaml:"lastLogin,omitempty"`
-	LastLoginRealm          string `json:"lastLoginRealm,omitempty" yaml:"lastLoginRealm,omitempty"`
-	LastLoginType           string `json:"lastLoginType,omitempty" yaml:"lastLoginType,omitempty"`
-	Realm                   string `json:"realm,omitempty" yaml:"realm,omitempty"`
-	TwoFactorAuthentication bool   `json:"twoFactorAuthentication" yaml:"twoFactorAuthentication"`
-	UserCategory            string `json:"userCategory" yaml:"userCategory"`
-	PwdChangedTime          string `json:"pwdChangedTime,omitempty" yaml:"pwdChangedTime,omitempty"`
-	PwdReset                bool   `json:"pwdReset,omitempty" yaml:"pwdReset,omitempty"`
+	LastLogin               string            `json:"lastLogin,omitempty" yaml:"lastLogin,omitempty"`
+	LastLoginRealm          string            `json:"lastLoginRealm,omitempty" yaml:"lastLoginRealm,omitempty"`
+	LastLoginType           string            `json:"lastLoginType,omitempty" yaml:"lastLoginType,omitempty"`
+	Realm                   string            `json:"realm,omitempty" yaml:"realm,omitempty"`
+	TwoFactorAuthentication bool              `json:"twoFactorAuthentication" yaml:"twoFactorAuthentication"`
+	UserCategory            string            `json:"userCategory" yaml:"userCategory"`
+	EmailVerified           int               `json:"emailVerified,omitempty" yaml:"emailVerified,omitempty"`
+	UnqualifiedUserName     string            `json:"unqualifiedUserName,omitempty" yaml:"unqualifiedUserName,omitempty"`
+	Delegate                string            `json:"delegate,omitempty" yaml:"delegate,omitempty"`
+	PwdChangedTime          string            `json:"pwdChangedTime,omitempty" yaml:"pwdChangedTime,omitempty"`
+	PwdReset                bool              `json:"pwdReset,omitempty" yaml:"pwdReset,omitempty"`
+	CustomAttributes        []CustomAttribute `json:"customAttributes,omitempty" yaml:"customAttributes,omitempty"`
+	LinkedAccounts          []LinkedAccount   `json:"linkedAccounts,omitempty" yaml:"linkedAccounts,omitempty"`
+	AccountExpires          string            `json:"accountExpires,omitempty" yaml:"accountExpires,omitempty"`
+}
+
+type CustomAttribute struct {
+	Name   string   `json:"name,omitempty" yaml:"name,omitempty"`
+	Values []string `json:"values,omitempty" yaml:"values,omitempty"`
+}
+
+type LinkedAccount struct {
+	ExternalID string `json:"externalId,omitempty" yaml:"externalId,omitempty"`
+	Realm      string `json:"realm,omitempty" yaml:"realm,omitempty"`
 }
 
 type EnterpriseUser struct {
-	Department     string `json:"department,omitempty" yaml:"department,omitempty"`
-	EmployeeNumber string `json:"employeeNumber,omitempty" yaml:"employeeNumber,omitempty"`
+	Department     string  `json:"department,omitempty" yaml:"department,omitempty"`
+	EmployeeNumber string  `json:"employeeNumber,omitempty" yaml:"employeeNumber,omitempty"`
+	Manager        Manager `json:"manager,omitempty" yaml:"manager,omitempty"`
+}
+
+type Manager struct {
+	Value       string `json:"value,omitempty" yaml:"value,omitempty"`
+	Ref         string `json:"$ref,omitempty" yaml:"$ref,omitempty"`
+	DisplayName string `json:"displayName,omitempty" yaml:"displayName,omitempty"`
 }
 
 type Notification struct {
-	NotifyType    string `json:"notifyType" yaml:"notifyType"`
-	NotifyManager bool   `json:"notifyManager" yaml:"notifyManager"`
+	NotifyType     string `json:"notifyType" yaml:"notifyType"`
+	NotifyPassword bool   `json:"notifyPassword" yaml:"notifyPassword"`
+	NotifyManager  bool   `json:"notifyManager" yaml:"notifyManager"`
 }
 
 type UserPatchRequest struct {

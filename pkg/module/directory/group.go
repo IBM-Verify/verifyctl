@@ -28,16 +28,44 @@ type GroupListResponse struct {
 }
 
 type Group struct {
-	Schemas     []string `json:"schemas" yaml:"schemas"`
-	Id          string   `json:"id,omitempty" yaml:"id,omitempty"`
-	DisplayName string   `json:"displayName" yaml:"displayName"`
-	Description string   `json:"description,omitempty" yaml:"description,omitempty"`
-	Members     []Member `json:"members,omitempty" yaml:"members,omitempty"`
+	Schemas      []string          `json:"schemas" yaml:"schemas"`
+	Id           string            `json:"id,omitempty" yaml:"id,omitempty"`
+	ExternalId   string            `json:"externalId,omitempty" yaml:"externalId,omitempty"`
+	DisplayName  string            `json:"displayName" yaml:"displayName"`
+	Visible      bool              `json:"visible" yaml:"visible"`
+	Members      []Member          `json:"members,omitempty" yaml:"members,omitempty"`
+	IBMGROUP     IBMGROUPExtension `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Group,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Group,omitempty"`
+	Notification GroupNotification `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty"`
+	Meta         GroupMeta         `json:"meta,omitempty" yaml:"meta,omitempty"`
 }
 
 type Member struct {
-	Type  string `json:"type" yaml:"type"`
-	Value string `json:"value" yaml:"value"`
+	Type    string `json:"type,omitempty" yaml:"type,omitempty"`
+	Value   string `json:"value" yaml:"value"`
+	Display string `json:"display,omitempty" yaml:"display,omitempty"`
+	Ref     string `json:"$ref,omitempty" yaml:"$ref,omitempty"`
+}
+
+type IBMGROUPExtension struct {
+	Description string  `json:"description,omitempty" yaml:"description,omitempty"`
+	Owners      []Owner `json:"owners,omitempty" yaml:"owners,omitempty"`
+}
+
+type Owner struct {
+	Value       string `json:"value" yaml:"value"`
+	Ref         string `json:"$ref,omitempty" yaml:"$ref,omitempty"`
+	DisplayName string `json:"displayName,omitempty" yaml:"displayName,omitempty"`
+}
+
+type GroupNotification struct {
+	NotifyType     string `json:"notifyType" yaml:"notifyType"`
+	NotifyPassword bool   `json:"notifyPassword" yaml:"notifyPassword"`
+	NotifyManager  bool   `json:"notifyManager" yaml:"notifyManager"`
+}
+
+type GroupMeta struct {
+	Created      string `json:"created,omitempty" yaml:"created,omitempty"`
+	LastModified string `json:"lastModified,omitempty" yaml:"lastModified,omitempty"`
 }
 
 type GroupPatchRequest struct {
@@ -151,12 +179,27 @@ func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, so
 
 func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, group *Group) (string, error) {
 	vc := config.GetVerifyContext(ctx)
+	client := NewUserClient()
 	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiGroups))
 	headers := http.Header{
 		"Accept":                            []string{"application/scim+json"},
 		"Content-Type":                      []string{"application/scim+json"},
 		"groupshouldnotneedtoresetpassword": []string{"false"},
 		"Authorization":                     []string{"Bearer " + auth.Token},
+	}
+
+	for i, m := range group.Members {
+		// Get the username from the member's Value field.
+		username := m.Value
+		// Retrieve the actual user ID using the provided function.
+		userID, err := client.getUserId(ctx, auth, username)
+		if err != nil {
+			vc.Logger.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
+			return "", fmt.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
+		}
+
+		// Update the member's Value with the obtained user ID.
+		group.Members[i].Value = userID
 	}
 
 	b, err := json.Marshal(group)
@@ -174,7 +217,7 @@ func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, 
 
 	if response.StatusCode != http.StatusCreated {
 		vc.Logger.Errorf("Failed to create group; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return "", fmt.Errorf("Failed to create group")
+		return "", fmt.Errorf("Failed to create group; code=%d, body=%s", response.StatusCode, string(response.Body))
 	}
 
 	m := map[string]interface{}{}
