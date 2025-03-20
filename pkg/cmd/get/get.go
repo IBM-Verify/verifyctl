@@ -49,8 +49,10 @@ type options struct {
 	page         int
 	sort         string
 	search       string
+	count        string
 	//properties   string
-	id string
+	id   string
+	name string
 
 	config *config.CLIConfig
 }
@@ -80,13 +82,17 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	// add sub commands
 	cmd.AddCommand(NewAttributesCommand(config, streams))
 	cmd.AddCommand(NewThemesCommand(config, streams))
-
+	cmd.AddCommand(NewUsersCommand(config, streams))
+	cmd.AddCommand(NewGroupsCommand(config, streams))
 	return cmd
 }
 
 func (o *options) addCommonFlags(cmd *cobra.Command, resourceName string) {
 	cmd.Flags().BoolVar(&o.entitlements, "entitlements", o.entitlements, i18n.TranslateWithArgs("List the entitlements that can be configured to grant access to the %s. This is useful to know what to configure on the application or API client used to generate the login token. When this flag is used, the others are ignored.", resourceName))
-	cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Select the format of the output. The values supported are 'json' , 'yaml' and 'raw'. Default: 'yaml'."))
+	cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Select the format of the output. The values supported are 'json' , 'yaml' and 'raw'. Default: 'json'."))
+}
+
+func (o *options) addIdFlag(cmd *cobra.Command, resourceName string) {
 	cmd.Flags().StringVar(&o.id, "id", "", i18n.TranslateWithArgs("Identifier of the %s.", resourceName))
 }
 
@@ -101,6 +107,10 @@ func (o *options) addSortFlags(cmd *cobra.Command, _ string) {
 
 func (o *options) addSearchFlags(cmd *cobra.Command, _ string) {
 	cmd.Flags().StringVar(&o.search, "search", "", i18n.Translate("Specify the search criteria to fetch lists."))
+}
+
+func (o *options) addCountFlags(cmd *cobra.Command, _ string) {
+	cmd.Flags().StringVar(&o.count, "count", "", i18n.Translate("Specify the count to fetch lists."))
 }
 
 //func (o *options) addPropertiesFlags(cmd *cobra.Command, _ string) {
