@@ -75,6 +75,7 @@ func NewAttributesCommand(config *config.CLIConfig, streams io.ReadWriter) *cobr
 
 func (o *attributesOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, attributeResourceName)
+	o.addIdFlag(cmd, attributeResourceName)
 	o.addPaginationFlags(cmd, attributeResourceName)
 	o.addSearchFlags(cmd, attributeResourceName)
 	o.addSortFlags(cmd, attributeResourceName)
