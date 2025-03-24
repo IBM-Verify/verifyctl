@@ -80,30 +80,18 @@ type Meta struct {
 }
 
 type IBMUser struct {
-	LastLogin               string            `json:"lastLogin,omitempty" yaml:"lastLogin,omitempty"`
-	LastLoginRealm          string            `json:"lastLoginRealm,omitempty" yaml:"lastLoginRealm,omitempty"`
-	LastLoginType           string            `json:"lastLoginType,omitempty" yaml:"lastLoginType,omitempty"`
-	Realm                   string            `json:"realm,omitempty" yaml:"realm,omitempty"`
-	TwoFactorAuthentication bool              `json:"twoFactorAuthentication" yaml:"twoFactorAuthentication"`
-	UserCategory            string            `json:"userCategory" yaml:"userCategory"`
-	EmailVerified           int               `json:"emailVerified,omitempty" yaml:"emailVerified,omitempty"`
-	UnqualifiedUserName     string            `json:"unqualifiedUserName,omitempty" yaml:"unqualifiedUserName,omitempty"`
-	Delegate                string            `json:"delegate,omitempty" yaml:"delegate,omitempty"`
-	PwdChangedTime          string            `json:"pwdChangedTime,omitempty" yaml:"pwdChangedTime,omitempty"`
-	PwdReset                bool              `json:"pwdReset,omitempty" yaml:"pwdReset,omitempty"`
-	CustomAttributes        []CustomAttribute `json:"customAttributes,omitempty" yaml:"customAttributes,omitempty"`
-	LinkedAccounts          []LinkedAccount   `json:"linkedAccounts,omitempty" yaml:"linkedAccounts,omitempty"`
-	AccountExpires          string            `json:"accountExpires,omitempty" yaml:"accountExpires,omitempty"`
+	LastLoginType    string            `json:"lastLoginType,omitempty" yaml:"lastLoginType,omitempty"`
+	Realm            string            `json:"realm,omitempty" yaml:"realm,omitempty"`
+	UserCategory     string            `json:"userCategory" yaml:"userCategory"`
+	EmailVerified    int               `json:"emailVerified,omitempty" yaml:"emailVerified,omitempty"`
+	Delegate         string            `json:"delegate,omitempty" yaml:"delegate,omitempty"`
+	CustomAttributes []CustomAttribute `json:"customAttributes,omitempty" yaml:"customAttributes,omitempty"`
+	AccountExpires   string            `json:"accountExpires,omitempty" yaml:"accountExpires,omitempty"`
 }
 
 type CustomAttribute struct {
 	Name   string   `json:"name,omitempty" yaml:"name,omitempty"`
 	Values []string `json:"values,omitempty" yaml:"values,omitempty"`
-}
-
-type LinkedAccount struct {
-	ExternalID string `json:"externalId,omitempty" yaml:"externalId,omitempty"`
-	Realm      string `json:"realm,omitempty" yaml:"realm,omitempty"`
 }
 
 type EnterpriseUser struct {
