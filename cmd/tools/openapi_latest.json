@@ -613,7 +613,14 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Attribute_0"
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/Attribute_0"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/PaginatedAttribute_0"
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -8082,6 +8089,37 @@
                         },
                         "description": "Identifies the attribute custom properties that are attached to this attribute",
                         "example": "{ \"customKey1\": \"customValue\" }"
+                    }
+                }
+            },
+            "PaginatedAttribute_0": {
+                "required": [
+                    "limit",
+                    "page",
+                    "total",
+                    "count",
+                    "attributes"
+                ],
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "total": {
+                        "type": "integer"
+                    },
+                    "count": {
+                        "type": "integer"
+                    },
+                    "attributes": {
+                        "type": "array",
+                        "description": "list of attributes",
+                        "items": {
+                            "$ref": "#/components/schemas/Attribute_0"
+                        }
                     }
                 }
             },

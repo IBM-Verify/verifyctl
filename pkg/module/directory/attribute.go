@@ -89,7 +89,7 @@ func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthCon
 }
 
 func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (
-	*AttributeListResponse, string, error) {
+	*openapi.PaginatedAttribute0, string, error) {
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	params := openapi.GetAllAttributesParams{
@@ -102,25 +102,28 @@ func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthCo
 		params.Sort = &sort
 	}
 	pagination := url.Values{}
-	// if page > 0 {
-	// 	pagination.Set("page", fmt.Sprintf("%d", page))
-	// }
+	if page > 0 {
+		pagination.Set("page", fmt.Sprintf("%d", page))
+	}
 
-	// if limit > 0 {
-	// 	pagination.Set("limit", fmt.Sprintf("%d", limit))
-	// }
-	// paginationStr := pagination.Encode()
-	// if pagination.Encode() != "" {
-	// 	params.Pagination = &paginationStr
-	// }
+	if limit > 0 {
+		pagination.Set("limit", fmt.Sprintf("%d", limit))
+	}
+	paginationStr := pagination.Encode()
+	if pagination.Encode() != "" {
+		params.Pagination = &paginationStr
+	}
 
-	resp, err := client.GetAllAttributesWithResponse(context.Background(), &params)
-	var body AttributeListResponse
+	resp, err := module.CustomParse(client.GetAllAttributes(ctx, &params))
+	body := &openapi.PaginatedAttribute0{}
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		if len(pagination) > 0 {
-			// skipping this part as we don't have any openapi data type when pagination data are present
+			if err = json.Unmarshal(resp.Body, &body); err != nil {
+				vc.Logger.Errorf("unable to get the attributes; err=%s, body=%s", err, string(resp.Body))
+				return nil, "", fmt.Errorf("unable to get the attributes")
+			}
 		} else {
 			if err = json.Unmarshal(resp.Body, &body.Attributes); err != nil {
 				vc.Logger.Errorf("unable to get the attributes; err=%s, body=%s", err, string(resp.Body))
@@ -129,7 +132,7 @@ func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthCo
 		}
 	}
 
-	return &body, auth.Tenant, nil
+	return body, auth.Tenant, nil
 }
 
 // CreateAttribute creates an attribute and returns the resource URI.

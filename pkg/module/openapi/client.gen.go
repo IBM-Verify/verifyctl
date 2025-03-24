@@ -856,6 +856,16 @@ type OperationStatusSummary struct {
 	Messages *map[string][]string `json:"messages,omitempty"`
 }
 
+// PaginatedAttribute0 defines model for PaginatedAttribute_0.
+type PaginatedAttribute0 struct {
+	// Attributes list of attributes
+	Attributes []Attribute0 `json:"attributes"`
+	Count      int          `json:"count"`
+	Limit      int          `json:"limit"`
+	Page       int          `json:"page"`
+	Total      int          `json:"total"`
+}
+
 // PatchOperation defines model for PatchOperation.
 type PatchOperation struct {
 	// Op The patch operation to be executed
@@ -2568,10 +2578,12 @@ func (r DeleteAttributeObject) StatusCode() int {
 type GetAttribute0Object struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Attribute0
-	JSON400      *ErrorBean
-	JSON404      *ErrorBean
-	JSON500      *ErrorBean
+	JSON200      *struct {
+		union json.RawMessage
+	}
+	JSON400 *ErrorBean
+	JSON404 *ErrorBean
+	JSON500 *ErrorBean
 }
 
 // Status returns HTTPResponse.Status
@@ -3002,7 +3014,9 @@ func ParseGetAttribute0Object(rsp *http.Response) (*GetAttribute0Object, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Attribute0
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

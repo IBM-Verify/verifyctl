@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
+	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
 
@@ -37,4 +39,21 @@ func HandleCommonErrors(ctx context.Context, response *xhttp.Response, defaultEr
 	}
 
 	return nil
+}
+
+// when any API can generete multiple response structure for same response code
+// we use this custom parse method to parse the response
+func CustomParse(rsp *http.Response, rspErr error) (*openapi.GetAllAttributesObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &openapi.GetAllAttributesObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
 }
