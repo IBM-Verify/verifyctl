@@ -1,6 +1,7 @@
 package directory
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -136,53 +137,47 @@ func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthCo
 }
 
 // CreateAttribute creates an attribute and returns the resource URI.
-func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) (string, error) {
+func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *openapi.Attribute0) (string, error) {
 	vc := config.GetVerifyContext(ctx)
-	defaultErr := fmt.Errorf("unable to create attribute.")
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiAttributes))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Conent-Type":   []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
+	defaultErr := fmt.Errorf("unable to create attribute")
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	params := &openapi.CreateAttributeParams{
+		Authorization: fmt.Sprintf("Bearer %s", auth.Token),
 	}
-
 	// set some defaults
 	if attribute.SchemaAttribute != nil && len(attribute.SchemaAttribute.AttributeName) == 0 && attribute.SchemaAttribute.CustomAttribute {
 		attribute.SchemaAttribute.AttributeName = attribute.SchemaAttribute.ScimName
 	}
-
 	b, err := json.Marshal(attribute)
 	if err != nil {
 		vc.Logger.Errorf("unable to marshal the attribute; err=%v", err)
 		return "", defaultErr
 	}
-
-	response, err := c.client.Post(ctx, u, headers, b)
+	resp, err := client.CreateAttributeWithBodyWithResponse(ctx, params, "application/json", bytes.NewReader(b))
 	if err != nil {
 		vc.Logger.Errorf("unable to create attribute; err=%v", err)
 		return "", defaultErr
 	}
-	if response.StatusCode != http.StatusCreated {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get attributes"); err != nil {
-			vc.Logger.Errorf("unable to create the attribute; err=%s", err.Error())
-			return "", err
-		}
+	if resp.StatusCode() != http.StatusCreated {
+		// if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get attributes"); err != nil {
+		// 	vc.Logger.Errorf("unable to create the attribute; err=%s", err.Error())
+		// 	return "", err
+		// }
 
-		vc.Logger.Errorf("unable to create the attribute; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to create the attribute; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return "", defaultErr
 	}
 
 	// unmarshal the response body to get the ID
 	m := map[string]interface{}{}
 	resourceURI := ""
-	if err := json.Unmarshal(response.Body, &m); err != nil {
+	if err := json.Unmarshal(resp.Body, &m); err != nil {
 		vc.Logger.Warnf("unable to unmarshal the response body to get the 'id'")
-		resourceURI = response.Headers.Get("Location")
+		resourceURI = resp.HTTPResponse.Header.Get("Location")
 	} else {
 		id := typesx.Map(m).SafeString("id", "")
 		resourceURI = fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiAttributes, id)
 	}
-
 	return resourceURI, nil
 }
 
