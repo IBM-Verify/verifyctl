@@ -12,60 +12,13 @@ import (
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
-	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 	typesx "github.com/ibm-security-verify/verifyctl/pkg/util/types"
 )
 
-const (
-	apiAttributes string = "v1.0/attributes"
-)
-
-type AttributeClient struct {
-	client xhttp.Clientx
-}
-
-// SchemaAttribute is the domain model defining the properties of schema attribute
-type SchemaAttribute struct {
-	Name            string `json:"name" yaml:"name"`
-	AttributeName   string `json:"attributeName" yaml:"attributeName"`
-	ScimName        string `json:"scimName" yaml:"scimName"`
-	CustomAttribute bool   `json:"customAttribute" yaml:"customAttribute"`
-}
-
-// Function is the domain model holding the definition of custom and simple attribute functions
-type Function struct {
-	Name   string `json:"name" yaml:"name"`
-	Custom string `json:"custom" yaml:"custom"`
-}
-
-// Attribute is the domain model defining an attribute
-type Attribute struct {
-	ID                string            `json:"id,omitempty" yaml:"id,omitempty"`
-	Name              string            `json:"name" yaml:"name"`
-	Description       string            `json:"description" yaml:"description"`
-	Scope             string            `json:"scope,omitempty" yaml:"scope,omitempty"`
-	SourceType        string            `json:"sourceType" yaml:"sourceType"`
-	DataType          string            `json:"datatype" yaml:"datatype"`
-	Tags              []string          `json:"tags" yaml:"tags"`
-	Value             string            `json:"value" yaml:"value"`
-	CredName          string            `json:"credName" yaml:"credName"`
-	CredNameOverrides map[string]string `json:"credNameOverrides" yaml:"credNameOverrides"`
-	SchemaAttribute   *SchemaAttribute  `json:"schemaAttribute" yaml:"schemaAttribute"`
-	Function          Function          `json:"function" yaml:"function"`
-}
-
-type AttributeListResponse struct {
-	Limit      int                   `json:"limit,omitempty" yaml:"limit,omitempty"`
-	Page       int                   `json:"page,omitempty" yaml:"page,omitempty"`
-	Total      int                   `json:"total,omitempty" yaml:"total,omitempty"`
-	Count      int                   `json:"count,omitempty" yaml:"count,omitempty"`
-	Attributes []*openapi.Attribute0 `json:"attributes" yaml:"attributes"`
-}
+type AttributeClient struct{}
 
 func NewAttributeClient() *AttributeClient {
-	return &AttributeClient{
-		client: xhttp.NewDefaultClient(),
-	}
+	return &AttributeClient{}
 }
 
 func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthConfig, id string) (*openapi.Attribute0, string, error) {
@@ -176,44 +129,39 @@ func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.Auth
 		resourceURI = resp.HTTPResponse.Header.Get("Location")
 	} else {
 		id := typesx.Map(m).SafeString("id", "")
-		resourceURI = fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiAttributes, id)
+		resourceURI = resp.HTTPResponse.Request.URL.JoinPath(id).String()
 	}
 	return resourceURI, nil
 }
 
-func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) error {
+func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *openapi.Attribute0) error {
 	vc := config.GetVerifyContext(ctx)
-	defaultErr := fmt.Errorf("unable to update attribute.")
+	defaultErr := fmt.Errorf("unable to update attribute")
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
-	if len(attribute.ID) == 0 {
+	if len(*attribute.ID) == 0 {
 		return module.MakeSimpleError(i18n.TranslateWithArgs("'%s' is required", "id"))
 	}
-
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiAttributes, attribute.ID))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Conent-Type":   []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
+	params := &openapi.UpdateAttributeParams{
+		Authorization: fmt.Sprintf("Bearer %s", auth.Token),
 	}
-
-	b, err := json.Marshal(attribute)
+	body, err := json.Marshal(attribute)
 	if err != nil {
 		vc.Logger.Errorf("unable to marshal the attribute; err=%v", err)
 		return defaultErr
 	}
-
-	response, err := c.client.Put(ctx, u, headers, b)
+	resp, err := client.UpdateAttributeWithBodyWithResponse(ctx, *attribute.ID, params, "application/json", bytes.NewReader(body))
 	if err != nil {
 		vc.Logger.Errorf("unable to update attribute; err=%v", err)
 		return defaultErr
 	}
-	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get attributes"); err != nil {
-			vc.Logger.Errorf("unable to update the attribute; err=%s", err.Error())
-			return err
-		}
+	if resp.StatusCode() != http.StatusNoContent {
+		// if err := module.HandleCommonErrors(ctx, response, "unable to get attributes"); err != nil {
+		// 	vc.Logger.Errorf("unable to update the attribute; err=%s", err.Error())
+		// 	return err
+		// }
 
-		vc.Logger.Errorf("unable to update the attribute; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to update the attribute; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return defaultErr
 	}
 
