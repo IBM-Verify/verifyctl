@@ -10,6 +10,7 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
+	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
 
@@ -43,7 +44,7 @@ func NewThemeClient() *ThemeClient {
 
 func (c *ThemeClient) ListThemes(ctx context.Context, auth *config.AuthConfig, count int, page int, limit int) (*ListThemesResponse, string, error) {
 	vc := config.GetVerifyContext(ctx)
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiThemes))
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	pagination := url.Values{}
 	if count > 0 {
 		pagination.Add("count", fmt.Sprintf("%d", count))
@@ -57,40 +58,38 @@ func (c *ThemeClient) ListThemes(ctx context.Context, auth *config.AuthConfig, c
 		pagination.Add("limit", fmt.Sprintf("%d", limit))
 	}
 
+	params := &openapi.GetThemeRegistrationsParams{}
 	if len(pagination) > 0 {
-		q := u.Query()
-		q.Set("pagination", pagination.Encode())
-		u.RawQuery = q.Encode()
+		paginationString := pagination.Encode()
+		params.Pagination = &paginationString
 	}
 
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	response, err := c.client.Get(ctx, u, headers)
+	resp, err := client.GetThemeRegistrationsWithResponse(ctx, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to get the themes; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get themes"); err != nil {
-			vc.Logger.Errorf("unable to get the themes; err=%s", err.Error())
-			return nil, "", err
-		}
+	if resp.StatusCode() != http.StatusOK {
+		// if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get themes"); err != nil {
+		// 	vc.Logger.Errorf("unable to get the themes; err=%s", err.Error())
+		// 	return nil, "", err
+		// }
 
-		vc.Logger.Errorf("unable to get the themes; responseCode=%d, responseBody=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to get the themes; responseCode=%d, responseBody=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the themes")
 	}
 
 	themes := &ListThemesResponse{}
-	if err = json.Unmarshal(response.Body, themes); err != nil {
-		vc.Logger.Errorf("unable to unmarshal the themes response; body=%s, err=%s", string(response.Body), err.Error())
+	if err = json.Unmarshal(resp.Body, themes); err != nil {
+		vc.Logger.Errorf("unable to unmarshal the themes response; body=%s, err=%s", string(resp.Body), err.Error())
 		return nil, "", fmt.Errorf("unable to get the themes")
 	}
 
-	return themes, u.String(), nil
+	return themes, "", nil
 }
 
 func (c *ThemeClient) GetTheme(ctx context.Context, auth *config.AuthConfig, themeID string, customizedOnly bool) ([]byte, string, error) {
