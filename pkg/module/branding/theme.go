@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
@@ -94,33 +93,30 @@ func (c *ThemeClient) ListThemes(ctx context.Context, auth *config.AuthConfig, c
 
 func (c *ThemeClient) GetTheme(ctx context.Context, auth *config.AuthConfig, themeID string, customizedOnly bool) ([]byte, string, error) {
 	vc := config.GetVerifyContext(ctx)
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiThemes, themeID))
-	q := u.Query()
-	q.Set("customized_only", strconv.FormatBool(customizedOnly))
-	u.RawQuery = q.Encode()
-
-	headers := http.Header{
-		"Accept":        []string{"application/octet-stream"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	response, err := c.client.Get(ctx, u, headers)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	params := &openapi.DownloadThemeTemplatesParams{}
+	params.CustomizedOnly = &customizedOnly
+	resp, err := client.DownloadThemeTemplatesWithResponse(ctx, themeID, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		req.Header.Set("Accept", "application/octet-stream")
+		return nil
+	})
+	// response, err := c.client.Get(ctx, u, headers)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the themes; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get the theme"); err != nil {
-			vc.Logger.Errorf("unable to get the theme with ID %s; err=%s", themeID, err.Error())
-			return nil, "", err
-		}
+	if resp.StatusCode() != http.StatusOK {
+		// if err := module.HandleCommonErrors(ctx, resp, "unable to get the theme"); err != nil {
+		// 	vc.Logger.Errorf("unable to get the theme with ID %s; err=%s", themeID, err.Error())
+		// 	return nil, "", err
+		// }
 
-		vc.Logger.Errorf("unable to get the theme with ID %s; responseCode=%d, responseBody=%s", themeID, response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to get the theme with ID %s; responseCode=%d, responseBody=%s", themeID, resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the theme")
 	}
-
-	return response.Body, u.String(), nil
+	return resp.Body, resp.HTTPResponse.Request.URL.String(), nil
 }
 
 func (c *ThemeClient) GetFile(ctx context.Context, auth *config.AuthConfig, themeID string, path string) ([]byte, string, error) {

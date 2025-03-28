@@ -1549,11 +1549,29 @@ type RegisterThemeTemplatesMultipartBody struct {
 	Files openapi_types.File `json:"files"`
 }
 
+// DownloadThemeTemplatesParams defines parameters for DownloadThemeTemplates.
+type DownloadThemeTemplatesParams struct {
+	// CustomizedOnly Includes templates that are customized only. Returns global templates if false
+	CustomizedOnly *bool `form:"customized_only,omitempty" json:"customized_only,omitempty"`
+}
+
+// UpdateThemeTemplatesMultipartBody defines parameters for UpdateThemeTemplates.
+type UpdateThemeTemplatesMultipartBody struct {
+	// Configuration Theme Registration configuration payload. String-encoded JSON Object.<br><br>Example:<br>{<br>"name": "string",<br>"description": "string (optional)"<br>}<br><br>
+	Configuration string `json:"configuration"`
+
+	// Files Customized Theme .zip File
+	Files *openapi_types.File `json:"files,omitempty"`
+}
+
 // PostOauth2TokenFormdataRequestBody defines body for PostOauth2Token for application/x-www-form-urlencoded ContentType.
 type PostOauth2TokenFormdataRequestBody = TokenRequest
 
 // RegisterThemeTemplatesMultipartRequestBody defines body for RegisterThemeTemplates for multipart/form-data ContentType.
 type RegisterThemeTemplatesMultipartRequestBody RegisterThemeTemplatesMultipartBody
+
+// UpdateThemeTemplatesMultipartRequestBody defines body for UpdateThemeTemplates for multipart/form-data ContentType.
+type UpdateThemeTemplatesMultipartRequestBody UpdateThemeTemplatesMultipartBody
 
 // Getter for additional properties for Header. Returns the specified
 // element and whether it was found
@@ -1742,6 +1760,15 @@ type ClientInterface interface {
 
 	// RegisterThemeTemplatesWithBody request with any body
 	RegisterThemeTemplatesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeregisterTheme request
+	DeregisterTheme(ctx context.Context, themeID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DownloadThemeTemplates request
+	DownloadThemeTemplates(ctx context.Context, themeID string, params *DownloadThemeTemplatesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateThemeTemplatesWithBody request with any body
+	UpdateThemeTemplatesWithBody(ctx context.Context, themeID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) PostOauth2TokenWithBody(ctx context.Context, params *PostOauth2TokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1866,6 +1893,42 @@ func (c *Client) GetThemeRegistrations(ctx context.Context, params *GetThemeRegi
 
 func (c *Client) RegisterThemeTemplatesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRegisterThemeTemplatesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeregisterTheme(ctx context.Context, themeID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeregisterThemeRequest(c.Server, themeID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DownloadThemeTemplates(ctx context.Context, themeID string, params *DownloadThemeTemplatesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDownloadThemeTemplatesRequest(c.Server, themeID, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateThemeTemplatesWithBody(ctx context.Context, themeID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateThemeTemplatesRequestWithBody(c.Server, themeID, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2379,6 +2442,132 @@ func NewRegisterThemeTemplatesRequestWithBody(server string, contentType string,
 	return req, nil
 }
 
+// NewDeregisterThemeRequest generates requests for DeregisterTheme
+func NewDeregisterThemeRequest(server string, themeID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "themeId", runtime.ParamLocationPath, themeID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1.0/branding/themes/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDownloadThemeTemplatesRequest generates requests for DownloadThemeTemplates
+func NewDownloadThemeTemplatesRequest(server string, themeID string, params *DownloadThemeTemplatesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "themeId", runtime.ParamLocationPath, themeID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1.0/branding/themes/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.CustomizedOnly != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "customized_only", runtime.ParamLocationQuery, *params.CustomizedOnly); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateThemeTemplatesRequestWithBody generates requests for UpdateThemeTemplates with any type of body
+func NewUpdateThemeTemplatesRequestWithBody(server string, themeID string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "themeId", runtime.ParamLocationPath, themeID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1.0/branding/themes/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -2453,6 +2642,15 @@ type ClientWithResponsesInterface interface {
 
 	// RegisterThemeTemplatesWithBodyWithResponse request with any body
 	RegisterThemeTemplatesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterThemeTemplatesObject, error)
+
+	// DeregisterThemeWithResponse request
+	DeregisterThemeWithResponse(ctx context.Context, themeID string, reqEditors ...RequestEditorFn) (*DeregisterThemeObject, error)
+
+	// DownloadThemeTemplatesWithResponse request
+	DownloadThemeTemplatesWithResponse(ctx context.Context, themeID string, params *DownloadThemeTemplatesParams, reqEditors ...RequestEditorFn) (*DownloadThemeTemplatesObject, error)
+
+	// UpdateThemeTemplatesWithBodyWithResponse request with any body
+	UpdateThemeTemplatesWithBodyWithResponse(ctx context.Context, themeID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateThemeTemplatesObject, error)
 }
 
 type PostOauth2TokenObject struct {
@@ -2701,6 +2899,69 @@ func (r RegisterThemeTemplatesObject) StatusCode() int {
 	return 0
 }
 
+type DeregisterThemeObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeregisterThemeObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeregisterThemeObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DownloadThemeTemplatesObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DownloadThemeTemplatesObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DownloadThemeTemplatesObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateThemeTemplatesObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateThemeTemplatesObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateThemeTemplatesObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // PostOauth2TokenWithBodyWithResponse request with arbitrary body returning *PostOauth2TokenObject
 func (c *ClientWithResponses) PostOauth2TokenWithBodyWithResponse(ctx context.Context, params *PostOauth2TokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOauth2TokenObject, error) {
 	rsp, err := c.PostOauth2TokenWithBody(ctx, params, contentType, body, reqEditors...)
@@ -2797,6 +3058,33 @@ func (c *ClientWithResponses) RegisterThemeTemplatesWithBodyWithResponse(ctx con
 		return nil, err
 	}
 	return ParseRegisterThemeTemplatesObject(rsp)
+}
+
+// DeregisterThemeWithResponse request returning *DeregisterThemeObject
+func (c *ClientWithResponses) DeregisterThemeWithResponse(ctx context.Context, themeID string, reqEditors ...RequestEditorFn) (*DeregisterThemeObject, error) {
+	rsp, err := c.DeregisterTheme(ctx, themeID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeregisterThemeObject(rsp)
+}
+
+// DownloadThemeTemplatesWithResponse request returning *DownloadThemeTemplatesObject
+func (c *ClientWithResponses) DownloadThemeTemplatesWithResponse(ctx context.Context, themeID string, params *DownloadThemeTemplatesParams, reqEditors ...RequestEditorFn) (*DownloadThemeTemplatesObject, error) {
+	rsp, err := c.DownloadThemeTemplates(ctx, themeID, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDownloadThemeTemplatesObject(rsp)
+}
+
+// UpdateThemeTemplatesWithBodyWithResponse request with arbitrary body returning *UpdateThemeTemplatesObject
+func (c *ClientWithResponses) UpdateThemeTemplatesWithBodyWithResponse(ctx context.Context, themeID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateThemeTemplatesObject, error) {
+	rsp, err := c.UpdateThemeTemplatesWithBody(ctx, themeID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateThemeTemplatesObject(rsp)
 }
 
 // ParsePostOauth2TokenObject parses an HTTP response from a PostOauth2TokenWithResponse call
@@ -3219,6 +3507,54 @@ func ParseRegisterThemeTemplatesObject(rsp *http.Response) (*RegisterThemeTempla
 	}
 
 	response := &RegisterThemeTemplatesObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDeregisterThemeObject parses an HTTP response from a DeregisterThemeWithResponse call
+func ParseDeregisterThemeObject(rsp *http.Response) (*DeregisterThemeObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeregisterThemeObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDownloadThemeTemplatesObject parses an HTTP response from a DownloadThemeTemplatesWithResponse call
+func ParseDownloadThemeTemplatesObject(rsp *http.Response) (*DownloadThemeTemplatesObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DownloadThemeTemplatesObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateThemeTemplatesObject parses an HTTP response from a UpdateThemeTemplatesWithResponse call
+func ParseUpdateThemeTemplatesObject(rsp *http.Response) (*UpdateThemeTemplatesObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateThemeTemplatesObject{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
