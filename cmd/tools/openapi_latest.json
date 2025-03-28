@@ -1493,6 +1493,396 @@
                 },
                 "x-publicAPI": "true"
             }
+        },
+        "/v1.0/branding/themes/{themeId}/{templatePath}": {
+            "get": {
+                "tags": [
+                    "Customization - Themes"
+                ],
+                "summary": "Download a specific template file from a theme",
+                "description": "Downloads a single template file from a theme.",
+                "operationId": "getTemplate_0",
+                "parameters": [
+                    {
+                        "name": "themeId",
+                        "in": "path",
+                        "description": "Generated themeId for the requested theme. The themeID can be obtained from the GET call. See the \"List all the themes\" API.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "templatePath",
+                        "in": "path",
+                        "description": "Path to the template file as found in the theme .zip file. Example templatePath: authentication/saml/error/fr/routing_error.html",
+                        "required": true,
+                        "schema": {
+                            "pattern": ".*",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The request was successful.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "The request was malformed or might not be handled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The client was not authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The client was not authorized to perform the request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The resource could not be located",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "405": {
+                        "description": "The HTTP method that is specified in the request is not supported by the resource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "406": {
+                        "description": "The resource cannot produce the representation that is specified in the Accept header of the request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "The resource cannot consume the representation that is specified in the Content-Type header of the request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An error occurred processing the request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "put": {
+                "tags": [
+                    "Customization - Themes"
+                ],
+                "summary": "Update a specific template file for a theme",
+                "description": "Updates the contents of a single file from a themeId.",
+                "operationId": "updateThemeTemplate",
+                "parameters": [
+                    {
+                        "name": "themeId",
+                        "in": "path",
+                        "description": "Generated themeId for the requested theme. The themeID can be obtained from the GET call. See the \"List all the themes\" API.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "templatePath",
+                        "in": "path",
+                        "description": "Path to the template file as found in the theme .zip file. Example templatePath value: authentication/saml/error/default/routing_error.html",
+                        "required": true,
+                        "schema": {
+                            "pattern": ".*",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "description": "Translation Archive File",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "The request was successful.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "The request was malformed or might not be handled",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The client was not authenticated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The client was not authorized to perform the request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The resource could not be located",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "405": {
+                        "description": "The HTTP method that is specified in the request is not supported by the resource",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "406": {
+                        "description": "The resource cannot produce the representation that is specified in the Accept header of the request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "A conflict occurred updating this template.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "The resource cannot consume the representation that is specified in the Content-Type header of the request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An error occurred processing the request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "delete": {
+                "tags": [
+                    "Customization - Themes"
+                ],
+                "summary": "Deletes a customization for a specific template file in a theme",
+                "description": "Deletes a single customized template file from a theme. The file is restored to the default version of the template file.",
+                "operationId": "deleteSingleThemeFile",
+                "parameters": [
+                    {
+                        "name": "themeId",
+                        "in": "path",
+                        "description": "Generated themeId for the requested theme. The themeID can be obtained from the GET call. See the \"List all the themes\" API.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "templatePath",
+                        "in": "path",
+                        "description": "Path to the template file as found in the theme .zip file. Example templatePath: authentication/saml/error/default/routing_error.html",
+                        "required": true,
+                        "schema": {
+                            "pattern": ".*",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "The request was successful.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "The request was malformed or might not be handled",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The client was not authenticated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The client was not authorized to perform the request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The resource could not be located",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "405": {
+                        "description": "The HTTP method that is specified in the request is not supported by the resource",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "406": {
+                        "description": "The resource cannot produce the representation that is specified in the Accept header of the request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "A conflict occurred deregistering this template.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "The resource cannot consume the representation that is specified in the Content-Type header of the request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An error occurred processing the request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            }
         }
     },
     "components": {

@@ -121,29 +121,27 @@ func (c *ThemeClient) GetTheme(ctx context.Context, auth *config.AuthConfig, the
 
 func (c *ThemeClient) GetFile(ctx context.Context, auth *config.AuthConfig, themeID string, path string) ([]byte, string, error) {
 	vc := config.GetVerifyContext(ctx)
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s/%s", auth.Tenant, apiThemes, themeID, path))
-
-	headers := http.Header{
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	response, err := c.client.Get(ctx, u, headers)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	resp, err := client.GetTemplate0WithResponse(ctx, themeID, path, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to get the themes; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get the file"); err != nil {
-			vc.Logger.Errorf("unable to get the theme with ID %s and path %s; err=%s", themeID, path, err.Error())
-			return nil, "", err
-		}
+	if resp.StatusCode() != http.StatusOK {
+		// if err := module.HandleCommonErrors(ctx, resp, "unable to get the file"); err != nil {
+		// 	vc.Logger.Errorf("unable to get the theme with ID %s and path %s; err=%s", themeID, path, err.Error())
+		// 	return nil, "", err
+		// }
 
-		vc.Logger.Errorf("unable to get the theme with ID %s and path %s; responseCode=%d, responseBody=%s", themeID, path, response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to get the theme with ID %s and path %s; responseCode=%d, responseBody=%s", themeID, path, resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the file")
 	}
 
-	return response.Body, u.String(), nil
+	return resp.Body, resp.HTTPResponse.Request.URL.String(), nil
 }
 
 func (c *ThemeClient) UpdateFile(ctx context.Context, auth *config.AuthConfig, themeID string, path string, data []byte) error {
