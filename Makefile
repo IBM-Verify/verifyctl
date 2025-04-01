@@ -27,6 +27,11 @@ build-image:
 build-image-fips:
 	${DOCKERBIN} build -f build/verifyctl/Dockerfile.ubi9-fips -t verifyctl:fips .
 
+generate:
+	@echo Generating client code form openapi specifications
+	@echo --------------------------------------------------
+	scripts/generate_code.sh
+
 # Cleanup
 .PHONY: clean
 clean:
