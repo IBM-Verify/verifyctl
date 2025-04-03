@@ -109,10 +109,10 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 	if o.boilerplate {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "User",
-			APIVersion: "1.0",
+			APIVersion: "2.0",
 			Data: &directory.User{
-				Id:          "<id>",
-				DisplayName: "<name>",
+				Id:       "<id>",
+				UserName: "<name>",
 			},
 		}
 

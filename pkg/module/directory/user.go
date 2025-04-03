@@ -27,23 +27,24 @@ type UserListResponse struct {
 }
 
 type User struct {
-	Id                string         `json:"id,omitempty" yaml:"id,omitempty"`
-	UserName          string         `json:"userName,omitempty" yaml:"userName,omitempty"`
-	ExternalID        string         `json:"externalId,omitempty" yaml:"externalId,omitempty"`
-	Title             string         `json:"title,omitempty" yaml:"title,omitempty"`
-	Password          string         `json:"password,omitempty" yaml:"password,omitempty"`
-	DisplayName       string         `json:"displayName,omitempty" yaml:"displayName,omitempty"`
-	PreferredLanguage string         `json:"preferredLanguage,omitempty" yaml:"preferredLanguage,omitempty"`
-	Active            bool           `json:"active" yaml:"active"`
-	Emails            []Email        `json:"emails,omitempty" yaml:"emails,omitempty"`
-	Addresses         []Address      `json:"addresses,omitempty" yaml:"addresses,omitempty"`
-	PhoneNumbers      []PhoneNumber  `json:"phoneNumbers,omitempty" yaml:"phoneNumbers,omitempty"`
-	Meta              Meta           `json:"meta,omitempty" yaml:"meta,omitempty"`
-	Name              Name           `json:"name" yaml:"name"`
-	Schemas           []string       `json:"schemas" yaml:"schemas"`
-	IBMUserExtension  IBMUser        `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:User,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:User,omitempty"`
-	EnterpriseUser    EnterpriseUser `json:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User,omitempty"`
-	Notification      Notification   `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty"`
+	Id                string          `json:"id,omitempty" yaml:"id,omitempty"`
+	UserName          string          `json:"userName,omitempty" yaml:"userName,omitempty"`
+	ExternalID        string          `json:"externalId,omitempty" yaml:"externalId,omitempty"`
+	Title             string          `json:"title,omitempty" yaml:"title,omitempty"`
+	Password          string          `json:"password,omitempty" yaml:"password,omitempty"`
+	DisplayName       string          `json:"displayName,omitempty" yaml:"displayName,omitempty"`
+	PreferredLanguage string          `json:"preferredLanguage,omitempty" yaml:"preferredLanguage,omitempty"`
+	Active            bool            `json:"active" yaml:"active"`
+	Emails            []Email         `json:"emails,omitempty" yaml:"emails,omitempty"`
+	Addresses         []Address       `json:"addresses,omitempty" yaml:"addresses,omitempty"`
+	PhoneNumbers      []PhoneNumber   `json:"phoneNumbers,omitempty" yaml:"phoneNumbers,omitempty"`
+	Meta              Meta            `json:"meta,omitempty" yaml:"meta,omitempty"`
+	Name              Name            `json:"name" yaml:"name"`
+	Schemas           []string        `json:"schemas" yaml:"schemas"`
+	IBMUserExtension  IBMUser         `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:User,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:User,omitempty"`
+	EnterpriseUser    *EnterpriseUser `json:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User,omitempty"`
+	Notification      Notification    `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty"`
+	Groups            []Group         `json:"groups,omitempty" yaml:"groups,omitempty"`
 }
 
 type Name struct {
@@ -70,20 +71,21 @@ type Address struct {
 }
 
 type PhoneNumber struct {
-	Type  string `json:"type" yaml:"type"`
-	Value string `json:"value" yaml:"value"`
+	Type  string `json:"type,omitempty" yaml:"type,omitempty"`
+	Value string `json:"value,omitempty" yaml:"value,omitempty"`
 }
 
 type Meta struct {
 	Created      string `json:"created,omitempty" yaml:"created,omitempty"`
 	LastModified string `json:"lastModified,omitempty" yaml:"lastModified,omitempty"`
+	ResourceType string `json:"resourceType,omitempty" yaml:"resourceType,omitempty"`
 }
 
 type IBMUser struct {
 	LastLoginType    string            `json:"lastLoginType,omitempty" yaml:"lastLoginType,omitempty"`
 	Realm            string            `json:"realm,omitempty" yaml:"realm,omitempty"`
-	UserCategory     string            `json:"userCategory" yaml:"userCategory"`
-	EmailVerified    int               `json:"emailVerified,omitempty" yaml:"emailVerified,omitempty"`
+	UserCategory     string            `json:"userCategory,omitempty" yaml:"userCategory,omitempty"`
+	EmailVerified    string            `json:"emailVerified,omitempty" yaml:"emailVerified,omitempty"`
 	Delegate         string            `json:"delegate,omitempty" yaml:"delegate,omitempty"`
 	CustomAttributes []CustomAttribute `json:"customAttributes,omitempty" yaml:"customAttributes,omitempty"`
 	AccountExpires   string            `json:"accountExpires,omitempty" yaml:"accountExpires,omitempty"`
@@ -110,6 +112,13 @@ type Notification struct {
 	NotifyType     string `json:"notifyType" yaml:"notifyType"`
 	NotifyPassword bool   `json:"notifyPassword" yaml:"notifyPassword"`
 	NotifyManager  bool   `json:"notifyManager" yaml:"notifyManager"`
+}
+
+type UserGroup struct {
+	DisplayName string `json:"displayName,omitempty" yaml:"displayName,omitempty"`
+	ID          string `json:"id,omitempty" yaml:"id,omitempty"`
+	Ref         string `json:"$ref,omitempty" yaml:"$ref,omitempty"`
+	Value       string `json:"value,omitempty" yaml:"value,omitempty"`
 }
 
 type UserPatchRequest struct {

@@ -133,7 +133,7 @@ func (o *usersOptions) handleSingleUser(cmd *cobra.Command, auth *config.AuthCon
 		Kind:       resource.ResourceTypePrefix + "User",
 		APIVersion: "2.0",
 		Metadata: &resource.ResourceObjectMetadata{
-			UID:  usr.ExternalID,
+			UID:  usr.Id,
 			Name: usr.UserName,
 			URI:  uri,
 		},
@@ -168,7 +168,7 @@ func (o *usersOptions) handleUserList(cmd *cobra.Command, auth *config.AuthConfi
 			Kind:       resource.ResourceTypePrefix + "User",
 			APIVersion: "2.0",
 			Metadata: &resource.ResourceObjectMetadata{
-				UID:  usr.ExternalID,
+				UID:  usr.Id,
 				Name: usr.UserName,
 			},
 			Data: usr,
