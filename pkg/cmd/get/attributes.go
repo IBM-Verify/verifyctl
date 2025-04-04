@@ -134,7 +134,7 @@ func (o *attributesOptions) handleSingleAttribute(cmd *cobra.Command, auth *conf
 		Kind:       resource.ResourceTypePrefix + "Attribute",
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
-			UID:  attr.ID,
+			UID:  *attr.ID,
 			Name: attr.Name,
 			URI:  uri,
 		},
@@ -169,7 +169,7 @@ func (o *attributesOptions) handleAttributeList(cmd *cobra.Command, auth *config
 			Kind:       resource.ResourceTypePrefix + "Attribute",
 			APIVersion: "1.0",
 			Metadata: &resource.ResourceObjectMetadata{
-				UID:  attr.ID,
+				UID:  *attr.ID,
 				Name: attr.Name,
 			},
 			Data: attr,

@@ -3,16 +3,15 @@ package auth
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
-	oauth2x "github.com/ibm-security-verify/verifyctl/x/oauth2"
+	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
 )
 
 type AuthResource struct {
@@ -31,51 +30,29 @@ type AuthResource struct {
 	PrivateKeyJWK *jose.JSONWebKey `yaml:"-" json:"-"`
 }
 
-func (o *options) authenticate(cmd *cobra.Command, r *AuthResource) (*oauth2.Token, error) {
-	var clientAuth oauth2x.ClientAuth
-	if r.ClientAuthType == "private_key_jwt" {
-		clientAuth = &oauth2x.PrivateKeyJWT{
-			Tenant:        o.tenant,
-			ClientID:      r.ClientID,
-			PrivateKeyJWK: r.PrivateKeyJWK,
-		}
-	} else {
-		clientAuth = &oauth2x.ClientSecretPost{
-			ClientID:     r.ClientID,
-			ClientSecret: r.ClientSecret,
-		}
-	}
-
-	client := &oauth2x.Client{
-		Tenant:     o.tenant,
-		ClientAuth: clientAuth,
-	}
-
-	var tokenResponse *oauth2.Token
-	var err error
-
+func (o *options) authenticate(cmd *cobra.Command, r *AuthResource) (*openapi.TokenResponse, error) {
+	var tokenResponse openapi.TokenResponse
 	if r.User && r.UserGrantType == "auth_code" {
 		return nil, fmt.Errorf("not implemented")
 	} else if r.User && r.UserGrantType == "jwt_bearer" {
 		return nil, fmt.Errorf("not implemented")
 	} else if r.User {
-		deviceAuthResponse, e := client.AuthorizeWithDeviceFlow(cmd.Context(), nil)
-		if e != nil {
-			return nil, e
-		}
-
-		cmdutil.WriteString(cmd, fmt.Sprintf("Complete login by accessing the URL: %s", deviceAuthResponse.VerificationURIComplete))
-
-		tokenResponse, err = client.TokenWithDeviceFlow(cmd.Context(), deviceAuthResponse)
+		return nil, fmt.Errorf("not implemented")
 	} else {
-		tokenResponse, err = client.TokenWithAPIClient(cmd.Context(), nil)
+		formData := url.Values{}
+		formData.Add("client_id", r.ClientID)
+		formData.Add("client_secret", r.ClientSecret)
+		formData.Add("grant_type", "client_credentials")
+		client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", o.tenant))
+		resp, err := client.PostOauth2TokenWithBodyWithResponse(cmd.Context(), nil, "application/x-www-form-urlencoded", strings.NewReader(formData.Encode()))
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			json.Unmarshal(resp.Body, &tokenResponse)
+		}
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
-	return tokenResponse, nil
+	return &tokenResponse, nil
 }
 
 func (o *options) readFile(cmd *cobra.Command) (*AuthResource, error) {
