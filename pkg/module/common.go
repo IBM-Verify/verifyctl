@@ -26,12 +26,15 @@ func HandleCommonErrors(ctx context.Context, response *xhttp.Response, defaultEr
 	}
 
 	if response.StatusCode == http.StatusBadRequest {
-		errorMessage := &VerifyError{}
-		if err := json.Unmarshal(response.Body, errorMessage); err != nil {
-			return MakeSimpleError(defaultError)
-		} else {
-			return fmt.Errorf("%s %s", errorMessage.MessageID, errorMessage.MessageDescription)
+		var errorMessage VerifyError
+		if err := json.Unmarshal(response.Body, &errorMessage); err != nil {
+			return fmt.Errorf("bad request: %s", defaultError)
 		}
+		// If the expected fields are not populated, return the raw response body.
+		if errorMessage.MessageID == "" && errorMessage.MessageDescription == "" {
+			return fmt.Errorf("bad request: %s", string(response.Body))
+		}
+		return fmt.Errorf("%s %s", errorMessage.MessageID, errorMessage.MessageDescription)
 	}
 
 	if response.StatusCode == http.StatusNotFound {

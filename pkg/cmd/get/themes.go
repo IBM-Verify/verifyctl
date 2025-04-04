@@ -85,6 +85,7 @@ func (o *themesOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, themeResourceName)
 	o.addPaginationFlags(cmd, themeResourceName)
 
+	o.addIdFlag(cmd, attributeResourceName)
 	cmd.Flags().BoolVar(&o.customizedOnly, "customizedOnly", false, i18n.Translate("Use the flag if you only want customized template files. This is only used for single theme downloads."))
 	cmd.Flags().BoolVar(&o.unpack, "unpack", false, i18n.Translate("Uncompress the downloaded zip. This is only used for single theme download commands."))
 	cmd.Flags().StringVar(&o.outputDirectory, "dir", "", i18n.Translate("Path to the directory where the theme will be unpacked, if requested. This is paired with 'unpack' flag."))

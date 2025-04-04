@@ -87,6 +87,8 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 
 	// add sub commands
 	cmd.AddCommand(newAttributeCommand(config, streams))
+	cmd.AddCommand(newUserCommand(config, streams))
+	cmd.AddCommand(newGroupCommand(config, streams))
 
 	return cmd
 }
@@ -133,6 +135,14 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	case resource.ResourceTypePrefix + "Attribute":
 		options := &attributeOptions{}
 		err = options.createAttributeFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+
+	case resource.ResourceTypePrefix + "User":
+		options := &userOptions{}
+		err = options.createUserFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+
+	case resource.ResourceTypePrefix + "Group":
+		options := &groupOptions{}
+		err = options.createGroupFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err
