@@ -524,7 +524,7 @@ type CICCustomUserResponse struct {
 	PwdAccountLockedTime *string `json:"pwdAccountLockedTime,omitempty"`
 
 	// PwdChangedTime Indicates the time when the password was changed for the current user entry. This value is read-only.
-	PwdChangedTime *int64 `json:"pwdChangedTime,omitempty"`
+	PwdChangedTime *string `json:"pwdChangedTime,omitempty"`
 
 	// PwdExpirationWarned A field that indicates the timestamp at which the user's password expiration is set. The value of this field is in milliseconds and is read-only.
 	PwdExpirationWarned *string `json:"pwdExpirationWarned,omitempty"`

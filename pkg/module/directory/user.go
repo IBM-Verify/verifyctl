@@ -9,6 +9,7 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
+	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
 
@@ -186,41 +187,41 @@ func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, us
 	return fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiUsers, id), nil
 }
 
-func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userName string) (*User, string, error) {
+func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userName string) (*openapi.UserResponseV2, string, error) {
 	vc := config.GetVerifyContext(ctx)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getUserId(ctx, auth, userName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the group ID; err=%s", err.Error())
 		return nil, "", err
 	}
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiUsers, id))
-	headers := http.Header{
-		"Accept":        []string{"application/scim+json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	response, err := c.client.Get(ctx, u, headers)
+	params := &openapi.GetUser0Params{}
+	resp, err := client.GetUser0WithResponse(ctx, id, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Add("Accept", "application/scim+json")
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to get the User; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get User"); err != nil {
-			vc.Logger.Errorf("unable to get the User; err=%s", err.Error())
-			return nil, "", err
-		}
+	if resp.StatusCode() != http.StatusOK {
+		// if err := module.HandleCommonErrors(ctx, resp, "unable to get User"); err != nil {
+		// 	vc.Logger.Errorf("unable to get the User; err=%s", err.Error())
+		// 	return nil, "", err
+		// }
 
-		vc.Logger.Errorf("unable to get the User; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to get the User; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the User")
 	}
 
-	User := &User{}
-	if err = json.Unmarshal(response.Body, User); err != nil {
+	User := &openapi.UserResponseV2{}
+	if err = json.Unmarshal(resp.Body, User); err != nil {
 		return nil, "", fmt.Errorf("unable to get the User")
 	}
 
-	return User, u.String(), nil
+	return User, resp.HTTPResponse.Request.URL.String(), nil
 }
 
 func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort string, count string) (

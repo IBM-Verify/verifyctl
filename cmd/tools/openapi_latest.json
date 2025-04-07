@@ -16198,9 +16198,8 @@
                         "description": "Indicates whether the password is reset for the current user entry. This value is read-only."
                     },
                     "pwdChangedTime": {
-                        "type": "integer",
-                        "description": "Indicates the time when the password was changed for the current user entry. This value is read-only.",
-                        "format": "int64"
+                        "type": "string",
+                        "description": "Indicates the time when the password was changed for the current user entry. This value is read-only."
                     },
                     "pwdAccountLockedTime": {
                         "type": "string",
