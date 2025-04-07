@@ -224,54 +224,47 @@ func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userN
 	return User, resp.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort string, count string) (
-	*UserListResponse, string, error) {
+func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*UserListResponse, string, error) {
 
 	vc := config.GetVerifyContext(ctx)
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiUsers))
-	headers := http.Header{
-		"Accept":        []string{"application/scim+json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
-	q := u.Query()
-
+	params := &openapi.GetUsersParams{}
 	if len(sort) > 0 {
-		q.Set("sortBy", sort)
+		params.SortBy = &sort
 	}
-
 	if len(count) > 0 {
-		q.Set("count", count)
+		params.Count = &count
 	}
 
-	if len(q) > 0 {
-		u.RawQuery = q.Encode()
-	}
-
-	response, err := c.client.Get(ctx, u, headers)
+	resp, err := client.GetUsersWithResponse(ctx, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/scim+json")
+		req.Header.Set("Authorization", "Bearer "+auth.Token)
+		return nil
+	})
 
 	if err != nil {
 		vc.Logger.Errorf("unable to get the Users; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get Users"); err != nil {
-			vc.Logger.Errorf("unable to get the Users; err=%s", err.Error())
-			return nil, "", err
-		}
+	if resp.StatusCode() != http.StatusOK {
+		// if err := module.HandleCommonErrors(ctx, resp, "unable to get Users"); err != nil {
+		// 	vc.Logger.Errorf("unable to get the Users; err=%s", err.Error())
+		// 	return nil, "", err
+		// }
 
-		vc.Logger.Errorf("unable to get the Users; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to get the Users; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Users")
 	}
 
 	UsersResponse := &UserListResponse{}
-	if err = json.Unmarshal(response.Body, &UsersResponse); err != nil {
-		vc.Logger.Errorf("unable to get the Users; err=%s, body=%s", err, string(response.Body))
+	if err = json.Unmarshal(resp.Body, &UsersResponse); err != nil {
+		vc.Logger.Errorf("unable to get the Users; err=%s, body=%s", err, string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Users")
 	}
 
-	return UsersResponse, u.String(), nil
+	return UsersResponse, resp.HTTPResponse.Request.URL.String(), nil
 }
 
 func (c *UserClient) DeleteUser(ctx context.Context, auth *config.AuthConfig, name string) error {
