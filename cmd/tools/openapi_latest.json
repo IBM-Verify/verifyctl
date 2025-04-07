@@ -18894,7 +18894,6 @@
                         "example": "title"
                     },
                     "value": {
-                        "type": "string",
                         "description": "The attribute content used for the operation. The \"value\" attribute is required for the \"add\" and \"replace\" operations. The \"value\" attribute is allowed with \"remove\" operations only when the \"path\" identifies  a single object (specified by a selection filter), and the attribute path identifies an array attribute.  Currently, this usage is for removing values from a custom attribute's values array only. <br> <br> The following example shows a patch operation removing a single value from \"customAttributeNameA\"  and multiple values from \"customAttributeNameB\": <br>  <table> <tr><td> {  \"schemas\":[\"urn:ietf:params:scim:api:messages:2.0:PatchOp\"], \"Operations\":  [    {      \"op\":\"remove\",      \"path\":\"urn:ietf:params:scim:schemas:extension:ibm:2.0:User:customAttributes[name eq \"customAttributeNameA\"].values\",      \"value\":\"customAttributeValueToRemoveA1\"    },    {      \"op\":\"remove\",      \"path\":\"urn:ietf:params:scim:schemas:extension:ibm:2.0:User:customAttributes[name eq \"customAttributeNameB\"].values\",      \"value\":          [             \"customAttributeValueToRemoveB1\",             \"customAttributeValueToRemoveB2\"          ]    }  ]}</td></tr></table>",
                         "example": "Vice President"
                     }

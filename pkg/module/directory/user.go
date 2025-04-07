@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
@@ -115,27 +114,9 @@ type Notification struct {
 	NotifyManager  bool   `json:"notifyManager" yaml:"notifyManager"`
 }
 
-type UserGroup struct {
-	DisplayName string `json:"displayName,omitempty" yaml:"displayName,omitempty"`
-	ID          string `json:"id,omitempty" yaml:"id,omitempty"`
-	Ref         string `json:"$ref,omitempty" yaml:"$ref,omitempty"`
-	Value       string `json:"value,omitempty" yaml:"value,omitempty"`
-}
-
 type UserPatchRequest struct {
-	UserName         string               `json:"userName" yaml:"userName"`
-	SCIMPatchRequest UserSCIMPatchRequest `json:"scimPatch" yaml:"scimPatch"`
-}
-
-type UserSCIMPatchRequest struct {
-	Schemas    []string          `json:"schemas" yaml:"schemas"`
-	Operations []UserSCIMOpEntry `json:"Operations" yaml:"Operations"`
-}
-
-type UserSCIMOpEntry struct {
-	Op    string      `json:"op" yaml:"op"`
-	Path  string      `json:"path,omitempty" yaml:"path,omitempty"`
-	Value interface{} `json:"value,omitempty" yaml:"value,omitempty"`
+	UserName         string            `json:"userName" yaml:"userName"`
+	SCIMPatchRequest openapi.PatchBody `json:"scimPatch" yaml:"scimPatch"`
 }
 
 func NewUserClient() *UserClient {
@@ -299,44 +280,43 @@ func (c *UserClient) DeleteUser(ctx context.Context, auth *config.AuthConfig, na
 	return nil
 }
 
-func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, userName string, operations []UserSCIMOpEntry) error {
+func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, userName string, operations []openapi.PatchOperation0) error {
 	vc := config.GetVerifyContext(ctx)
-
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getUserId(ctx, auth, userName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the user ID; err=%s", err.Error())
 		return fmt.Errorf("unable to get the user ID; err=%s", err.Error())
 	}
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiUsers, id))
-	headers := http.Header{
-		"Accept":                           []string{"application/scim+json"},
-		"Content-Type":                     []string{"application/scim+json"},
-		"usershouldnotneedtoresetpassword": []string{"false"},
-		"Authorization":                    []string{"Bearer " + auth.Token},
-	}
-
-	patchRequest := UserSCIMPatchRequest{
+	patchRequest := openapi.PatchBody{
 		Schemas:    []string{"urn:ietf:params:scim:api:messages:2.0:PatchOp"},
 		Operations: operations,
 	}
 
-	b, err := json.Marshal(patchRequest)
+	body, err := json.Marshal(patchRequest)
 
 	if err != nil {
 		vc.Logger.Errorf("unable to marshal the patch request; err=%v", err)
 		return fmt.Errorf("unable to marshal the patch request; err=%v", err)
 	}
-
-	response, err := c.client.Patch(ctx, u, headers, b)
+	var usershouldnotneedtoresetpassword openapi.PatchUserParamsUsershouldnotneedtoresetpassword = "false"
+	params := &openapi.PatchUserParams{
+		Usershouldnotneedtoresetpassword: &usershouldnotneedtoresetpassword,
+	}
+	resp, err := client.PatchUserWithBodyWithResponse(ctx, id, params, "application/scim+json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/scim+json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
 	if err != nil {
 		vc.Logger.Errorf("unable to update user; err=%v", err)
 		return fmt.Errorf("unable to update user; err=%v", err)
 	}
-	if response.StatusCode != http.StatusNoContent {
-		vc.Logger.Errorf("failed to update user; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return fmt.Errorf("failed to update user ; code=%d, body=%s", response.StatusCode, string(response.Body))
+	if resp.StatusCode() != http.StatusNoContent {
+		vc.Logger.Errorf("failed to update user; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return fmt.Errorf("failed to update user ; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	return nil
