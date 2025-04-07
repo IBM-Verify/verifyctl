@@ -1,6 +1,7 @@
 package directory
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -144,47 +145,47 @@ func NewUserClient() *UserClient {
 	}
 }
 
-func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, user *User) (string, error) {
+func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, user *openapi.UserV2) (string, error) {
 	vc := config.GetVerifyContext(ctx)
-	defaultErr := fmt.Errorf("unable to create user.")
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiUsers))
-	headers := http.Header{
-		"Accept":                           []string{"application/scim+json"},
-		"Content-Type":                     []string{"application/scim+json"},
-		"usershouldnotneedtoresetpassword": []string{"false"},
-		"Authorization":                    []string{"Bearer " + auth.Token},
-	}
-
-	b, err := json.Marshal(user)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	defaultErr := fmt.Errorf("unable to create user")
+	body, err := json.Marshal(user)
 	if err != nil {
 		vc.Logger.Errorf("Unable to marshal user data; err=%v", err)
 		return "", defaultErr
 	}
-
-	response, err := c.client.Post(ctx, u, headers, b)
+	var usershouldnotneedtoresetpassword openapi.CreateUserParamsUsershouldnotneedtoresetpassword = "false"
+	params := &openapi.CreateUserParams{
+		Usershouldnotneedtoresetpassword: &usershouldnotneedtoresetpassword,
+	}
+	resp, err := client.CreateUserWithBodyWithResponse(ctx, params, "application/scim+json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/scim+json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
 	if err != nil {
 		vc.Logger.Errorf("Unable to create user; err=%v", err)
 		return "", defaultErr
 	}
 
-	if response.StatusCode != http.StatusCreated {
-		if err := module.HandleCommonErrors(ctx, response, "unable to create user"); err != nil {
-			vc.Logger.Errorf("unable to create the user; err=%s", err.Error())
-			return "", fmt.Errorf("unable to create the user; err=%s", err.Error())
-		}
+	if resp.StatusCode() != http.StatusCreated {
+		// if err := module.HandleCommonErrors(ctx, resp, "unable to create user"); err != nil {
+		// 	vc.Logger.Errorf("unable to create the user; err=%s", err.Error())
+		// 	return "", fmt.Errorf("unable to create the user; err=%s", err.Error())
+		// }
 
-		vc.Logger.Errorf("unable to create the user; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return "", fmt.Errorf("unable to create the user; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to create the user; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return "", fmt.Errorf("unable to create the user; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	m := map[string]interface{}{}
-	if err := json.Unmarshal(response.Body, &m); err != nil {
-		return "", fmt.Errorf("Failed to parse response")
+	if err := json.Unmarshal(resp.Body, &m); err != nil {
+		return "", fmt.Errorf("failed to parse response")
 	}
 
 	id := m["id"].(string)
-	return fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiUsers, id), nil
+	return fmt.Sprintf("%s/%s", resp.HTTPResponse.Request.URL.String(), id), nil
 }
 
 func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userName string) (*openapi.UserResponseV2, string, error) {

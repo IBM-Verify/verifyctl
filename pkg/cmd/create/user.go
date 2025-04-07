@@ -10,6 +10,7 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/directory"
+	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -145,7 +146,7 @@ func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	vc := config.GetVerifyContext(ctx)
 
 	// unmarshal to user
-	user := &directory.User{}
+	user := &openapi.UserV2{}
 	if err := json.Unmarshal(data, &user); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the user; err=%v", err)
 		return err
@@ -166,7 +167,7 @@ func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, auth *config.Aut
 	vc := config.GetVerifyContext(ctx)
 
 	// unmarshal to user
-	user := &directory.User{}
+	user := &openapi.UserV2{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal the data map; err=%v", err)
