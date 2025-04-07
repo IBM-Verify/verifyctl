@@ -9,7 +9,6 @@ import (
 	"net/url"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
@@ -344,24 +343,23 @@ func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, us
 }
 
 func (c *UserClient) getUserId(ctx context.Context, auth *config.AuthConfig, name string) (string, error) {
-	vc := config.GetVerifyContext(ctx)
-	headers := http.Header{
-		"Accept":        []string{"application/scim+json"},
-		"Authorization": []string{"Bearer " + auth.Token},
+	// vc := config.GetVerifyContext(ctx)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	filter := fmt.Sprintf(`userName eq "%s"`, name)
+	params := &openapi.GetUsersParams{
+		Filter: &filter,
 	}
+	response, _ := client.GetUsersWithResponse(ctx, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/scim+json")
+		req.Header.Set("Authorization", "Bearer "+auth.Token)
+		return nil
+	})
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiUsers))
-	q := u.Query()
-	q.Set("filter", fmt.Sprintf(`userName eq "%s"`, name))
-	u.RawQuery = q.Encode()
-
-	response, _ := c.client.Get(ctx, u, headers)
-
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get User"); err != nil {
-			vc.Logger.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
-			return "", fmt.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
-		}
+	if response.StatusCode() != http.StatusOK {
+		// if err := module.HandleCommonErrors(ctx, response, "unable to get User"); err != nil {
+		// 	vc.Logger.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
+		// 	return "", fmt.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
+		// }
 	}
 
 	var data map[string]interface{}
