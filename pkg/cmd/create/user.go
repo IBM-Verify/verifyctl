@@ -111,7 +111,7 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "User",
 			APIVersion: "2.0",
-			Data:       &directory.User{},
+			Data:       &openapi.UserResponseV2{},
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())

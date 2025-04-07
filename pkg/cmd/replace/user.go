@@ -10,6 +10,7 @@ import (
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/directory"
+	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -110,8 +111,8 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "User",
 			APIVersion: "2.0",
-			Data: &directory.User{
-				Id:       "<id>",
+			Data: &openapi.UserResponseV2{
+				ID:       "<id>",
 				UserName: "<name>",
 			},
 		}

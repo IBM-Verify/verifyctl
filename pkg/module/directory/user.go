@@ -12,106 +12,8 @@ import (
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
 
-const (
-	apiUsers = "v2.0/Users"
-)
-
 type UserClient struct {
 	client xhttp.Clientx
-}
-
-type UserListResponse struct {
-	TotalResults int      `json:"totalResults" yaml:"totalResults"`
-	Schemas      []string `json:"schemas" yaml:"schemas"`
-	Users        []User   `json:"Resources" yaml:"Resources"`
-}
-
-type User struct {
-	Id                string          `json:"id,omitempty" yaml:"id,omitempty"`
-	UserName          string          `json:"userName,omitempty" yaml:"userName,omitempty"`
-	ExternalID        string          `json:"externalId,omitempty" yaml:"externalId,omitempty"`
-	Title             string          `json:"title,omitempty" yaml:"title,omitempty"`
-	Password          string          `json:"password,omitempty" yaml:"password,omitempty"`
-	DisplayName       string          `json:"displayName,omitempty" yaml:"displayName,omitempty"`
-	PreferredLanguage string          `json:"preferredLanguage,omitempty" yaml:"preferredLanguage,omitempty"`
-	Active            bool            `json:"active" yaml:"active"`
-	Emails            []Email         `json:"emails,omitempty" yaml:"emails,omitempty"`
-	Addresses         []Address       `json:"addresses,omitempty" yaml:"addresses,omitempty"`
-	PhoneNumbers      []PhoneNumber   `json:"phoneNumbers,omitempty" yaml:"phoneNumbers,omitempty"`
-	Meta              Meta            `json:"meta,omitempty" yaml:"meta,omitempty"`
-	Name              Name            `json:"name" yaml:"name"`
-	Schemas           []string        `json:"schemas" yaml:"schemas"`
-	IBMUserExtension  IBMUser         `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:User,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:User,omitempty"`
-	EnterpriseUser    *EnterpriseUser `json:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User,omitempty"`
-	Notification      Notification    `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty"`
-	Groups            []Group         `json:"groups,omitempty" yaml:"groups,omitempty"`
-}
-
-type Name struct {
-	Formatted  string `json:"formatted,omitempty" yaml:"formatted,omitempty"`
-	FamilyName string `json:"familyName,omitempty" yaml:"familyName,omitempty"`
-	GivenName  string `json:"givenName,omitempty" yaml:"givenName,omitempty"`
-	MiddleName string `json:"middleName,omitempty" yaml:"middleName,omitempty"`
-}
-
-type Email struct {
-	Type  string `json:"type" yaml:"type"`
-	Value string `json:"value" yaml:"value"`
-}
-
-type Address struct {
-	StreetAddress string `json:"streetAddress,omitempty" yaml:"streetAddress,omitempty"`
-	Locality      string `json:"locality,omitempty" yaml:"locality,omitempty"`
-	Region        string `json:"region,omitempty" yaml:"region,omitempty"`
-	Country       string `json:"country,omitempty" yaml:"country,omitempty"`
-	PostalCode    string `json:"postalCode,omitempty" yaml:"postalCode,omitempty"`
-	Type          string `json:"type,omitempty" yaml:"type,omitempty"`
-	Formatted     string `json:"formatted,omitempty" yaml:"formatted,omitempty"`
-	Primary       bool   `json:"primary,omitempty" yaml:"primary,omitempty"`
-}
-
-type PhoneNumber struct {
-	Type  string `json:"type,omitempty" yaml:"type,omitempty"`
-	Value string `json:"value,omitempty" yaml:"value,omitempty"`
-}
-
-type Meta struct {
-	Created      string `json:"created,omitempty" yaml:"created,omitempty"`
-	LastModified string `json:"lastModified,omitempty" yaml:"lastModified,omitempty"`
-	ResourceType string `json:"resourceType,omitempty" yaml:"resourceType,omitempty"`
-}
-
-type IBMUser struct {
-	LastLoginType    string            `json:"lastLoginType,omitempty" yaml:"lastLoginType,omitempty"`
-	Realm            string            `json:"realm,omitempty" yaml:"realm,omitempty"`
-	UserCategory     string            `json:"userCategory,omitempty" yaml:"userCategory,omitempty"`
-	EmailVerified    string            `json:"emailVerified,omitempty" yaml:"emailVerified,omitempty"`
-	Delegate         string            `json:"delegate,omitempty" yaml:"delegate,omitempty"`
-	CustomAttributes []CustomAttribute `json:"customAttributes,omitempty" yaml:"customAttributes,omitempty"`
-	AccountExpires   string            `json:"accountExpires,omitempty" yaml:"accountExpires,omitempty"`
-}
-
-type CustomAttribute struct {
-	Name   string   `json:"name,omitempty" yaml:"name,omitempty"`
-	Values []string `json:"values,omitempty" yaml:"values,omitempty"`
-}
-
-type EnterpriseUser struct {
-	Department     string  `json:"department,omitempty" yaml:"department,omitempty"`
-	EmployeeNumber string  `json:"employeeNumber,omitempty" yaml:"employeeNumber,omitempty"`
-	Manager        Manager `json:"manager,omitempty" yaml:"manager,omitempty"`
-}
-
-type Manager struct {
-	Value       string `json:"value,omitempty" yaml:"value,omitempty"`
-	Ref         string `json:"$ref,omitempty" yaml:"$ref,omitempty"`
-	DisplayName string `json:"displayName,omitempty" yaml:"displayName,omitempty"`
-}
-
-type Notification struct {
-	NotifyType     string `json:"notifyType" yaml:"notifyType"`
-	NotifyPassword bool   `json:"notifyPassword" yaml:"notifyPassword"`
-	NotifyManager  bool   `json:"notifyManager" yaml:"notifyManager"`
 }
 
 type UserPatchRequest struct {
@@ -205,7 +107,7 @@ func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userN
 	return User, resp.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*UserListResponse, string, error) {
+func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*openapi.GetUsersResponseV2, string, error) {
 
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
@@ -239,7 +141,7 @@ func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort
 		return nil, "", fmt.Errorf("unable to get the Users")
 	}
 
-	UsersResponse := &UserListResponse{}
+	UsersResponse := &openapi.GetUsersResponseV2{}
 	if err = json.Unmarshal(resp.Body, &UsersResponse); err != nil {
 		vc.Logger.Errorf("unable to get the Users; err=%s, body=%s", err, string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Users")

@@ -163,12 +163,12 @@ func (o *usersOptions) handleUserList(cmd *cobra.Command, auth *config.AuthConfi
 	}
 
 	items := []*resource.ResourceObject{}
-	for _, usr := range usrs.Users {
+	for _, usr := range *usrs.Resources {
 		items = append(items, &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "User",
 			APIVersion: "2.0",
 			Metadata: &resource.ResourceObjectMetadata{
-				UID:  usr.Id,
+				UID:  usr.ID,
 				Name: usr.UserName,
 			},
 			Data: usr,
@@ -180,7 +180,7 @@ func (o *usersOptions) handleUserList(cmd *cobra.Command, auth *config.AuthConfi
 		APIVersion: "2.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: usrs.TotalResults,
+			Total: int(usrs.TotalResults),
 		},
 		Items: items,
 	}
