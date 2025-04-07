@@ -1883,6 +1883,674 @@
                 },
                 "x-publicAPI": "true"
             }
+        },
+        "/v2.0/Users": {
+            "get": {
+                "tags": [
+                    "Users Management Version 2.0"
+                ],
+                "summary": "Retrieves a list of users that belong to a specified tenant and match the search filter criteria.",
+                "description": "Entitlement required: readUserGroups (Read users and groups), or manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or readUsers (Read all users but not group memberships), or readUsersGroupMembership (Read all users and group memberships), or readUsersStandardGroupMembership (Read all users and standard group memberships), or manageUsers (Manage all users), or manageUsersInStandardGroups (Manage users in standard groups).<br>Note: You only need one entitlement, but you can have more than one.<br><br>Searching, sorting, paging, and filtering are supported. A maximum of 2500 records are returned for a search query.<br><br>To improve performance, specify the list of the attributes that you want returned by using the attributes query parameter.<br><br>Search operators supported:<table><tr><td>eq</td><td>The attribute and operator values must be identical for a match.</td></tr><tr><td>ne</td><td>The attribute and operator values are not identical.</td></tr><tr><td>co</td><td>The entire operator value must be a substring of the attribute value for a match.  For performance reasons, use sw or ew operators instead of co.</td></tr><tr><td>sw</td><td>The entire operator value must be a substring of the attribute value, starting at the beginning of the attribute value.</td></tr><tr><td>ew</td><td>The entire operator value must be a substring of the attribute value, matching at the end of the attribute value.</td></tr><tr><td>pr</td><td>If the attribute has a value, there is a match.</td></tr><tr><td>npr</td><td>If the attribute does not have a value, there is a match.</td></tr><tr><td>gt</td><td>If the attribute value is greater than the operator value, there is a match.  The actual comparison is dependent on the attribute type.</td></tr><tr><td>ge</td><td>If the attribute value is greater than or equal to the operator value, there is a match.  The actual comparison is dependent on the attribute type.</td></tr><tr><td>lt</td><td>If the attribute value is less than the operator value, there is a match.  The actual comparison is dependent on the attribute type.</td></tr><tr><td>le</td><td>If the attribute value is less than or equal to the operator value, there is a match.  The actual comparison is dependent on the attribute type.</td></tr></table><br><br>Example search queries:<table><tr><td>filter=userName eq \"bob\"&attributes=userName</td></tr><tr><td>filter=name.familyName eq \"Marley\"&attributes=name</td></tr><tr><td>filter=meta.created ge \"2011-09-20T00:00:00Z\" and meta.created le \"2021-09-21T00:00:00Z\"&attributes=userName,meta.created,emails&sortBy=userName&count=2500</td></tr><tr><td>filter=urn:ietf:params:scim:schemas:extension:ibm:2.0:User:customAttributes.favoriteColor eq \"blue\"&attributes=userName,urn:ietf:params:scim:schemas:extension:ibm:2.0:User:customAttributes.favoriteColor&count=2500</td></tr><tr><td>filter=urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department eq \"2A\"&attributes=userName,emails,urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager</td></tr><tr><td>filter=not (emails ew \"@example.com\")&attributes=userName,emails</td></tr><tr><td>filter=emails ew \"@example.com\" and (phoneNumbers eq \"15551212\" or phoneNumbers eq \"1(555)1212\")&attributes=userName,phoneNumbers,emails</td></tr><tr><td>Note: There are some special syntax for \"phoneNumbers\" to allow filtering using the type, such as GET /v2.0/Users?filter=phoneNumbers.work eq \"{value}\"&attributes=phoneNumbers.work</td></tr></table><br><br>For tenants that support large groups, additional feature are available.  They are:<table><tr><td>- Search for users in a specific group by using the \"memberOf\" SCIM attribute.  For example.  GET /v2.0/Users?filter=userName sw \"patel\" and memberOf eq \"{group ID}\"</td></tr><tr><td>- Restrict HelpDesk administrators to manage specific groups of users by using Admin Roles.</td></tr></table><br>To check whether the tenant supports large groups, run the GET /v2.0/SCIM/capabilities API.",
+                "operationId": "getUsers",
+                "parameters": [
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "The SCIM compliant search filter. For example, userName eq \"john\". The filter should be no longer than 4096 characters in length.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "attributes",
+                        "in": "query",
+                        "description": "The list of attributes that are passed in as comma-separated values that are used when passing the result back to the caller. To improve performance, specify in the list only the attributes that you want returned. If no list is provided, the default action is to return all attributes.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "count",
+                        "in": "query",
+                        "description": "Specifies the maximum number of query results per page. A negative value is interpreted as 0.  A value of 0 indicates that no resource results are to be returned, except for totalResults.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "startIndex",
+                        "in": "query",
+                        "description": "A 1-based index that indicates the start index that is used when the number of users is returned. A value less than 1 is interpreted as 1.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sortBy",
+                        "in": "query",
+                        "description": "Sort the results by the specified criteria when the users are returned.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sortOrder",
+                        "in": "query",
+                        "description": "The sorting order when the number of users is returned.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "ascending",
+                                "descending"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "hashed",
+                        "in": "query",
+                        "description": "The comma-separated list of attributes whose values are to be hashed.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "fullText",
+                        "in": "query",
+                        "description": "A string that is searched for in the user records.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "includeGroups",
+                        "in": "query",
+                        "description": "Include group information in the response.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The operation was successful.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetUsersResponseV2"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "529": {
+                        "description": "The request timed out.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "post": {
+                "tags": [
+                    "Users Management Version 2.0"
+                ],
+                "summary": "Creates a user in Cloud Directory.",
+                "description": "Entitlement required: manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or manageUsers (Manage all users), or manageUsersInStandardGroups (Manage users in standard groups). <br>Note: You only need one entitlement, but you can have more than one.<br><br>The users are created for a specific tenant that is specified in the request.  Users are either created to use Cloud Directory as an identity source or as a just-in-time provisioning sequence when the user is authenticated at a remote identity source such as an enterprise authentication.<br><br>By default, an email is sent with the password to the user that was created, unless its a federated user. Federated users do not get an email notification. The email templates for branding are at \"notifications/user_management/profile/{locale}/account_created_email.xml\" and \"notifications/user_management/profile/{locale}/account_created_email_with_no_password.xml\". Pass in the themeId query parameter to brand the email templates for notifications. To turn off email notifications, send the notifications option  \"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification\": {\"notifyType\":\"NONE\"} in the payload.<br><br>If custom password intelligence warning is enabled and a password is provided that is listed in it, the 201 response includes the header 'isv-dictionary-policy' with the value: 'WARNLOCAL'.<br>If X-Force password intelligence warning is enabled and a password is provided that is listed in it, the 201 response includes the header 'isv-dictionary-policy' with the value: 'WARNGLOBAL'.<br>If custom password intelligence prevention is enabled and a password is provided that is listed in it, the 400 response can include the header 'isv-dictionary-policy' with the value: 'ENFORCELOCAL'. The corresponding error status is 'PWD_IN_DICTIONARY'.<br>If X-Force password intelligence prevention is enabled and a password is provided that is listed in it, the 400 response can include the header 'isv-dictionary-policy' with the value: 'ENFORCEGLOBAL'. The corresponding error status is 'PWD_IN_GLOBAL_DICTIONARY'.",
+                "operationId": "createUser",
+                "parameters": [
+                    {
+                        "name": "hashed",
+                        "in": "query",
+                        "description": "The comma-separated list of attributes whose values are to be hashed.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "themeId",
+                        "in": "query",
+                        "description": "The identifier of the theme that you want to apply.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "usershouldnotneedtoresetpassword",
+                        "in": "header",
+                        "description": "If set to true, the user is not required to change the password after login.<br>Only honored when the password element of UserV2 is set.",
+                        "schema": {
+                            "type": "string",
+                            "default": "false",
+                            "enum": [
+                                "true",
+                                "false"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The user object that contains the attributes for the user that is to be created.",
+                    "content": {
+                        "application/scim+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserV2"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponseV2"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The user exists.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            }
+        },
+        "/v2.0/Users/{id}": {
+            "get": {
+                "tags": [
+                    "Users Management Version 2.0"
+                ],
+                "summary": "Retrieves the details of a user in Cloud Directory for a tenant.",
+                "description": "Entitlement required: readUserGroups (Read users and groups), or manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or readUsers (Read all users but not group memberships), or readUsersGroupMembership (Read all users and group memberships), or readUsersStandardGroupMembership (Read all users and standard group memberships), or manageUsers (Manage all users), or manageUsersInStandardGroups (Manage users in standard groups).<br>Note: You only need one entitlement, but you can have more than one.<br><br>To improve performance, specify the list of the attributes that you want returned by using the attributes query parameter.<br><br>On Success, the returned response includes the user and group membership details. The group membership that is returned includes the group ID and displayName attributes.<br><br>The memberAttributes, memberCount, and memberStartIndex query parameters are currently ignored.",
+                "operationId": "getUser_0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The identifier of the user whose details are being retrieved.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "attributes",
+                        "in": "query",
+                        "description": "The list of attributes that are passed in as comma-separated values that are used when passing the result back to the caller. To improve performance, specify in the list only the attributes that you want returned. If no list is provided, the default action is to return all attributes.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "memberAttributes",
+                        "in": "query",
+                        "description": "The list of group attributes that are passed in as comma separated values that are used when passing the result back to the caller. For example, the ID and displayName attributes.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "memberCount",
+                        "in": "query",
+                        "description": "Specifies the maximum number of query results per page. A negative value is interpreted as 0.  A value of 0 indicates that no member resource results are to be returned, except for totalResults.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "memberStartIndex",
+                        "in": "query",
+                        "description": "The starting index of the search.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The operation was successful.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponseV2"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "529": {
+                        "description": "The request timed out.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "put": {
+                "tags": [
+                    "Users Management Version 2.0"
+                ],
+                "summary": "Replaces the user's attributes in Cloud Directory.",
+                "description": "Entitlement required: manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or updateAnyUser (Update any user), or manageUsers (Manage all users), or manageUsersInStandardGroups (Manage users in standard groups).<br>Note: You only need one entitlement, but you can have more than one.<br><br> On Success, the return response contains the user and group membership details. The HTTP PUT method is used to replace the resource's attributes.  For example, clients that previously retrieved the entire resource and revised it, can replace the resource by using an HTTP PUT.<br><br>Only certain attributes for federated users can be modified unless you have the manageAllUserGroups entitlement.  The user's groups cannot be modified and are ignored in the payload. Group membership is managed by using the PUT /v2.0/Groups/{id} and PATCH /v2.0/Groups/{id} API.<br><br>By default, an email is sent to regular users that includes the changed attributes. Federated users do not get an email notification. The email template for branding is at \"notifications/user_management/profile/{locale}/user_profile_modified_email.xml\". Pass in the themeId query parameter to brand the email template for notifications. To turn off email notifications, send the notifications option  \"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification\": {\"notifyType\":\"NONE\"} in the payload.<br><br>If custom password intelligence warning is enabled and a password is provided that is listed in it, the 200 response includes the header 'isv-dictionary-policy' with the value: 'WARNLOCAL'.<br>If X-Force password intelligence warning is enabled and a password is provided that is listed in it, the 200 response includes the header 'isv-dictionary-policy' with the value: 'WARNGLOBAL'.<br>If custom password intelligence prevention is enabled and a password is provided that is listed in it, the 400 response can include the header 'isv-dictionary-policy' with the value: 'ENFORCELOCAL'. The corresponding error status is 'PWD_IN_DICTIONARY'.<br>If X-Force password intelligence prevention is enabled and a password is provided that is listed in it, the 400 response can include the header 'isv-dictionary-policy' with the value: 'ENFORCEGLOBAL'. The corresponding error status is 'PWD_IN_GLOBAL_DICTIONARY'.",
+                "operationId": "putUser_0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "hashed",
+                        "in": "query",
+                        "description": "The comma separated list of attributes whose values are to be hashed.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "themeId",
+                        "in": "query",
+                        "description": "The identifier of the theme that you want to apply.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "usershouldnotneedtoresetpassword",
+                        "in": "header",
+                        "description": "If set to true for a password change, the user is not required to change the password after login.<br>Only honored when the password element of UserV2 is set.",
+                        "schema": {
+                            "type": "string",
+                            "default": "false",
+                            "enum": [
+                                "true",
+                                "false"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The user object that contains attributes for the user that is to be modified.",
+                    "content": {
+                        "application/scim+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserV2"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The operation was successful.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponseV2"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "A conflict exists.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            },
+            "delete": {
+                "tags": [
+                    "Users Management Version 2.0"
+                ],
+                "summary": "Deletes a user from a specified tenant in Cloud Directory.",
+                "description": "Entitlement required: manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or manageUsers (Manage all users), or manageUsersInStandardGroups (Manage users in standard groups). <br>Note: You only need one entitlement, but you can have more than one.<br><br>By default, an email is sent to regular users that the account was deleted. Federated users do not get an email notification. The email template for branding is at \"notifications/user_management/profile/{locale}/account_deleted_email.xml\". Pass in the themeId query parameter to brand the email template for notifications.<br><br>To turn off email notifications, send notifyType=NONE as a query parameter.",
+                "operationId": "deleteUser_0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The identifier of the user that is being deleted.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "notifyType",
+                        "in": "query",
+                        "description": "An optional query parameter that denotes the notification type.  If not present, the EMAIL notification is used. Specify NONE if no notification to the user that their account has been deleted is required.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "EMAIL",
+                                "NONE"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "themeId",
+                        "in": "query",
+                        "description": "The identifier of the theme that you want to apply.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "patch": {
+                "tags": [
+                    "Users Management Version 2.0"
+                ],
+                "summary": "Modify a user's attributes in Cloud Directory.  It can be used to update one or more attributes.",
+                "description": "Entitlement required: manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or updateAnyUser (Update any user), or manageUsers (Manage all users), or manageUsersInStandardGroups (Manage users in standard groups). <br>Note: You only need one entitlement, but you can have more than one.<br><br>Only certain attributes for federated users can be modified unless you have the manageAllUserGroups entitlement.  The user's groups cannot be modified and are ignored in the payload. Group membership is managed by using the PUT /v2.0/Groups/{id} and PATCH /v2.0/Groups/{id} API.<br><br>By default, an email is sent to regular users that includes the changed attributes. Federated users do not get an email notification. The email template for branding is at \"notifications/user_management/profile/{locale}/user_profile_modified_email.xml\". Pass in the themeId query parameter to brand the email template for notifications. <br><br>The following is an example of a patch request that adds a title, replaces the formatted name, and removes any custom attributes which name contains \"customA\" from the user. Notice also that the example shows how you can specify the notifyType if you want to.<br>NotifyType is an optional attribute that denotes the notification type.  If not present, the EMAIL notification is used.Specify NONE if no notification is required.<br><br> `{ \"schemas\":[\"urn:ietf:params:scim:api:messages:2.0:PatchOp\"],\"Operations\":  [    {      \"op\":\"add\",      \"path\":\"title\",      \"value\":\"Vice President\"    },    {      \"op\":\"replace\",      \"path\":\"name.formatted\",      \"value\":\"James Smith-Miller\"    },    {      \"op\":\"remove\",      \"path\":\"urn:ietf:params:scim:schemas:extension:ibm:2.0:User:customAttributes[name co \\\"customA\\\"]\"    },    {      \"op\": \"add\",      \"path\": \"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification:notifyType\",      \"value\": \"EMAIL\"    }  ]}` <br><br>If custom password intelligence warning is enabled and a password is provided that is listed in it, the 204 response includes the header 'isv-dictionary-policy' with the value: 'WARNLOCAL'.<br>If X-Force password intelligence warning is enabled and a password is provided that is listed in it, the 204 response includes the header 'isv-dictionary-policy' with the value: 'WARNGLOBAL'.<br>If custom password intelligence prevention is enabled and a password is provided that is listed in it, the 400 response can include the header 'isv-dictionary-policy' with the value: 'ENFORCELOCAL'. The corresponding error status is 'PWD_IN_DICTIONARY'.<br>If X-Force password intelligence prevention is enabled and a password is provided that is listed in it, the 400 response can include the header 'isv-dictionary-policy' with the value: 'ENFORCEGLOBAL'. The corresponding error status is 'PWD_IN_GLOBAL_DICTIONARY'.",
+                "operationId": "patchUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the user to be patched.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "themeId",
+                        "in": "query",
+                        "description": "The identifier of the theme that you want to apply.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "usershouldnotneedtoresetpassword",
+                        "in": "header",
+                        "description": "If set to true for a password change, the user is not required to change the password after login.",
+                        "schema": {
+                            "type": "string",
+                            "default": "false",
+                            "enum": [
+                                "true",
+                                "false"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The body for the user's patch operation.",
+                    "content": {
+                        "application/scim+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchBody"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "A conflict exists.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            }
         }
     },
     "components": {
