@@ -111,7 +111,7 @@ func (o *groupOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "Group",
 			APIVersion: "2.0",
-			Data:       &directory.Group{},
+			Data:       &openapi.GroupResponseV2{},
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())

@@ -10,84 +10,17 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
-	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
 
-const (
-	apiGroups = "v2.0/Groups"
-)
-
-type GroupClient struct {
-	client xhttp.Clientx
-}
-
-type GroupListResponse struct {
-	TotalResults int      `json:"totalResults" yaml:"totalResults"`
-	Schemas      []string `json:"schemas" yaml:"schemas"`
-	Groups       []Group  `json:"Resources" yaml:"Resources"`
-}
-
-type Group struct {
-	Schemas      []string          `json:"schemas" yaml:"schemas"`
-	Id           string            `json:"id,omitempty" yaml:"id,omitempty"`
-	ExternalId   string            `json:"externalId,omitempty" yaml:"externalId,omitempty"`
-	DisplayName  string            `json:"displayName" yaml:"displayName"`
-	Visible      bool              `json:"visible" yaml:"visible"`
-	Members      []Member          `json:"members,omitempty" yaml:"members,omitempty"`
-	IBMGROUP     IBMGROUPExtension `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Group,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Group,omitempty"`
-	Notification GroupNotification `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty" yaml:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty"`
-	Meta         GroupMeta         `json:"meta,omitempty" yaml:"meta,omitempty"`
-}
-
-type Member struct {
-	Type    string `json:"type,omitempty" yaml:"type,omitempty"`
-	Value   string `json:"value" yaml:"value"`
-	Display string `json:"display,omitempty" yaml:"display,omitempty"`
-	Ref     string `json:"$ref,omitempty" yaml:"$ref,omitempty"`
-}
-
-type IBMGROUPExtension struct {
-	Description string  `json:"description,omitempty" yaml:"description,omitempty"`
-	Owners      []Owner `json:"owners,omitempty" yaml:"owners,omitempty"`
-}
-
-type Owner struct {
-	Value       string `json:"value" yaml:"value"`
-	Ref         string `json:"$ref,omitempty" yaml:"$ref,omitempty"`
-	DisplayName string `json:"displayName,omitempty" yaml:"displayName,omitempty"`
-}
-
-type GroupNotification struct {
-	NotifyType     string `json:"notifyType" yaml:"notifyType"`
-	NotifyPassword bool   `json:"notifyPassword" yaml:"notifyPassword"`
-	NotifyManager  bool   `json:"notifyManager" yaml:"notifyManager"`
-}
-
-type GroupMeta struct {
-	Created      string `json:"created,omitempty" yaml:"created,omitempty"`
-	LastModified string `json:"lastModified,omitempty" yaml:"lastModified,omitempty"`
-}
+type GroupClient struct{}
 
 type GroupPatchRequest struct {
 	GroupName        string            `json:"displayName" yaml:"displayName"`
 	SCIMPatchRequest openapi.PatchBody `json:"scimPatch" yaml:"scimPatch"`
 }
 
-type GroupSCIMPatchRequest struct {
-	Schemas    []string           `json:"schemas" yaml:"schemas"`
-	Operations []GroupSCIMOpEntry `json:"Operations" yaml:"Operations"`
-}
-
-type GroupSCIMOpEntry struct {
-	Op    string      `json:"op" yaml:"op"`
-	Path  string      `json:"path,omitempty" yaml:"path,omitempty"`
-	Value interface{} `json:"value,omitempty" yaml:"value,omitempty"`
-}
-
 func NewGroupClient() *GroupClient {
-	return &GroupClient{
-		client: xhttp.NewDefaultClient(),
-	}
+	return &GroupClient{}
 }
 
 func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, groupName string) (*openapi.GroupResponseV2, string, error) {
@@ -210,7 +143,7 @@ func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, 
 
 	if resp.StatusCode() != http.StatusCreated {
 		vc.Logger.Errorf("Failed to create group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return "", fmt.Errorf("Failed to create group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return "", fmt.Errorf("failed to create group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	m := map[string]interface{}{}
