@@ -10,7 +10,6 @@ import (
 	"regexp"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
@@ -226,32 +225,30 @@ func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, 
 
 func (c *GroupClient) DeleteGroup(ctx context.Context, auth *config.AuthConfig, groupName string) error {
 	vc := config.GetVerifyContext(ctx)
-
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getGroupId(ctx, auth, groupName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the group ID; err=%s", err.Error())
 		return fmt.Errorf("unable to get the group ID; err=%s", err.Error())
 	}
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiGroups, id))
-	headers := http.Header{
-		"Content-Type":  []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	response, err := c.client.Delete(ctx, u, headers)
+	resp, err := client.DeleteGroupWithResponse(ctx, id, &openapi.DeleteGroupParams{}, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to delete the Group; err=%s", err.Error())
 		return fmt.Errorf("unable to delete the Group; err=%s", err.Error())
 	}
 
-	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, response, "unable to delete Group"); err != nil {
-			vc.Logger.Errorf("unable to delete the Group; err=%s", err.Error())
-			return fmt.Errorf("unable to delete the Group; err=%s", err.Error())
-		}
+	if resp.StatusCode() != http.StatusNoContent {
+		// if err := module.HandleCommonErrors(ctx, resp, "unable to delete Group"); err != nil {
+		// 	vc.Logger.Errorf("unable to delete the Group; err=%s", err.Error())
+		// 	return fmt.Errorf("unable to delete the Group; err=%s", err.Error())
+		// }
 
-		vc.Logger.Errorf("unable to delete the Group; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to delete the Group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return fmt.Errorf("unable to delete the Group")
 	}
 
@@ -328,28 +325,27 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 }
 
 func (c *GroupClient) getGroupId(ctx context.Context, auth *config.AuthConfig, name string) (string, error) {
-	vc := config.GetVerifyContext(ctx)
-
-	headers := http.Header{
-		"Accept":        []string{"application/scim+json"},
-		"Authorization": []string{"Bearer " + auth.Token},
+	// vc := config.GetVerifyContext(ctx)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	filter := fmt.Sprintf(`displayName eq "%s"`, name)
+	params := &openapi.GetGroupsParams{
+		Filter: &filter,
 	}
+	resp, _ := client.GetGroupsWithResponse(ctx, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/scim+json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiGroups))
-	q := u.Query()
-	q.Set("filter", fmt.Sprintf(`displayName eq "%s"`, name))
-	u.RawQuery = q.Encode()
-
-	response, _ := c.client.Get(ctx, u, headers)
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get Group"); err != nil {
-			vc.Logger.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
-			return "", fmt.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
-		}
+	if resp.StatusCode() != http.StatusOK {
+		// if err := module.HandleCommonErrors(ctx, resp, "unable to get Group"); err != nil {
+		// 	vc.Logger.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
+		// 	return "", fmt.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
+		// }
 	}
 
 	var data map[string]interface{}
-	if err := json.Unmarshal(response.Body, &data); err != nil {
+	if err := json.Unmarshal(resp.Body, &data); err != nil {
 		return "", fmt.Errorf("failed to parse response: %w", err)
 	}
 
