@@ -17420,7 +17420,8 @@
             },
             "GetGroupsResponseV2": {
                 "required": [
-                    "schemas"
+                    "schemas",
+                    "totalResults"
                 ],
                 "type": "object",
                 "properties": {
@@ -17437,6 +17438,11 @@
                         "items": {
                             "$ref": "#/components/schemas/GroupResponseV2"
                         }
+                    },
+                    "totalResults": {
+                        "type": "integer",
+                        "description": "The total number of groups that were found that match the specified search criteria for the specified tenant.",
+                        "format": "int32"
                     }
                 }
             },

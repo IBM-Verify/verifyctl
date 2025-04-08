@@ -1048,6 +1048,9 @@ type GetGroupsResponseV2 struct {
 
 	// Schemas An array of strings that contain the URIs that indicate the namespaces of the SCIM schemas that define the attributes in the current JSON structure. The schema "urn:ietf:params:scim:api:messages:2.0:ListResponse" is returned in the response.
 	Schemas []string `json:"schemas"`
+
+	// TotalResults The total number of groups that were found that match the specified search criteria for the specified tenant.
+	TotalResults int32 `json:"totalResults"`
 }
 
 // GetUsersResponseV2 defines model for GetUsersResponseV2.

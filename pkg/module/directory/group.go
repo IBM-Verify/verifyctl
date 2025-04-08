@@ -128,54 +128,47 @@ func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, gro
 	return Group, resp.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, sort string, count string) (
-	*GroupListResponse, string, error) {
+func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*openapi.GetGroupsResponseV2, string, error) {
 
 	vc := config.GetVerifyContext(ctx)
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiGroups))
-	headers := http.Header{
-		"Accept":        []string{"application/scim+json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
-	q := u.Query()
-
+	params := &openapi.GetGroupsParams{}
 	if len(sort) > 0 {
-		q.Set("sortBy", sort)
+		params.SortBy = &sort
 	}
-
 	if len(count) > 0 {
-		q.Set("count", count)
+		params.Count = &count
 	}
 
-	if len(q) > 0 {
-		u.RawQuery = q.Encode()
-	}
-
-	response, err := c.client.Get(ctx, u, headers)
+	resp, err := client.GetGroupsWithResponse(ctx, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/scim+json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
 	if err != nil {
 		vc.Logger.Errorf("unable to get the Groups; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get Groups"); err != nil {
-			vc.Logger.Errorf("unable to get the Groups; err=%s", err.Error())
-			return nil, "", err
-		}
+	if resp.StatusCode() != http.StatusOK {
+		// if err := module.HandleCommonErrors(ctx, resp, "unable to get Groups"); err != nil {
+		// 	vc.Logger.Errorf("unable to get the Groups; err=%s", err.Error())
+		// 	return nil, "", err
+		// }
 
-		vc.Logger.Errorf("unable to get the Groups; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to get the Groups; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Groups")
 	}
 
-	GroupsResponse := &GroupListResponse{}
-	if err = json.Unmarshal(response.Body, &GroupsResponse); err != nil {
-		vc.Logger.Errorf("unable to get the Groups; err=%s, body=%s", err, string(response.Body))
+	GroupsResponse := &openapi.GetGroupsResponseV2{}
+	if err = json.Unmarshal(resp.Body, &GroupsResponse); err != nil {
+		vc.Logger.Errorf("unable to get the Groups; err=%s, body=%s", err, string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Groups")
 	}
 
-	return GroupsResponse, u.String(), nil
+	return GroupsResponse, resp.HTTPResponse.Request.URL.String(), nil
 }
 
 func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, group *Group) (string, error) {
