@@ -48,7 +48,10 @@ func (o *options) authenticate(cmd *cobra.Command, r *AuthResource) (*openapi.To
 		if err != nil {
 			fmt.Println(err)
 		} else {
-			json.Unmarshal(resp.Body, &tokenResponse)
+			err = json.Unmarshal(resp.Body, &tokenResponse)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
