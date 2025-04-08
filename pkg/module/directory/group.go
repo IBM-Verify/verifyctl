@@ -1,6 +1,7 @@
 package directory
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -171,56 +172,56 @@ func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, so
 	return GroupsResponse, resp.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, group *Group) (string, error) {
+func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, group *openapi.GroupResponseV2) (string, error) {
 	vc := config.GetVerifyContext(ctx)
-	client := NewUserClient()
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiGroups))
-	headers := http.Header{
-		"Accept":                            []string{"application/scim+json"},
-		"Content-Type":                      []string{"application/scim+json"},
-		"groupshouldnotneedtoresetpassword": []string{"false"},
-		"Authorization":                     []string{"Bearer " + auth.Token},
-	}
+	userClient := NewUserClient()
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
-	for i, m := range group.Members {
+	for i, m := range *group.Members {
 		// Get the username from the member's Value field.
 		username := m.Value
 		// Retrieve the actual user ID using the provided function.
-		userID, err := client.getUserId(ctx, auth, username)
+		userID, err := userClient.getUserId(ctx, auth, username)
 		if err != nil {
 			vc.Logger.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
 			return "", fmt.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
 		}
 
 		// Update the member's Value with the obtained user ID.
-		group.Members[i].Value = userID
+		(*group.Members)[i].Value = userID
 	}
 
-	b, err := json.Marshal(group)
+	body, err := json.Marshal(group)
 	if err != nil {
 		vc.Logger.Errorf("Unable to marshal group data; err=%v", err)
 		return "", err
 	}
 
-	response, err := c.client.Post(ctx, u, headers, b)
+	params := &openapi.CreateGroupParams{}
+	resp, err := client.CreateGroupWithBodyWithResponse(ctx, params, "application/scim+json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/scim+json")
+		req.Header.Set("groupshouldnotneedtoresetpassword", "false")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
 	if err != nil {
 		vc.Logger.Errorf("Unable to create group; err=%v", err)
 		return "", err
 	}
 
-	if response.StatusCode != http.StatusCreated {
-		vc.Logger.Errorf("Failed to create group; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return "", fmt.Errorf("Failed to create group; code=%d, body=%s", response.StatusCode, string(response.Body))
+	if resp.StatusCode() != http.StatusCreated {
+		vc.Logger.Errorf("Failed to create group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return "", fmt.Errorf("Failed to create group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	m := map[string]interface{}{}
-	if err := json.Unmarshal(response.Body, &m); err != nil {
-		return "", fmt.Errorf("Failed to parse response")
+	if err := json.Unmarshal(resp.Body, &m); err != nil {
+		return "", fmt.Errorf("failed to parse response")
 	}
 
 	id := m["id"].(string)
-	return fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiGroups, id), nil
+	return fmt.Sprintf("%s/%s", resp.HTTPResponse.Request.URL.String(), id), nil
 }
 
 func (c *GroupClient) DeleteGroup(ctx context.Context, auth *config.AuthConfig, groupName string) error {
