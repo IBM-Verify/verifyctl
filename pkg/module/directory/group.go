@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"regexp"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
@@ -70,8 +69,8 @@ type GroupMeta struct {
 }
 
 type GroupPatchRequest struct {
-	GroupName        string                `json:"displayName" yaml:"displayName"`
-	SCIMPatchRequest GroupSCIMPatchRequest `json:"scimPatch" yaml:"scimPatch"`
+	GroupName        string            `json:"displayName" yaml:"displayName"`
+	SCIMPatchRequest openapi.PatchBody `json:"scimPatch" yaml:"scimPatch"`
 }
 
 type GroupSCIMPatchRequest struct {
@@ -255,9 +254,10 @@ func (c *GroupClient) DeleteGroup(ctx context.Context, auth *config.AuthConfig, 
 	return nil
 }
 
-func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, groupName string, operations []GroupSCIMOpEntry) error {
+func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, groupName string, operations []openapi.PatchOperation0) error {
 	vc := config.GetVerifyContext(ctx)
-	client := NewUserClient()
+	userClient := NewUserClient()
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	groupID, err := c.getGroupId(ctx, auth, groupName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the group ID; err=%s", err.Error())
@@ -266,16 +266,16 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 
 	for i, op := range operations {
 		if op.Op == "add" && op.Path == "members" {
-			if values, ok := op.Value.([]interface{}); ok {
+			if values, ok := (*op.Value).([]interface{}); ok {
 				for j, v := range values {
 					if member, ok := v.(map[string]interface{}); ok {
 						if username, exists := member["value"].(string); exists {
-							userID, err := client.getUserId(ctx, auth, username)
+							userID, err := userClient.getUserId(ctx, auth, username)
 							if err != nil {
 								vc.Logger.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
 								return fmt.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
 							}
-							operations[i].Value.([]interface{})[j].(map[string]interface{})["value"] = userID
+							(*operations[i].Value).([]interface{})[j].(map[string]interface{})["value"] = userID
 						}
 					}
 				}
@@ -283,7 +283,7 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 		} else if op.Op == "remove" {
 			username := extractUsernameFromPath(op.Path)
 			if username != "" {
-				userID, err := client.getUserId(ctx, auth, username)
+				userID, err := userClient.getUserId(ctx, auth, username)
 				if err != nil {
 					vc.Logger.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
 					return fmt.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
@@ -292,33 +292,27 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 			}
 		}
 	}
-
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiGroups, groupID))
-	headers := http.Header{
-		"Accept":        []string{"application/scim+json"},
-		"Content-Type":  []string{"application/scim+json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	patchRequest := GroupSCIMPatchRequest{
+	patchRequest := openapi.PatchBody{
 		Schemas:    []string{"urn:ietf:params:scim:api:messages:2.0:PatchOp"},
 		Operations: operations,
 	}
-
-	b, err := json.Marshal(patchRequest)
+	body, err := json.Marshal(patchRequest)
 	if err != nil {
 		vc.Logger.Errorf("unable to marshal the patch request; err=%v", err)
 		return fmt.Errorf("unable to marshal the patch request; err=%v", err)
 	}
-
-	response, err := c.client.Patch(ctx, u, headers, b)
+	resp, err := client.PatchGroupWithBodyWithResponse(ctx, groupID, &openapi.PatchGroupParams{}, "application/scim+json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/scim+json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to update group; err=%v", err)
 		return fmt.Errorf("unable to update group; err=%v", err)
 	}
-	if response.StatusCode != http.StatusNoContent {
-		vc.Logger.Errorf("failed to update group; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return fmt.Errorf("failed to update group ; code=%d, body=%s", response.StatusCode, string(response.Body))
+	if resp.StatusCode() != http.StatusNoContent {
+		vc.Logger.Errorf("failed to update group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return fmt.Errorf("failed to update group ; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	return nil
