@@ -2551,6 +2551,647 @@
                 "x-publicAPI": "true",
                 "x-codegen-request-body-name": "body"
             }
+        },
+        "/v2.0/Groups": {
+            "get": {
+                "tags": [
+                    "Groups Management Version 2.0"
+                ],
+                "summary": "Retrieves a list of groups that belong to the specified tenant and match the search criteria.",
+                "description": "Entitlement required: readUserGroups (Read users and groups), or manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or readGroups (Read all groups but not their members), or readStandardGroups (Read standard groups but not their members), or readGroupMembers (Read all groups and their members), or readStandardGroupMembers (Read standard groups and their members), or manageGroups (Manage all groups but not their members), or manageStandardGroups (Manage standard groups but not their members),or manageGroupMembers (Manage all group and their members), or manageStandardGroupMembers (Manage standard groups and their members). <br>Note: You only need one entitlement, but you can have more than one.<br><br>The members attribute is not returned in the response.<br><br>Searching, sorting, paging, and filtering are supported.<br>",
+                "operationId": "getGroups",
+                "parameters": [
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "The SCIM compliant search filter.  For example, displayName eq \"admin\". The filter should be no longer than 4096 characters in length.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "attributes",
+                        "in": "query",
+                        "description": "The list of attributes that are passed in as comma-separated values that are used when passing the result back to the caller. To improve performance, specify in the list only the attributes that you want returned. If no list is provided, the default action is to return all attributes.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "count",
+                        "in": "query",
+                        "description": " Specifies the maximum number of query results per page. A negative value is interpreted as 0.  A value of 0 indicates that no resource results are to be returned, except for totalResults.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "startIndex",
+                        "in": "query",
+                        "description": "A 1-based index that indicates the start index that is used when the number of groups is returned. A value less than 1 is interpreted as 1.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sortBy",
+                        "in": "query",
+                        "description": "Sort the results by the specified criteria when the groups are returned.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sortOrder",
+                        "in": "query",
+                        "description": "The sorting order when the number of groups is returned.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "ascending",
+                                "descending"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "fullText",
+                        "in": "query",
+                        "description": "A string that is searched for in the group records.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The operation was successful.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetGroupsResponseV2"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "529": {
+                        "description": "The request timed out.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "post": {
+                "tags": [
+                    "Groups Management Version 2.0"
+                ],
+                "summary": "Creates a group for a specified tenant. ",
+                "description": "Entitlement required: manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or manageGroups (Manage all groups but not their members), or manageStandardGroups (Manage standard groups but not their members), or manageGroupMembers (Manage all group and their members), or manageStandardGroupMembers (Manage standard groups and their members).<br>Note: You only need one entitlement, but you can have more than one.<br><br>To create a group, a displayName is required. An optional Description attribute can be set to describe the group.  A group can be created with or without members. When a group is created with members,  a list of members needs to be passed in.<br><br>By default, an email is sent to each regular user member added to the group. Federated user members do not get an email notification. The email template for branding is at \"notifications/user_management/group/{locale}/group_added_email.xml\". Pass in the themeId query parameter to brand the email template for notifications. To turn off email notifications, send the notifications option  \"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification\": {\"notifyType\":\"NONE\"} in the payload.<br><br>Limitations for tenants that support large groups:<table>  <tr><td>- A maximum of 256 first-level, nested group members is allowed.</td></tr>  <tr><td>- A maximum of 2,500 users members is allowed in the input payload.  To add more members, use PATCH.</td></tr></table><br><br>To check whether the tenant supports large groups, run the GET /v2.0/SCIM/capabilities API.",
+                "operationId": "createGroup",
+                "parameters": [
+                    {
+                        "name": "themeId",
+                        "in": "query",
+                        "description": "The identifier of the theme that you want to apply.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The group object that contains the attributes for the group that is to be created.",
+                    "content": {
+                        "application/scim+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GroupV2"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GroupResponseV2"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The group exists.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            }
+        },
+        "/v2.0/Groups/{id}": {
+            "get": {
+                "tags": [
+                    "Groups Management Version 2.0"
+                ],
+                "summary": "Retrieves the details of a group for a specified tenant.",
+                "description": "Entitlement required: readUserGroups (Read users and groups), or manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or readGroups (Read all groups but not their members), or readStandardGroups (Read standard groups but not their members), or readGroupMembers (Read all groups and their members), or readStandardGroupMembers (Read standard groups and their members), or manageGroups (Manage all groups but not their members), or manageStandardGroups (Manage standard groups but not their members),or manageGroupMembers (Manage all group and their members), or manageStandardGroupMembers (Manage standard groups and their members). <br>Note: You only need one entitlement, but you can have more than one.<br><br>To improve performance, specify the list of the attributes that you want returned by using the attributes and memberAttributes query parameters.<br><br>On Success, the returned response contains the members and details of the group.<br><br>Limitations for tenants that do not support large groups:  <br>When specifying the allNestedUsers membershipType, if the number of nested users exceeds 10,000 then the LargeGroupResponse (HTTP Status Code 207) is returned.  If the total number of nested users cannot be determined, the totalMembers value is set to -1.  When specifying a membershipType other than allNestedUsers, if the group has more than 10,000 members, then the LargeGroupResponse (HTTP Status Code 207) is returned.  When the LargeGroupResponse is returned, the memberAttributes, memberCount, and memberStartIndex parameters are ignored.<br><br>Tenants that support large groups can page through all the members of a group for all membershipType queries.  Each call to the endpoint returns at most 2,500 members of the group.  If more members of the group exist that were not returned, an additional element called \"bookmark\" is returned in the response payload.  To get the next set of members, the caller makes an additional call to the same endpoint, and passes the bookmark value as a query parameter named \"nextPage\". For example ?nextPage=XASDGAJDGKAWHGI=. The caller continues to make calls to the endpoint until no bookmark element are returned in the response payload, which indicates that all group members were returned.  The memberStartIndex and memberCount are supported within the 2,500 members returned.<br><br>To check whether the tenant supports large groups, run the GET /v2.0/SCIM/capabilities API.",
+                "operationId": "getGroup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The unique identifier of the group whose details are to be retrieved. This identifier is passed in the path of the URL.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "attributes",
+                        "in": "query",
+                        "description": "The list of attributes that are passed in as comma-separated values that are used when passing the result back to the caller. To improve performance, specify in the list only the attributes that you want returned. If no list is provided, the default action is to return all attributes.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "membershipType",
+                        "in": "query",
+                        "description": "Type of members of the group to retrieve:\n\"firstLevelUsersAndGroups\" (default) returns the users and groups directly contained in the group.\"allNestedUsers\" returns all the users (including nested users) contained in the group.\"firstLevelUsers\" returns the users directly contained in the group.\"firstLevelGroups\" returns the groups directly contained in the group.",
+                        "schema": {
+                            "type": "string",
+                            "default": "firstLevelUsersAndGroups",
+                            "enum": [
+                                "firstLevelUsersAndGroups",
+                                "allNestedUsers",
+                                "firstLevelUsers",
+                                "firstLevelGroups"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "memberAttributes",
+                        "in": "query",
+                        "description": "The list of attributes that are passed in as comma-separated values for returning the members of the groups when passing the result back to the caller. To improve performance, specify in the list only the attributes that you want returned. If no list is provided, the default action is to return all attributes.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "memberCount",
+                        "in": "query",
+                        "description": "The count that indicates the number of members from this group that will be returned. A negative value is interpreted as 0.  A value of 0 indicates that no member results are to be returned, except for totalMembers.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "memberStartIndex",
+                        "in": "query",
+                        "description": "A 1-based index that indicates the start index that is used when the members in the group are returned. A value less than 1 is interpreted as 1.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "nextPage",
+                        "in": "query",
+                        "description": "The bookmark that indicates the next page of members to be returned.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The operation was successful.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GroupResponseV2"
+                                }
+                            }
+                        }
+                    },
+                    "207": {
+                        "description": "The group has more than 10000 members.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LargeGroupResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The group that was requested was not found.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "529": {
+                        "description": "The request timed out.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "put": {
+                "tags": [
+                    "Groups Management Version 2.0"
+                ],
+                "summary": "Updates the group's attributes for a specified tenant. ",
+                "description": "Entitlement required: manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or manageGroups (Manage all groups but not their members), or manageStandardGroups (Manage standard groups but not their members), or manageGroupMembers (Manage all group and their members), or manageStandardGroupMembers (Manage standard groups and their members).<br>Note: You only need one entitlement, but you can have more than one.<br><br>On Success, the return response contains the members and details of the group. The HTTP PUT method is used to replace the resource's attributes.  For example, clients that previously retrieved the entire resource and revised it, can replace the resource by using an HTTP PUT.<br><br>By default, an email is sent to each regular user member added and removed from the group. Federated user members do not get an email notification. The email templates for branding are at \"notifications/user_management/group/{locale}/user_added_to_group_email.xml\" and \"notifications/user_management/group/{locale}/user_removed_from_group_email.xml\". Pass in the themeId query parameter to brand the email templates for notifications. To turn off email notifications, send the notifications option  \"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification\": {\"notifyType\":\"NONE\"} in the payload.<br><br>Limitations for tenants that do not support large groups:<br>  - A group with more than 10,000 members cannot be modified. Use PATCH instead.<br><br>Limitations for tenants that support large groups:<table>  <tr><td>- A group with over 2,500 group members cannot be modified.  Use PATCH instead. </td></tr>  <tr><td>- The \"size\" of the changes to a group cannot exceed 2,500 member modifications.</td></tr>  <tr><td>- A maximum of 256 first-level, nested group members are allowed.</td></tr></table><br>To check whether the tenant supports large groups, run the GET /v2.0/SCIM/capabilities API.",
+                "operationId": "putGroup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The unique identifier of the group to be modified. This identifier is passed in the path of the URL.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "themeId",
+                        "in": "query",
+                        "description": "The identifier of the theme that you want to apply.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The group object that contains attributes for the group that is to be modified.",
+                    "content": {
+                        "application/scim+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GroupV2"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The operation was successful.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GroupResponseV2"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The group that was requested was not found.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "A conflict exists.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            },
+            "delete": {
+                "tags": [
+                    "Groups Management Version 2.0"
+                ],
+                "summary": "Delete a group from a specified tenant.",
+                "description": "Entitlement required: manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or manageGroups (Manage all groups but not their members), or manageStandardGroups (Manage standard groups but not their members), or manageGroupMembers (Manage all group and their members), or manageStandardGroupMembers (Manage standard groups and their members).<br>Note: You only need one entitlement, but you can have more than one.<br><br>An email is sent to each regular user member of the group. Federated user members do not get an email notification. The email template for branding is at \"notifications/user_management/group/{locale}/group_deleted_email.xml\". Pass in the themeId query parameter to brand the email template for notifications. <br><br>To turn off email notifications, send notifyType=NONE as a query parameter.<br><br>A group with more than 10,000 members cannot be deleted.<br><br>Reserved groups cannot be deleted.",
+                "operationId": "deleteGroup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The unique identifier of the group to be deleted. This identifier is passed in the path of the URL.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "notifyType",
+                        "in": "query",
+                        "description": "An optional query parameter that denotes the notification type.  If not present, the EMAIL notification is used. Specify NONE if no notification to the user is required.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "EMAIL",
+                                "NONE"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "themeId",
+                        "in": "query",
+                        "description": "The identifier of the theme that you want to apply.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success. No content.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The group does not exist.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "patch": {
+                "tags": [
+                    "Groups Management Version 2.0"
+                ],
+                "summary": "This API is used to modify a group's attributes. It can be used to update one or more attributes.",
+                "description": "Entitlement required: manageUserGroups (Manage users and groups), or manageAllUserGroups (Synchronize users and groups), or manageUserStandardGroups (Manage users and standard groups), or manageGroups (Manage all groups but not their members), or manageStandardGroups (Manage standard groups but not their members), or manageGroupMembers (Manage all group and their members), or manageStandardGroupMembers (Manage standard groups and their members).<br>Note: You only need one entitlement, but you can have more than one.<br><br>Restrictions per request: Up to 1,000 patch operations are allowed. The total number of \"values\" specified cannot exceed 1,000.<br><br>Limitations: If the group being patched has over 9,000 members, the \"replace\" operation on the \"members\" attribute is not supported and only the \"eq\" operator is allowed in the selection filter.<br><br>By default, an email is sent to each regular user member added and removed from the group. Federated user members do not get an email notification. The email templates for branding are at \"notifications/user_management/group/{locale}/user_added_to_group_email.xml\" and \"notifications/user_management/group/{locale}/user_removed_from_group_email.xml\". Pass in the themeId query parameter to brand the email templates for notifications.<br><br>The following example is a patch request to replace the group's displayName, remove a member, and add new members. Notice also that the example shows how you can specify the notifyType if you want to.<br>NotifyType is an optional attribute that denotes the notification type.  If not present, the EMAIL notification is used.Specify NONE if no notification to affected users is required.<br> <table><tr><td>{ \"schemas\":[\"urn:ietf:params:scim:api:messages:2.0:PatchOp\"],\"Operations\":  [    {      \"op\": \"replace\",      \"path\": \"displayName\",      \"value\": \"New Group Name\"    },    {      \"op\": \"remove\",      \"path\": \"members[value eq \\\"50JFP28VS4\\\"]\"    },    {      \"op\": \"add\",      \"path\": \"members\",      \"value\":        [          {            \"type\": \"user\",            \"value\": \"50RJ493GRW\"          },          {            \"type\": \"user\",            \"value\": \"50G6E672MU\"          }        ]    },    {      \"op\": \"add\",      \"path\": \"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification:notifyType\",      \"value\": \"EMAIL\"    }  ]}</td></tr></table>",
+                "operationId": "patchGroup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the group to be patched.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "themeId",
+                        "in": "query",
+                        "description": "The identifier of the theme that you want to apply.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "The body for the group's patch operation.",
+                    "content": {
+                        "application/scim+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchBody"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "The request was incorrect.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "A conflict exists.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal server error occurred.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalErrorMessage1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            }
         }
     },
     "components": {

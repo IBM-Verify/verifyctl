@@ -51,6 +51,18 @@ const (
 	Attribute0SourceTypeStatic     Attribute0SourceType = "static"
 )
 
+// Defines values for CICCustomGroupResponseGroupType.
+const (
+	CICCustomGroupResponseGroupTypeReserved CICCustomGroupResponseGroupType = "reserved"
+	CICCustomGroupResponseGroupTypeStandard CICCustomGroupResponseGroupType = "standard"
+)
+
+// Defines values for CICCustomLargeGroupResponseGroupType.
+const (
+	CICCustomLargeGroupResponseGroupTypeReserved CICCustomLargeGroupResponseGroupType = "reserved"
+	CICCustomLargeGroupResponseGroupTypeStandard CICCustomLargeGroupResponseGroupType = "standard"
+)
+
 // Defines values for CICCustomUserUserCategory.
 const (
 	CICCustomUserUserCategoryFederated CICCustomUserUserCategory = "federated"
@@ -123,6 +135,17 @@ const (
 // Defines values for EmailAddressType.
 const (
 	EmailAddressTypeWork EmailAddressType = "work"
+)
+
+// Defines values for GroupMembersType.
+const (
+	GroupMembersTypeUser GroupMembersType = "user"
+)
+
+// Defines values for GroupMembersResponseType.
+const (
+	GroupMembersResponseTypeGroup GroupMembersResponseType = "group"
+	GroupMembersResponseTypeUser  GroupMembersResponseType = "user"
 )
 
 // Defines values for MetaV2Deactivated.
@@ -288,6 +311,26 @@ const (
 	ViewTypeAuthenticated ViewType = "authenticated"
 	ViewTypeCustom        ViewType = "custom"
 	ViewTypePublic        ViewType = "public"
+)
+
+// Defines values for GetGroupsParamsSortOrder.
+const (
+	GetGroupsParamsSortOrderAscending  GetGroupsParamsSortOrder = "ascending"
+	GetGroupsParamsSortOrderDescending GetGroupsParamsSortOrder = "descending"
+)
+
+// Defines values for DeleteGroupParamsNotifyType.
+const (
+	DeleteGroupParamsNotifyTypeEMAIL DeleteGroupParamsNotifyType = "EMAIL"
+	DeleteGroupParamsNotifyTypeNONE  DeleteGroupParamsNotifyType = "NONE"
+)
+
+// Defines values for GetGroupParamsMembershipType.
+const (
+	GetGroupParamsMembershipTypeAllNestedUsers           GetGroupParamsMembershipType = "allNestedUsers"
+	GetGroupParamsMembershipTypeFirstLevelGroups         GetGroupParamsMembershipType = "firstLevelGroups"
+	GetGroupParamsMembershipTypeFirstLevelUsers          GetGroupParamsMembershipType = "firstLevelUsers"
+	GetGroupParamsMembershipTypeFirstLevelUsersAndGroups GetGroupParamsMembershipType = "firstLevelUsersAndGroups"
 )
 
 // Defines values for GetUsersParamsSortOrder.
@@ -457,6 +500,54 @@ type Attribute0SourceType string
 
 // BufferedReader defines model for BufferedReader.
 type BufferedReader = map[string]interface{}
+
+// CICCustomGroup defines model for CICCustomGroup.
+type CICCustomGroup struct {
+	// Description The description for the group that is being created.
+	Description *string `json:"description,omitempty"`
+
+	// Owners A list of owners for the group.  When the scope of an admin role restricts groups, the members of that role can access only those restricted groups and any other groups that they own.  Members of a scoped role are also automatically assigned as the group owner when creating the group by calling the POST /v2.0/Groups API.
+	Owners *[]GroupOwner `json:"owners,omitempty"`
+}
+
+// CICCustomGroupResponse defines model for CICCustomGroupResponse.
+type CICCustomGroupResponse struct {
+	// Description The description for the group.
+	Description *string `json:"description,omitempty"`
+
+	// GroupType The group type. This value is read-only.
+	GroupType *CICCustomGroupResponseGroupType `json:"groupType,omitempty"`
+
+	// MemberStartIndex The start index of members that are returned on the page.
+	MemberStartIndex *int32 `json:"memberStartIndex,omitempty"`
+
+	// MembersPerPage Members per page.  For large group support, this property is the count of members returned in the members array.
+	MembersPerPage *int32 `json:"membersPerPage,omitempty"`
+
+	// Owners A list of owners for the group.  For large group support, the group ownership is automatically set and enforced when the request has restricted groups that are associated with the access token's user subject identifier.
+	Owners *[]GroupOwner `json:"owners,omitempty"`
+
+	// TotalMembers The total number of members that are in the group.
+	TotalMembers int32 `json:"totalMembers"`
+}
+
+// CICCustomGroupResponseGroupType The group type. This value is read-only.
+type CICCustomGroupResponseGroupType string
+
+// CICCustomLargeGroupResponse defines model for CICCustomLargeGroupResponse.
+type CICCustomLargeGroupResponse struct {
+	// Description The description for the group.
+	Description *string `json:"description,omitempty"`
+
+	// GroupType The group type. This value is read-only.
+	GroupType *CICCustomLargeGroupResponseGroupType `json:"groupType,omitempty"`
+
+	// TotalMembers The total number of members that are in the group.
+	TotalMembers int32 `json:"totalMembers"`
+}
+
+// CICCustomLargeGroupResponseGroupType The group type. This value is read-only.
+type CICCustomLargeGroupResponseGroupType string
 
 // CICCustomUser defines model for CICCustomUser.
 type CICCustomUser struct {
@@ -950,6 +1041,15 @@ type Function struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// GetGroupsResponseV2 defines model for GetGroupsResponseV2.
+type GetGroupsResponseV2 struct {
+	// Resources A list of groups.
+	Resources *[]GroupResponseV2 `json:"Resources,omitempty"`
+
+	// Schemas An array of strings that contain the URIs that indicate the namespaces of the SCIM schemas that define the attributes in the current JSON structure. The schema "urn:ietf:params:scim:api:messages:2.0:ListResponse" is returned in the response.
+	Schemas []string `json:"schemas"`
+}
+
 // GetUsersResponseV2 defines model for GetUsersResponseV2.
 type GetUsersResponseV2 struct {
 	// Resources A list of users.
@@ -1006,6 +1106,119 @@ type GetUsersUserResponseV2 struct {
 
 	// UserName The unique identifier for the user that is typically used by the user to directly authenticate to the service provider. It is often displayed to the user as their unique identifier within the system (as opposed to the id or externalId attributes, which are generally opaque and not user-friendly identifiers). Each user must include a non-empty userName value. This identifier must be unique across the service consumer's entire set of users. It must be a stable ID that does not change when the same user is returned in subsequent requests.
 	UserName string `json:"userName"`
+}
+
+// GroupMembers defines model for GroupMembers.
+type GroupMembers struct {
+	// Type The type of group member that is being added.
+	Type GroupMembersType `json:"type"`
+
+	// Value The unique identifier of the member that is being added to the group.
+	Value string `json:"value"`
+}
+
+// GroupMembersType The type of group member that is being added.
+type GroupMembersType string
+
+// GroupMembersResponse defines model for GroupMembersResponse.
+type GroupMembersResponse struct {
+	// Ref A sub-attr required by the SCIM specification the contains the URI of the SCIM resource.
+	Ref string `json:"$ref"`
+
+	// Active Valid for user type members only. A Boolean value that indicates the user's administrative status. The definitive meaning of this attribute is determined by the service provider. For example, a value of true indicates that the user is, for example, able to log in, while a value of false indicates that the user's account has been suspended. If not specified, the value defaults to true.
+	Active *bool `json:"active,omitempty"`
+
+	// Addresses Valid for user type members only. A list of addresses that are associated with the user.
+	Addresses []Address `json:"addresses"`
+
+	// DisplayName The name of the user or group that is displayed to users. Each member returned may include a non-empty displayName value. For a user type member, typically it is the full name of the user that is being described, for example, Babs Jensen or Ms. Barbara J Jensen. However, if that information is unavailable, a username or handle can be used, for example, bjensen. The value is the primary textual label by which this user is normally displayed by the service provider when presenting information to users.
+	DisplayName *string `json:"displayName,omitempty"`
+
+	// Emails Valid for user type members only. A list of email addresses that are associated with the user.
+	Emails []EmailAddress `json:"emails"`
+
+	// ExternalID Valid for user type members only. A unique identifier for the resource that is defined by the provisioning client. It identifies a resource between the provisioning client and the service provider. The client can use a filter to locate the resource with the identifier from the provisioning domain.
+	ExternalID *string `json:"externalId,omitempty"`
+
+	// ID The unique identifier for the resource as defined by the service. This attribute is read-only and is sent by the service. Any value that is specified for this attribute in the JSON POST or PUT request payload is ignored.
+	ID   *string `json:"id,omitempty"`
+	Name Name    `json:"name"`
+
+	// PhoneNumbers Valid for user type members only. A list of phone numbers that are associated with the user.
+	PhoneNumbers *[]PhoneNumber `json:"phoneNumbers,omitempty"`
+
+	// PreferredLanguage Valid for user type members only. The language code identifying the preferred language of this identity, for example, en-us or fr-ca.
+	PreferredLanguage *string `json:"preferredLanguage,omitempty"`
+
+	// Title Valid for user type members only. The user's title, such as "Vice President".
+	Title *string `json:"title,omitempty"`
+
+	// Type The type of group member.
+	Type                                              GroupMembersResponseType `json:"type"`
+	UrnIetfParamsScimSchemasExtensionEnterprise20User *EnterpriseUser          `json:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User,omitempty"`
+	UrnIetfParamsScimSchemasExtensionIbm20User        *CICCustomUserResponse   `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:User,omitempty"`
+
+	// UserName Valid for user type members only. The unique identifier for the user that is typically used by the user to directly authenticate to the service provider. It is often displayed to the user as their unique identifier within the system (as opposed to the id or externalId attributes, which are generally opaque and not user-friendly identifiers). Each user must include a non-empty userName value. This identifier must be unique across the service consumer's entire set of users. It must be a stable ID that does not change when the same user is returned in subsequent requests.
+	UserName string `json:"userName"`
+
+	// Value A sub-attr required by the SCIM specification that contains the "id" of the SCIM resource.
+	Value string `json:"value"`
+}
+
+// GroupMembersResponseType The type of group member.
+type GroupMembersResponseType string
+
+// GroupOwner defines model for GroupOwner.
+type GroupOwner struct {
+	// Ref The URI of the SCIM resource representing the user.  This value is readonly.
+	Ref *string `json:"$ref,omitempty"`
+
+	// DisplayName The display name of the user. This value is readonly.
+	DisplayName *string `json:"displayName,omitempty"`
+
+	// Value The id of the group owner
+	Value string `json:"value"`
+}
+
+// GroupResponseV2 defines model for GroupResponseV2.
+type GroupResponseV2 struct {
+	// Bookmark An opaque string that is used by the system to get the next 2500 members of this group.  The existence of this element in the GET /v2.0/Groups/{id} response payload indicates that more members exist that were not returned in the call.  To get the next set of members, the caller makes an additional call to the same endpoint, and passes the bookmark value as a query parameter named "nextPage". For example ?nextPage=XASDGAJDGKAWHGI=.  The caller can continue to make calls to the endpoint until no bookmark element are returned in the response payload, which indicates that all group members were returned.  A bookmark is generated from a membershipType query.  The bookmark feature is available for tenants that have large group support enabled.
+	Bookmark *string `json:"bookmark,omitempty"`
+
+	// DisplayName A human-readable name for the group.
+	DisplayName string `json:"displayName"`
+
+	// ExternalID Identifier of the Group resource as defined by the provisioning client.
+	ExternalID *string `json:"externalId,omitempty"`
+
+	// ID The unique identifier for the resource as defined by the service. This attribute is read-only and will be sent by the service. Any value that is specified for this attribute in the JSON POST or PUT request payload is ignored.
+	ID *string `json:"id,omitempty"`
+
+	// Members A list of members that belong to this group.  If the group has more than 10,000 members, then this array is empty, unless large group support is enabled for the tenant.  With large group support enabled, each call to the GET /v2.0/Groups/{id} endpoint returns at most 2,500 members of the group.  If more members of the group exist that were not returned, a bookmark is returned in the response.  The bookmark is used to get the next set of group members.  See the "bookmark" property for more details.
+	Members *[]GroupMembersResponse `json:"members,omitempty"`
+	Meta    *MetaV2                 `json:"meta,omitempty"`
+
+	// Schemas An array of strings that contain the URIs that indicate the namespaces of the SCIM schemas that define the attributes in the current JSON structure. The schemas "urn:ietf:params:scim:schemas:core:2.0:Group"   and "urn:ietf:params:scim:schemas:extension:ibm:2.0:Group" are returned in the response.
+	Schemas                                     []string                `json:"schemas"`
+	UrnIetfParamsScimSchemasExtensionIbm20Group *CICCustomGroupResponse `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Group,omitempty"`
+}
+
+// GroupV2 defines model for GroupV2.
+type GroupV2 struct {
+	// DisplayName The display name of the group. Maximum length is 255 characters.
+	DisplayName string `json:"displayName"`
+
+	// ExternalID Identifier of the Group resource as defined by the provisioning client. Maximum length is 240 characters.
+	ExternalID *string `json:"externalId,omitempty"`
+
+	// Members A list of members that are being added.  When creating a group, the number of elements must be less than or equal to 10,000.
+	Members *[]GroupMembers `json:"members,omitempty"`
+
+	// Schemas An array of strings that contain the URIs that indicate the namespaces of the SCIM schemas that define the attributes in the current JSON structure.   The schemas "urn:ietf:params:scim:schemas:core:2.0:Group", urn:ietf:params:scim:schemas:extension:ibm:2.0:Group",  and "urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification" are valid.  The core group schema is required.
+	Schemas                                            []string        `json:"schemas"`
+	UrnIetfParamsScimSchemasExtensionIbm20Group        *CICCustomGroup `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Group,omitempty"`
+	UrnIetfParamsScimSchemasExtensionIbm20Notification *Notifications  `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Notification,omitempty"`
+	Visible                                            *bool           `json:"visible,omitempty"`
 }
 
 // Groups defines model for Groups.
@@ -1151,6 +1364,23 @@ type JspPropertyGroupDescriptor struct {
 	ScriptingInvalid               *string   `json:"scriptingInvalid,omitempty"`
 	TrimDirectiveWhitespaces       *string   `json:"trimDirectiveWhitespaces,omitempty"`
 	URLPatterns                    *[]string `json:"urlPatterns,omitempty"`
+}
+
+// LargeGroupResponse defines model for LargeGroupResponse.
+type LargeGroupResponse struct {
+	// DisplayName A human-readable name for the group.
+	DisplayName string `json:"displayName"`
+
+	// ExternalID Identifier of the Group resource as defined by the provisioning client.
+	ExternalID *string `json:"externalId,omitempty"`
+
+	// ID The unique identifier for the resource as defined by the service. This attribute is read-only and will be sent by the service. Any value that is specified for this attribute in the JSON POST or PUT request payload is ignored.
+	ID   *string `json:"id,omitempty"`
+	Meta *MetaV2 `json:"meta,omitempty"`
+
+	// Schemas An array of strings that contain the URIs that indicate the namespaces of the SCIM schemas that define the attributes in the current JSON structure. The schemas "urn:ietf:params:scim:schemas:core:2.0:Group"   and "urn:ietf:params:scim:schemas:extension:ibm:2.0:Group" are returned in the response.
+	Schemas                                     []string                     `json:"schemas"`
+	UrnIetfParamsScimSchemasExtensionIbm20Group *CICCustomLargeGroupResponse `json:"urn:ietf:params:scim:schemas:extension:ibm:2.0:Group,omitempty"`
 }
 
 // LastMFA defines model for LastMFA.
@@ -2095,6 +2325,88 @@ type UpdateThemeTemplateMultipartBody struct {
 	File openapi_types.File `json:"file"`
 }
 
+// GetGroupsParams defines parameters for GetGroups.
+type GetGroupsParams struct {
+	// Filter The SCIM compliant search filter.  For example, displayName eq "admin". The filter should be no longer than 4096 characters in length.
+	Filter *string `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// Attributes The list of attributes that are passed in as comma-separated values that are used when passing the result back to the caller. To improve performance, specify in the list only the attributes that you want returned. If no list is provided, the default action is to return all attributes.
+	Attributes *string `form:"attributes,omitempty" json:"attributes,omitempty"`
+
+	// Count  Specifies the maximum number of query results per page. A negative value is interpreted as 0.  A value of 0 indicates that no resource results are to be returned, except for totalResults.
+	Count *string `form:"count,omitempty" json:"count,omitempty"`
+
+	// StartIndex A 1-based index that indicates the start index that is used when the number of groups is returned. A value less than 1 is interpreted as 1.
+	StartIndex *string `form:"startIndex,omitempty" json:"startIndex,omitempty"`
+
+	// SortBy Sort the results by the specified criteria when the groups are returned.
+	SortBy *string `form:"sortBy,omitempty" json:"sortBy,omitempty"`
+
+	// SortOrder The sorting order when the number of groups is returned.
+	SortOrder *GetGroupsParamsSortOrder `form:"sortOrder,omitempty" json:"sortOrder,omitempty"`
+
+	// FullText A string that is searched for in the group records.
+	FullText *string `form:"fullText,omitempty" json:"fullText,omitempty"`
+}
+
+// GetGroupsParamsSortOrder defines parameters for GetGroups.
+type GetGroupsParamsSortOrder string
+
+// CreateGroupParams defines parameters for CreateGroup.
+type CreateGroupParams struct {
+	// ThemeID The identifier of the theme that you want to apply.
+	ThemeID *string `form:"themeId,omitempty" json:"themeId,omitempty"`
+}
+
+// DeleteGroupParams defines parameters for DeleteGroup.
+type DeleteGroupParams struct {
+	// NotifyType An optional query parameter that denotes the notification type.  If not present, the EMAIL notification is used. Specify NONE if no notification to the user is required.
+	NotifyType *DeleteGroupParamsNotifyType `form:"notifyType,omitempty" json:"notifyType,omitempty"`
+
+	// ThemeID The identifier of the theme that you want to apply.
+	ThemeID *string `form:"themeId,omitempty" json:"themeId,omitempty"`
+}
+
+// DeleteGroupParamsNotifyType defines parameters for DeleteGroup.
+type DeleteGroupParamsNotifyType string
+
+// GetGroupParams defines parameters for GetGroup.
+type GetGroupParams struct {
+	// Attributes The list of attributes that are passed in as comma-separated values that are used when passing the result back to the caller. To improve performance, specify in the list only the attributes that you want returned. If no list is provided, the default action is to return all attributes.
+	Attributes *string `form:"attributes,omitempty" json:"attributes,omitempty"`
+
+	// MembershipType Type of members of the group to retrieve:
+	// "firstLevelUsersAndGroups" (default) returns the users and groups directly contained in the group."allNestedUsers" returns all the users (including nested users) contained in the group."firstLevelUsers" returns the users directly contained in the group."firstLevelGroups" returns the groups directly contained in the group.
+	MembershipType *GetGroupParamsMembershipType `form:"membershipType,omitempty" json:"membershipType,omitempty"`
+
+	// MemberAttributes The list of attributes that are passed in as comma-separated values for returning the members of the groups when passing the result back to the caller. To improve performance, specify in the list only the attributes that you want returned. If no list is provided, the default action is to return all attributes.
+	MemberAttributes *string `form:"memberAttributes,omitempty" json:"memberAttributes,omitempty"`
+
+	// MemberCount The count that indicates the number of members from this group that will be returned. A negative value is interpreted as 0.  A value of 0 indicates that no member results are to be returned, except for totalMembers.
+	MemberCount *string `form:"memberCount,omitempty" json:"memberCount,omitempty"`
+
+	// MemberStartIndex A 1-based index that indicates the start index that is used when the members in the group are returned. A value less than 1 is interpreted as 1.
+	MemberStartIndex *string `form:"memberStartIndex,omitempty" json:"memberStartIndex,omitempty"`
+
+	// NextPage The bookmark that indicates the next page of members to be returned.
+	NextPage *string `form:"nextPage,omitempty" json:"nextPage,omitempty"`
+}
+
+// GetGroupParamsMembershipType defines parameters for GetGroup.
+type GetGroupParamsMembershipType string
+
+// PatchGroupParams defines parameters for PatchGroup.
+type PatchGroupParams struct {
+	// ThemeID The identifier of the theme that you want to apply.
+	ThemeID *string `form:"themeId,omitempty" json:"themeId,omitempty"`
+}
+
+// PutGroupParams defines parameters for PutGroup.
+type PutGroupParams struct {
+	// ThemeID The identifier of the theme that you want to apply.
+	ThemeID *string `form:"themeId,omitempty" json:"themeId,omitempty"`
+}
+
 // GetUsersParams defines parameters for GetUsers.
 type GetUsersParams struct {
 	// Filter The SCIM compliant search filter. For example, userName eq "john". The filter should be no longer than 4096 characters in length.
@@ -2208,6 +2520,15 @@ type UpdateThemeTemplatesMultipartRequestBody UpdateThemeTemplatesMultipartBody
 
 // UpdateThemeTemplateMultipartRequestBody defines body for UpdateThemeTemplate for multipart/form-data ContentType.
 type UpdateThemeTemplateMultipartRequestBody UpdateThemeTemplateMultipartBody
+
+// CreateGroupApplicationScimPlusJSONRequestBody defines body for CreateGroup for application/scim+json ContentType.
+type CreateGroupApplicationScimPlusJSONRequestBody = GroupV2
+
+// PatchGroupApplicationScimPlusJSONRequestBody defines body for PatchGroup for application/scim+json ContentType.
+type PatchGroupApplicationScimPlusJSONRequestBody = PatchBody
+
+// PutGroupApplicationScimPlusJSONRequestBody defines body for PutGroup for application/scim+json ContentType.
+type PutGroupApplicationScimPlusJSONRequestBody = GroupV2
 
 // CreateUserApplicationScimPlusJSONRequestBody defines body for CreateUser for application/scim+json ContentType.
 type CreateUserApplicationScimPlusJSONRequestBody = UserV2
@@ -2423,6 +2744,30 @@ type ClientInterface interface {
 
 	// UpdateThemeTemplateWithBody request with any body
 	UpdateThemeTemplateWithBody(ctx context.Context, themeID string, templatePath string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetGroups request
+	GetGroups(ctx context.Context, params *GetGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateGroupWithBody request with any body
+	CreateGroupWithBody(ctx context.Context, params *CreateGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateGroupWithApplicationScimPlusJSONBody(ctx context.Context, params *CreateGroupParams, body CreateGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteGroup request
+	DeleteGroup(ctx context.Context, id string, params *DeleteGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetGroup request
+	GetGroup(ctx context.Context, id string, params *GetGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PatchGroupWithBody request with any body
+	PatchGroupWithBody(ctx context.Context, id string, params *PatchGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PatchGroupWithApplicationScimPlusJSONBody(ctx context.Context, id string, params *PatchGroupParams, body PatchGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutGroupWithBody request with any body
+	PutGroupWithBody(ctx context.Context, id string, params *PutGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutGroupWithApplicationScimPlusJSONBody(ctx context.Context, id string, params *PutGroupParams, body PutGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUsers request
 	GetUsers(ctx context.Context, params *GetUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2643,6 +2988,114 @@ func (c *Client) GetTemplate0(ctx context.Context, themeID string, templatePath 
 
 func (c *Client) UpdateThemeTemplateWithBody(ctx context.Context, themeID string, templatePath string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateThemeTemplateRequestWithBody(c.Server, themeID, templatePath, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetGroups(ctx context.Context, params *GetGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetGroupsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateGroupWithBody(ctx context.Context, params *CreateGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateGroupRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateGroupWithApplicationScimPlusJSONBody(ctx context.Context, params *CreateGroupParams, body CreateGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateGroupRequestWithApplicationScimPlusJSONBody(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteGroup(ctx context.Context, id string, params *DeleteGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteGroupRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetGroup(ctx context.Context, id string, params *GetGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetGroupRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchGroupWithBody(ctx context.Context, id string, params *PatchGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchGroupRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchGroupWithApplicationScimPlusJSONBody(ctx context.Context, id string, params *PatchGroupParams, body PatchGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchGroupRequestWithApplicationScimPlusJSONBody(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutGroupWithBody(ctx context.Context, id string, params *PutGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutGroupRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutGroupWithApplicationScimPlusJSONBody(ctx context.Context, id string, params *PutGroupParams, body PutGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutGroupRequestWithApplicationScimPlusJSONBody(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3515,6 +3968,559 @@ func NewUpdateThemeTemplateRequestWithBody(server string, themeID string, templa
 	return req, nil
 }
 
+// NewGetGroupsRequest generates requests for GetGroups
+func NewGetGroupsRequest(server string, params *GetGroupsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/Groups")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Filter != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "filter", runtime.ParamLocationQuery, *params.Filter); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Attributes != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "attributes", runtime.ParamLocationQuery, *params.Attributes); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Count != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "count", runtime.ParamLocationQuery, *params.Count); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.StartIndex != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "startIndex", runtime.ParamLocationQuery, *params.StartIndex); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SortBy != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sortBy", runtime.ParamLocationQuery, *params.SortBy); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SortOrder != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sortOrder", runtime.ParamLocationQuery, *params.SortOrder); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.FullText != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fullText", runtime.ParamLocationQuery, *params.FullText); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateGroupRequestWithApplicationScimPlusJSONBody calls the generic CreateGroup builder with application/scim+json body
+func NewCreateGroupRequestWithApplicationScimPlusJSONBody(server string, params *CreateGroupParams, body CreateGroupApplicationScimPlusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateGroupRequestWithBody(server, params, "application/scim+json", bodyReader)
+}
+
+// NewCreateGroupRequestWithBody generates requests for CreateGroup with any type of body
+func NewCreateGroupRequestWithBody(server string, params *CreateGroupParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/Groups")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ThemeID != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "themeId", runtime.ParamLocationQuery, *params.ThemeID); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteGroupRequest generates requests for DeleteGroup
+func NewDeleteGroupRequest(server string, id string, params *DeleteGroupParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/Groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.NotifyType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "notifyType", runtime.ParamLocationQuery, *params.NotifyType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ThemeID != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "themeId", runtime.ParamLocationQuery, *params.ThemeID); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetGroupRequest generates requests for GetGroup
+func NewGetGroupRequest(server string, id string, params *GetGroupParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/Groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Attributes != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "attributes", runtime.ParamLocationQuery, *params.Attributes); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.MembershipType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "membershipType", runtime.ParamLocationQuery, *params.MembershipType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.MemberAttributes != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "memberAttributes", runtime.ParamLocationQuery, *params.MemberAttributes); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.MemberCount != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "memberCount", runtime.ParamLocationQuery, *params.MemberCount); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.MemberStartIndex != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "memberStartIndex", runtime.ParamLocationQuery, *params.MemberStartIndex); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.NextPage != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "nextPage", runtime.ParamLocationQuery, *params.NextPage); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPatchGroupRequestWithApplicationScimPlusJSONBody calls the generic PatchGroup builder with application/scim+json body
+func NewPatchGroupRequestWithApplicationScimPlusJSONBody(server string, id string, params *PatchGroupParams, body PatchGroupApplicationScimPlusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPatchGroupRequestWithBody(server, id, params, "application/scim+json", bodyReader)
+}
+
+// NewPatchGroupRequestWithBody generates requests for PatchGroup with any type of body
+func NewPatchGroupRequestWithBody(server string, id string, params *PatchGroupParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/Groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ThemeID != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "themeId", runtime.ParamLocationQuery, *params.ThemeID); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutGroupRequestWithApplicationScimPlusJSONBody calls the generic PutGroup builder with application/scim+json body
+func NewPutGroupRequestWithApplicationScimPlusJSONBody(server string, id string, params *PutGroupParams, body PutGroupApplicationScimPlusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutGroupRequestWithBody(server, id, params, "application/scim+json", bodyReader)
+}
+
+// NewPutGroupRequestWithBody generates requests for PutGroup with any type of body
+func NewPutGroupRequestWithBody(server string, id string, params *PutGroupParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/Groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ThemeID != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "themeId", runtime.ParamLocationQuery, *params.ThemeID); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetUsersRequest generates requests for GetUsers
 func NewGetUsersRequest(server string, params *GetUsersParams) (*http.Request, error) {
 	var err error
@@ -4238,6 +5244,30 @@ type ClientWithResponsesInterface interface {
 	// UpdateThemeTemplateWithBodyWithResponse request with any body
 	UpdateThemeTemplateWithBodyWithResponse(ctx context.Context, themeID string, templatePath string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateThemeTemplateObject, error)
 
+	// GetGroupsWithResponse request
+	GetGroupsWithResponse(ctx context.Context, params *GetGroupsParams, reqEditors ...RequestEditorFn) (*GetGroupsObject, error)
+
+	// CreateGroupWithBodyWithResponse request with any body
+	CreateGroupWithBodyWithResponse(ctx context.Context, params *CreateGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateGroupObject, error)
+
+	CreateGroupWithApplicationScimPlusJSONBodyWithResponse(ctx context.Context, params *CreateGroupParams, body CreateGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateGroupObject, error)
+
+	// DeleteGroupWithResponse request
+	DeleteGroupWithResponse(ctx context.Context, id string, params *DeleteGroupParams, reqEditors ...RequestEditorFn) (*DeleteGroupObject, error)
+
+	// GetGroupWithResponse request
+	GetGroupWithResponse(ctx context.Context, id string, params *GetGroupParams, reqEditors ...RequestEditorFn) (*GetGroupObject, error)
+
+	// PatchGroupWithBodyWithResponse request with any body
+	PatchGroupWithBodyWithResponse(ctx context.Context, id string, params *PatchGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchGroupObject, error)
+
+	PatchGroupWithApplicationScimPlusJSONBodyWithResponse(ctx context.Context, id string, params *PatchGroupParams, body PatchGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchGroupObject, error)
+
+	// PutGroupWithBodyWithResponse request with any body
+	PutGroupWithBodyWithResponse(ctx context.Context, id string, params *PutGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutGroupObject, error)
+
+	PutGroupWithApplicationScimPlusJSONBodyWithResponse(ctx context.Context, id string, params *PutGroupParams, body PutGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*PutGroupObject, error)
+
 	// GetUsersWithResponse request
 	GetUsersWithResponse(ctx context.Context, params *GetUsersParams, reqEditors ...RequestEditorFn) (*GetUsersObject, error)
 
@@ -4643,6 +5673,164 @@ func (r UpdateThemeTemplateObject) StatusCode() int {
 	return 0
 }
 
+type GetGroupsObject struct {
+	Body                   []byte
+	HTTPResponse           *http.Response
+	ApplicationScimJSON200 *GetGroupsResponseV2
+	ApplicationScimJSON400 *ExternalErrorMessage1
+	ApplicationScimJSON403 *ExternalErrorMessage1
+	ApplicationScimJSON500 *ExternalErrorMessage1
+	ApplicationScimJSON529 *ExternalErrorMessage1
+}
+
+// Status returns HTTPResponse.Status
+func (r GetGroupsObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetGroupsObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateGroupObject struct {
+	Body                   []byte
+	HTTPResponse           *http.Response
+	ApplicationScimJSON201 *GroupResponseV2
+	ApplicationScimJSON400 *ExternalErrorMessage1
+	ApplicationScimJSON403 *ExternalErrorMessage1
+	ApplicationScimJSON409 *ExternalErrorMessage1
+	ApplicationScimJSON500 *ExternalErrorMessage1
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateGroupObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateGroupObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteGroupObject struct {
+	Body                   []byte
+	HTTPResponse           *http.Response
+	ApplicationScimJSON400 *ExternalErrorMessage1
+	ApplicationScimJSON403 *ExternalErrorMessage1
+	ApplicationScimJSON404 *ExternalErrorMessage1
+	ApplicationScimJSON500 *ExternalErrorMessage1
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteGroupObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteGroupObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetGroupObject struct {
+	Body                   []byte
+	HTTPResponse           *http.Response
+	ApplicationScimJSON200 *GroupResponseV2
+	ApplicationScimJSON207 *LargeGroupResponse
+	ApplicationScimJSON400 *ExternalErrorMessage1
+	ApplicationScimJSON403 *ExternalErrorMessage1
+	ApplicationScimJSON404 *ExternalErrorMessage1
+	ApplicationScimJSON500 *ExternalErrorMessage1
+	ApplicationScimJSON529 *ExternalErrorMessage1
+}
+
+// Status returns HTTPResponse.Status
+func (r GetGroupObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetGroupObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PatchGroupObject struct {
+	Body                   []byte
+	HTTPResponse           *http.Response
+	ApplicationScimJSON400 *ExternalErrorMessage1
+	ApplicationScimJSON403 *ExternalErrorMessage1
+	ApplicationScimJSON404 *ExternalErrorMessage1
+	ApplicationScimJSON409 *ExternalErrorMessage1
+	ApplicationScimJSON500 *ExternalErrorMessage1
+}
+
+// Status returns HTTPResponse.Status
+func (r PatchGroupObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PatchGroupObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutGroupObject struct {
+	Body                   []byte
+	HTTPResponse           *http.Response
+	ApplicationScimJSON200 *GroupResponseV2
+	ApplicationScimJSON400 *ExternalErrorMessage1
+	ApplicationScimJSON403 *ExternalErrorMessage1
+	ApplicationScimJSON404 *ExternalErrorMessage1
+	ApplicationScimJSON409 *ExternalErrorMessage1
+	ApplicationScimJSON500 *ExternalErrorMessage1
+}
+
+// Status returns HTTPResponse.Status
+func (r PutGroupObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutGroupObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetUsersObject struct {
 	Body                   []byte
 	HTTPResponse           *http.Response
@@ -4949,6 +6137,84 @@ func (c *ClientWithResponses) UpdateThemeTemplateWithBodyWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseUpdateThemeTemplateObject(rsp)
+}
+
+// GetGroupsWithResponse request returning *GetGroupsObject
+func (c *ClientWithResponses) GetGroupsWithResponse(ctx context.Context, params *GetGroupsParams, reqEditors ...RequestEditorFn) (*GetGroupsObject, error) {
+	rsp, err := c.GetGroups(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetGroupsObject(rsp)
+}
+
+// CreateGroupWithBodyWithResponse request with arbitrary body returning *CreateGroupObject
+func (c *ClientWithResponses) CreateGroupWithBodyWithResponse(ctx context.Context, params *CreateGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateGroupObject, error) {
+	rsp, err := c.CreateGroupWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateGroupObject(rsp)
+}
+
+func (c *ClientWithResponses) CreateGroupWithApplicationScimPlusJSONBodyWithResponse(ctx context.Context, params *CreateGroupParams, body CreateGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateGroupObject, error) {
+	rsp, err := c.CreateGroupWithApplicationScimPlusJSONBody(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateGroupObject(rsp)
+}
+
+// DeleteGroupWithResponse request returning *DeleteGroupObject
+func (c *ClientWithResponses) DeleteGroupWithResponse(ctx context.Context, id string, params *DeleteGroupParams, reqEditors ...RequestEditorFn) (*DeleteGroupObject, error) {
+	rsp, err := c.DeleteGroup(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteGroupObject(rsp)
+}
+
+// GetGroupWithResponse request returning *GetGroupObject
+func (c *ClientWithResponses) GetGroupWithResponse(ctx context.Context, id string, params *GetGroupParams, reqEditors ...RequestEditorFn) (*GetGroupObject, error) {
+	rsp, err := c.GetGroup(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetGroupObject(rsp)
+}
+
+// PatchGroupWithBodyWithResponse request with arbitrary body returning *PatchGroupObject
+func (c *ClientWithResponses) PatchGroupWithBodyWithResponse(ctx context.Context, id string, params *PatchGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchGroupObject, error) {
+	rsp, err := c.PatchGroupWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchGroupObject(rsp)
+}
+
+func (c *ClientWithResponses) PatchGroupWithApplicationScimPlusJSONBodyWithResponse(ctx context.Context, id string, params *PatchGroupParams, body PatchGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchGroupObject, error) {
+	rsp, err := c.PatchGroupWithApplicationScimPlusJSONBody(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchGroupObject(rsp)
+}
+
+// PutGroupWithBodyWithResponse request with arbitrary body returning *PutGroupObject
+func (c *ClientWithResponses) PutGroupWithBodyWithResponse(ctx context.Context, id string, params *PutGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutGroupObject, error) {
+	rsp, err := c.PutGroupWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutGroupObject(rsp)
+}
+
+func (c *ClientWithResponses) PutGroupWithApplicationScimPlusJSONBodyWithResponse(ctx context.Context, id string, params *PutGroupParams, body PutGroupApplicationScimPlusJSONRequestBody, reqEditors ...RequestEditorFn) (*PutGroupObject, error) {
+	rsp, err := c.PutGroupWithApplicationScimPlusJSONBody(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutGroupObject(rsp)
 }
 
 // GetUsersWithResponse request returning *GetUsersObject
@@ -5606,6 +6872,344 @@ func ParseUpdateThemeTemplateObject(rsp *http.Response) (*UpdateThemeTemplateObj
 	response := &UpdateThemeTemplateObject{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetGroupsObject parses an HTTP response from a GetGroupsWithResponse call
+func ParseGetGroupsObject(rsp *http.Response) (*GetGroupsObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetGroupsObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetGroupsResponseV2
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 529:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON529 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateGroupObject parses an HTTP response from a CreateGroupWithResponse call
+func ParseCreateGroupObject(rsp *http.Response) (*CreateGroupObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateGroupObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest GroupResponseV2
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteGroupObject parses an HTTP response from a DeleteGroupWithResponse call
+func ParseDeleteGroupObject(rsp *http.Response) (*DeleteGroupObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteGroupObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetGroupObject parses an HTTP response from a GetGroupWithResponse call
+func ParseGetGroupObject(rsp *http.Response) (*GetGroupObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetGroupObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GroupResponseV2
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 207:
+		var dest LargeGroupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON207 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 529:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON529 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePatchGroupObject parses an HTTP response from a PatchGroupWithResponse call
+func ParsePatchGroupObject(rsp *http.Response) (*PatchGroupObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PatchGroupObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutGroupObject parses an HTTP response from a PutGroupWithResponse call
+func ParsePutGroupObject(rsp *http.Response) (*PutGroupObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutGroupObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GroupResponseV2
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ExternalErrorMessage1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON500 = &dest
+
 	}
 
 	return response, nil
