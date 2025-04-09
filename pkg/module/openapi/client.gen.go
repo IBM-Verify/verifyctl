@@ -4,6 +4,7 @@
 package openapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -26,6 +27,14 @@ const (
 	AllowBlockListInputOutputAccountStatusCompliant    AllowBlockListInputOutputAccountStatus = "compliant"
 	AllowBlockListInputOutputAccountStatusNonCompliant AllowBlockListInputOutputAccountStatus = "non_compliant"
 	AllowBlockListInputOutputAccountStatusUnmatched    AllowBlockListInputOutputAccountStatus = "unmatched"
+)
+
+// Defines values for AttributeMappingJitpOption.
+const (
+	AttributeMappingJitpOptionALWAYS   AttributeMappingJitpOption = "ALWAYS"
+	AttributeMappingJitpOptionCREATE   AttributeMappingJitpOption = "CREATE"
+	AttributeMappingJitpOptionDISABLED AttributeMappingJitpOption = "DISABLED"
+	AttributeMappingJitpOptionNONE     AttributeMappingJitpOption = "NONE"
 )
 
 // Defines values for Attribute0Datatype.
@@ -100,6 +109,12 @@ const (
 	DatabaseMetaDataRowIDLifetimeROWIDVALIDOTHER       DatabaseMetaDataRowIDLifetime = "ROWID_VALID_OTHER"
 	DatabaseMetaDataRowIDLifetimeROWIDVALIDSESSION     DatabaseMetaDataRowIDLifetime = "ROWID_VALID_SESSION"
 	DatabaseMetaDataRowIDLifetimeROWIDVALIDTRANSACTION DatabaseMetaDataRowIDLifetime = "ROWID_VALID_TRANSACTION"
+)
+
+// Defines values for IdentitySourceInstancesDataStatus.
+const (
+	IdentitySourceInstancesDataStatusConfigured   IdentitySourceInstancesDataStatus = "configured"
+	IdentitySourceInstancesDataStatusUnconfigured IdentitySourceInstancesDataStatus = "unconfigured"
 )
 
 // Defines values for PatchOperationOp.
@@ -238,6 +253,12 @@ const (
 	ViewTypePublic        ViewType = "public"
 )
 
+// Defines values for GetInstancesV2ParamsFilter.
+const (
+	GetInstancesV2ParamsFilterAppscope GetInstancesV2ParamsFilter = "appscope"
+	GetInstancesV2ParamsFilterEnduser  GetInstancesV2ParamsFilter = "enduser"
+)
+
 // AllowBlockListInputOutput Object used to represent an allowlist and blocklist.
 type AllowBlockListInputOutput struct {
 	// AGroup Specifies if the filter refers to a group. The values are true or false.
@@ -296,6 +317,22 @@ type AsyncContext struct {
 	Timeout  *int64           `json:"timeout,omitempty"`
 }
 
+// AttributeMapping defines model for AttributeMapping.
+type AttributeMapping struct {
+	// AttrID The IBM Security Verify Cloud Directory attribute identifier.
+	AttrID string `json:"attrId"`
+
+	// IdsAttrName The external identity source attribute name. Only required if identity source is not Cloud Directory.
+	IdsAttrName string `json:"idsAttrName"`
+
+	// JitpOption The IBM Security Verify Cloud Directory attribute identifier.
+	JitpOption AttributeMappingJitpOption `json:"jitpOption"`
+	PostEval   *PostEval                  `json:"postEval,omitempty"`
+}
+
+// AttributeMappingJitpOption The IBM Security Verify Cloud Directory attribute identifier.
+type AttributeMappingJitpOption string
+
 // Attribute0 defines model for Attribute_0.
 type Attribute0 struct {
 	Constraints *Constraints `json:"constraints,omitempty"`
@@ -342,6 +379,15 @@ type Attribute0Datatype string
 
 // Attribute0SourceType The type of the attribute source from which the attribute value is derived
 type Attribute0SourceType string
+
+// BadRequest0 defines model for BadRequest_0.
+type BadRequest0 struct {
+	// MessageDescription A requester locale-specific descriptive message.
+	MessageDescription string `json:"messageDescription"`
+
+	// MessageID The message key identifier.
+	MessageID string `json:"messageId"`
+}
 
 // BufferedReader defines model for BufferedReader.
 type BufferedReader = map[string]interface{}
@@ -550,6 +596,15 @@ type Constraints struct {
 	WriteAccessForEndUser *bool            `json:"writeAccessForEndUser,omitempty"`
 }
 
+// CreateConflict defines model for CreateConflict.
+type CreateConflict struct {
+	// MessageDescription A requester locale-specific descriptive message.
+	MessageDescription string `json:"messageDescription"`
+
+	// MessageID The message key identifier.
+	MessageID string `json:"messageId"`
+}
+
 // DatabaseMetaData defines model for DatabaseMetaData.
 type DatabaseMetaData struct {
 	CatalogAtStart              *bool                          `json:"catalogAtStart,omitempty"`
@@ -613,6 +668,15 @@ type DatabaseMetaData struct {
 
 // DatabaseMetaDataRowIDLifetime defines model for DatabaseMetaData.RowIDLifetime.
 type DatabaseMetaDataRowIDLifetime string
+
+// DeleteConflict defines model for DeleteConflict.
+type DeleteConflict struct {
+	// MessageDescription A requester locale-specific descriptive message.
+	MessageDescription string `json:"messageDescription"`
+
+	// MessageID The message key identifier.
+	MessageID string `json:"messageId"`
+}
 
 // DeploymentVisibility defines model for DeploymentVisibility.
 type DeploymentVisibility struct {
@@ -690,6 +754,15 @@ type FilterRegistration struct {
 	URLPatternMappings  *[]string          `json:"urlPatternMappings,omitempty"`
 }
 
+// Forbidden0 defines model for Forbidden_0.
+type Forbidden0 struct {
+	// MessageDescription A requester locale-specific descriptive message.
+	MessageDescription string `json:"messageDescription"`
+
+	// MessageID The message key identifier.
+	MessageID string `json:"messageId"`
+}
+
 // Function defines model for Function.
 type Function struct {
 	// Custom The custom function
@@ -705,6 +778,59 @@ type Header struct {
 	Key                  *string             `json:"key,omitempty"`
 	Value                *string             `json:"value,omitempty"`
 	AdditionalProperties map[string][]string `json:"-"`
+}
+
+// IdentitySourceInstancesData defines model for IdentitySourceInstancesData.
+type IdentitySourceInstancesData struct {
+	// AttributeMappings A set of attribute mappings that are associated with the identity source instance.
+	//  It is an array of attribute mappings that are not required but an optional input for certain runtime login flows.
+	//  The properties and the number of properties differe with the provider type.
+	AttributeMappings *[]AttributeMapping `json:"attributeMappings,omitempty"`
+
+	// Enabled A Boolean flag that indicates whether this instance is enabled or disabled. Only enabled identity source instances are displayed on the login selection page.
+	Enabled bool `json:"enabled"`
+
+	// InstanceName The instance name to be displayed on login selection page.
+	InstanceName string `json:"instanceName"`
+
+	// Predefined This property is currently not in use. We do not support plugging-in any other custom types of identity providers.
+	//  However, the purpose was to indicate that this instance is special; it neither be created and nor deleted.
+	Predefined *bool `json:"predefined,omitempty"`
+
+	// Properties A set of properties that are associated with the identity source instance.
+	//   It is an array of properties of identity source instance that are required to perform the runtime login flow.
+	//   The properties and the number of properties differ with the provider type.
+	Properties []IdentitySourceInstancesPropertiesData `json:"properties"`
+
+	// SourceTypeID The numeric identifier of identity provider type.
+	SourceTypeID int32 `json:"sourceTypeId"`
+
+	// Status A string label that indicates whether this instance is configured. If specified, this property is ignored during creation.
+	Status *IdentitySourceInstancesDataStatus `json:"status,omitempty"`
+}
+
+// IdentitySourceInstancesDataStatus A string label that indicates whether this instance is configured. If specified, this property is ignored during creation.
+type IdentitySourceInstancesDataStatus string
+
+// IdentitySourceInstancesPropertiesData defines model for IdentitySourceInstancesPropertiesData.
+type IdentitySourceInstancesPropertiesData struct {
+	// Key Property key.
+	Key string `json:"key"`
+
+	// Sensitive Indicates whether this property holds any secrets that should not be disclosed.<br> If the property is sensitive, then the property value will be masked out with asterisk characters.
+	Sensitive bool `json:"sensitive"`
+
+	// Value Property value. Secret values will be masked out with asterisk characters.
+	Value string `json:"value"`
+}
+
+// IdentitySourceIntancesDataList defines model for IdentitySourceIntancesDataList.
+type IdentitySourceIntancesDataList struct {
+	// IdentitySources A list of identity source intances configured for the tenant.
+	IdentitySources []IdentitySourceInstancesData `json:"identitySources"`
+
+	// Total Total number of identity source intances configured for the tenant.
+	Total int32 `json:"total"`
 }
 
 // JSONArray defines model for JsonArray.
@@ -845,6 +971,15 @@ type Locale struct {
 	UnicodeLocaleAttributes *[]string `json:"unicodeLocaleAttributes,omitempty"`
 	UnicodeLocaleKeys       *[]string `json:"unicodeLocaleKeys,omitempty"`
 	Variant                 *string   `json:"variant,omitempty"`
+}
+
+// NotFound0 defines model for NotFound_0.
+type NotFound0 struct {
+	// MessageDescription A requester locale-specific descriptive message.
+	MessageDescription string `json:"messageDescription"`
+
+	// MessageID The message key identifier.
+	MessageID string `json:"messageId"`
 }
 
 // Number defines model for Number.
@@ -1015,6 +1150,15 @@ type PlanPackageDocumentType string
 
 // PlanPackagePendingDeploymentState defines model for PlanPackage.PendingDeploymentState.
 type PlanPackagePendingDeploymentState string
+
+// PostEval defines model for PostEval.
+type PostEval struct {
+	// Custom A custom rule for transforming. This will tranform the attribute mapping. Only one of 'id' or 'custom' can be set on an attribute mapping.
+	Custom string `json:"custom"`
+
+	// ID A valid attribute function. This will tranform the attribute mapping. Only one of 'id' or 'custom' can be set on an attribute mapping.
+	ID string `json:"id"`
+}
 
 // PrintWriter defines model for PrintWriter.
 type PrintWriter = map[string]interface{}
@@ -1570,6 +1714,24 @@ type UpdateThemeTemplateMultipartBody struct {
 	File openapi_types.File `json:"file"`
 }
 
+// GetInstancesV2Params defines parameters for GetInstancesV2.
+type GetInstancesV2Params struct {
+	// Filter You can use following filters to fetch the identity source instances with specific properties. <br><br><b>enduser</b>: Returns all the identity source instances that are enabled for end users, i.e. the instances with <b>show_end_user</b> property value set as <b>true</b>.<br><br><b>appscope</b>: Returns all the social identity sources, excluding the IBMid identity source, that are associated with custom applications.<br>    Regardless of this filter, Cloud Directory is included as the default provider.
+	Filter *GetInstancesV2ParamsFilter `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// Search The prefix for all search operations is <b>search=</b>. <br>You can search on following fields: id, sourceTypeId, instanceName, enabled<br>Specifying any other field than the allowed search fields in the criteria will result in an error.<br><br>Valid operators for strings are =, != and contains <br>Valid operators for booleans are = and !=<br>Valid operators for numbers are =, !=, >=, >, &lt=, and &lt<br>String search values must be double quoted; the numbers and booleans must be without quotes. More than one search criteria can be specified using <b>"and"</b> and <b>"or"</b> operators.<br><br>The search parameter value <b>MUST</b> be URL encoded.<br><b>Notes:</b> Only value should be encoded; not the parameter name. Encoding is not required when using Swagger UI.<br><br><b>Examples:</b><br>a. To search on instanceName, provide the search criteria as follows: <br><pre>   instanceName = "Baidu" </pre><br>or in URL encoded form as follows: <br><pre>   search=instanceName%20%3D%20%22Baidu%22 </pre><br>b. To search on instanceName containing "SAML" in it, provide the search criteria as follows: <br><pre>   instanceName contains "SAML" </pre><br>or in URL encoded form as follows: <br><pre>   search=instanceName%20contains%20%22SAML%22 </pre><br>c. To search the SAML Enterprise instances that have "ABC" in their names, provide the search criteria as follows: <br><pre>   instanceName contains "ABC" and sourceTypeId = 4 </pre><br>or in URL encoded form as follows: <br><pre>   search=instanceName%20contains%20%22ABC%22%20and%20sourceTypeId%20%3D%204 </pre><br>
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+
+	// Pagination The prefix for the paging parameter is <b>pagination=</b>. <br><br>If pagination parameters are not specified, then all the results will be returned. <br><br>If pagination parameters are specified, then the results will be paginated. Following are the parameters that can be specified; these parameters will be included in the response reflecting the actual results. <br><br><b>page</b>: The page being requested, or the offset that defines the starting resource number. <br><b>limit</b>: It is a page size; it defines the total number of resources that can be included in one page. It is the maximum number of resources that will be returned in the response.<b>count</b>: The total number of resources to be returned in the response. It is an optional parameter, and it MUST be less than or equal to the limit. If not specified, then count = limit.<br><br><br>The pagination parameter value <b>MUST</b> be URL encoded.<br><b>Note:</b> Only value should be encoded; not the parameter name. Encoding is not required when using Swagger UI.<br><br><b>Note:</b> The maximum value allowed for the <b>limit</b> or <b>count</b> fields is 1000. <br><br><b>Examples:</b><br>a. To retrieve first 5 or less resources from page 1, provide pagination parameters as follows: <br><pre>   count=5&page=1&limit=10 </pre><br>or in URL encoded form as follows: <br><pre>   pagination=count%3D5%26page%3D1%26limit%3D10 </pre><br>b. To retrieve first 3 or less resources from page 2, provide pagination parameters as follows: <br><pre>   count=3&page=2&limit=10 </pre><br>or in URL encoded form as follows: <br><pre>   pagination=count%3D3%26page%3D2%26limit%3D10 </pre><br>
+	Pagination *string `form:"pagination,omitempty" json:"pagination,omitempty"`
+
+	// Sort The prefix for the sort parameter is <b>sort=</b>. <br>You can sort on following fields: id, sourceTypeId, instanceName, enabled<br>Specifying any other field than the allowed sort fields will result in an error.<br><br>Each sort attribute must be prefixed with either + or - (+ ascending, - descending). A list of attributes separated by a comma (,) can be specified for the second or third order of sorting. <br><br>The sort parameter value <b>MUST</b> be URL encoded.<br><b>Note:</b> Only value should be encoded; not the parameter name. Encoding is not required when using Swagger UI.<br><br><b>Examples:</b><br>a. To sort on sourceTypeId in ascending order, provide the sort parameter as follows: <br><pre>   +sourceTypeId </pre><br>or in URL encoded form as follows: <br><pre>   sort=%2BsourceTypeId </pre><br>b. To sort on sourceTypeId in ascending order and for second order sort on instanceName in descending order, provide the sort parameter as follows: <br><pre>   +sourceTypeId,-instanceName </pre><br>or in URL encoded form as follows: <br><pre>   sort=%2BsourceTypeId%2C-instanceName </pre><br>
+	Sort *string `form:"sort,omitempty" json:"sort,omitempty"`
+}
+
+// GetInstancesV2ParamsFilter defines parameters for GetInstancesV2.
+type GetInstancesV2ParamsFilter string
+
 // PostOauth2TokenFormdataRequestBody defines body for PostOauth2Token for application/x-www-form-urlencoded ContentType.
 type PostOauth2TokenFormdataRequestBody = TokenRequest
 
@@ -1581,6 +1743,12 @@ type UpdateThemeTemplatesMultipartRequestBody UpdateThemeTemplatesMultipartBody
 
 // UpdateThemeTemplateMultipartRequestBody defines body for UpdateThemeTemplate for multipart/form-data ContentType.
 type UpdateThemeTemplateMultipartRequestBody UpdateThemeTemplateMultipartBody
+
+// CreateIdentitySourceV2JSONRequestBody defines body for CreateIdentitySourceV2 for application/json ContentType.
+type CreateIdentitySourceV2JSONRequestBody = IdentitySourceInstancesData
+
+// UpdateIdentitySourceV2JSONRequestBody defines body for UpdateIdentitySourceV2 for application/json ContentType.
+type UpdateIdentitySourceV2JSONRequestBody = IdentitySourceInstancesData
 
 // Getter for additional properties for Header. Returns the specified
 // element and whether it was found
@@ -1787,6 +1955,25 @@ type ClientInterface interface {
 
 	// UpdateThemeTemplateWithBody request with any body
 	UpdateThemeTemplateWithBody(ctx context.Context, themeID string, templatePath string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetInstancesV2 request
+	GetInstancesV2(ctx context.Context, params *GetInstancesV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateIdentitySourceV2WithBody request with any body
+	CreateIdentitySourceV2WithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateIdentitySourceV2(ctx context.Context, body CreateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteIdentitySourceV2 request
+	DeleteIdentitySourceV2(ctx context.Context, instanceID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetInstanceV2 request
+	GetInstanceV2(ctx context.Context, instanceID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateIdentitySourceV2WithBody request with any body
+	UpdateIdentitySourceV2WithBody(ctx context.Context, instanceID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateIdentitySourceV2(ctx context.Context, instanceID string, body UpdateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) PostOauth2TokenWithBody(ctx context.Context, params *PostOauth2TokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1983,6 +2170,90 @@ func (c *Client) GetTemplate0(ctx context.Context, themeID string, templatePath 
 
 func (c *Client) UpdateThemeTemplateWithBody(ctx context.Context, themeID string, templatePath string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateThemeTemplateRequestWithBody(c.Server, themeID, templatePath, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetInstancesV2(ctx context.Context, params *GetInstancesV2Params, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetInstancesV2Request(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateIdentitySourceV2WithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateIdentitySourceV2RequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateIdentitySourceV2(ctx context.Context, body CreateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateIdentitySourceV2Request(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteIdentitySourceV2(ctx context.Context, instanceID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteIdentitySourceV2Request(c.Server, instanceID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetInstanceV2(ctx context.Context, instanceID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetInstanceV2Request(c.Server, instanceID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIdentitySourceV2WithBody(ctx context.Context, instanceID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIdentitySourceV2RequestWithBody(c.Server, instanceID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIdentitySourceV2(ctx context.Context, instanceID string, body UpdateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIdentitySourceV2Request(c.Server, instanceID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2747,6 +3018,258 @@ func NewUpdateThemeTemplateRequestWithBody(server string, themeID string, templa
 	return req, nil
 }
 
+// NewGetInstancesV2Request generates requests for GetInstancesV2
+func NewGetInstancesV2Request(server string, params *GetInstancesV2Params) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/identitysources")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Filter != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "filter", runtime.ParamLocationQuery, *params.Filter); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Search != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "search", runtime.ParamLocationQuery, *params.Search); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Pagination != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "pagination", runtime.ParamLocationQuery, *params.Pagination); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sort != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sort", runtime.ParamLocationQuery, *params.Sort); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateIdentitySourceV2Request calls the generic CreateIdentitySourceV2 builder with application/json body
+func NewCreateIdentitySourceV2Request(server string, body CreateIdentitySourceV2JSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateIdentitySourceV2RequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateIdentitySourceV2RequestWithBody generates requests for CreateIdentitySourceV2 with any type of body
+func NewCreateIdentitySourceV2RequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/identitysources")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteIdentitySourceV2Request generates requests for DeleteIdentitySourceV2
+func NewDeleteIdentitySourceV2Request(server string, instanceID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "instanceId", runtime.ParamLocationPath, instanceID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/identitysources/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetInstanceV2Request generates requests for GetInstanceV2
+func NewGetInstanceV2Request(server string, instanceID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "instanceId", runtime.ParamLocationPath, instanceID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/identitysources/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateIdentitySourceV2Request calls the generic UpdateIdentitySourceV2 builder with application/json body
+func NewUpdateIdentitySourceV2Request(server string, instanceID string, body UpdateIdentitySourceV2JSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateIdentitySourceV2RequestWithBody(server, instanceID, "application/json", bodyReader)
+}
+
+// NewUpdateIdentitySourceV2RequestWithBody generates requests for UpdateIdentitySourceV2 with any type of body
+func NewUpdateIdentitySourceV2RequestWithBody(server string, instanceID string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "instanceId", runtime.ParamLocationPath, instanceID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2.0/identitysources/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -2839,6 +3362,25 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateThemeTemplateWithBodyWithResponse request with any body
 	UpdateThemeTemplateWithBodyWithResponse(ctx context.Context, themeID string, templatePath string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateThemeTemplateObject, error)
+
+	// GetInstancesV2WithResponse request
+	GetInstancesV2WithResponse(ctx context.Context, params *GetInstancesV2Params, reqEditors ...RequestEditorFn) (*GetInstancesV2Object, error)
+
+	// CreateIdentitySourceV2WithBodyWithResponse request with any body
+	CreateIdentitySourceV2WithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateIdentitySourceV2Object, error)
+
+	CreateIdentitySourceV2WithResponse(ctx context.Context, body CreateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*CreateIdentitySourceV2Object, error)
+
+	// DeleteIdentitySourceV2WithResponse request
+	DeleteIdentitySourceV2WithResponse(ctx context.Context, instanceID string, reqEditors ...RequestEditorFn) (*DeleteIdentitySourceV2Object, error)
+
+	// GetInstanceV2WithResponse request
+	GetInstanceV2WithResponse(ctx context.Context, instanceID string, reqEditors ...RequestEditorFn) (*GetInstanceV2Object, error)
+
+	// UpdateIdentitySourceV2WithBodyWithResponse request with any body
+	UpdateIdentitySourceV2WithBodyWithResponse(ctx context.Context, instanceID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIdentitySourceV2Object, error)
+
+	UpdateIdentitySourceV2WithResponse(ctx context.Context, instanceID string, body UpdateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIdentitySourceV2Object, error)
 }
 
 type PostOauth2TokenObject struct {
@@ -3221,6 +3763,118 @@ func (r UpdateThemeTemplateObject) StatusCode() int {
 	return 0
 }
 
+type GetInstancesV2Object struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IdentitySourceIntancesDataList
+	JSON400      *BadRequest0
+	JSON403      *Forbidden0
+	JSON404      *NotFound0
+}
+
+// Status returns HTTPResponse.Status
+func (r GetInstancesV2Object) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetInstancesV2Object) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateIdentitySourceV2Object struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateIdentitySourceV2Object) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateIdentitySourceV2Object) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteIdentitySourceV2Object struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteIdentitySourceV2Object) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteIdentitySourceV2Object) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetInstanceV2Object struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IdentitySourceInstancesData
+	JSON403      *Forbidden0
+	JSON404      *NotFound0
+}
+
+// Status returns HTTPResponse.Status
+func (r GetInstanceV2Object) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetInstanceV2Object) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateIdentitySourceV2Object struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateIdentitySourceV2Object) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateIdentitySourceV2Object) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // PostOauth2TokenWithBodyWithResponse request with arbitrary body returning *PostOauth2TokenObject
 func (c *ClientWithResponses) PostOauth2TokenWithBodyWithResponse(ctx context.Context, params *PostOauth2TokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOauth2TokenObject, error) {
 	rsp, err := c.PostOauth2TokenWithBody(ctx, params, contentType, body, reqEditors...)
@@ -3371,6 +4025,67 @@ func (c *ClientWithResponses) UpdateThemeTemplateWithBodyWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseUpdateThemeTemplateObject(rsp)
+}
+
+// GetInstancesV2WithResponse request returning *GetInstancesV2Object
+func (c *ClientWithResponses) GetInstancesV2WithResponse(ctx context.Context, params *GetInstancesV2Params, reqEditors ...RequestEditorFn) (*GetInstancesV2Object, error) {
+	rsp, err := c.GetInstancesV2(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetInstancesV2Object(rsp)
+}
+
+// CreateIdentitySourceV2WithBodyWithResponse request with arbitrary body returning *CreateIdentitySourceV2Object
+func (c *ClientWithResponses) CreateIdentitySourceV2WithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateIdentitySourceV2Object, error) {
+	rsp, err := c.CreateIdentitySourceV2WithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateIdentitySourceV2Object(rsp)
+}
+
+func (c *ClientWithResponses) CreateIdentitySourceV2WithResponse(ctx context.Context, body CreateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*CreateIdentitySourceV2Object, error) {
+	rsp, err := c.CreateIdentitySourceV2(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateIdentitySourceV2Object(rsp)
+}
+
+// DeleteIdentitySourceV2WithResponse request returning *DeleteIdentitySourceV2Object
+func (c *ClientWithResponses) DeleteIdentitySourceV2WithResponse(ctx context.Context, instanceID string, reqEditors ...RequestEditorFn) (*DeleteIdentitySourceV2Object, error) {
+	rsp, err := c.DeleteIdentitySourceV2(ctx, instanceID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteIdentitySourceV2Object(rsp)
+}
+
+// GetInstanceV2WithResponse request returning *GetInstanceV2Object
+func (c *ClientWithResponses) GetInstanceV2WithResponse(ctx context.Context, instanceID string, reqEditors ...RequestEditorFn) (*GetInstanceV2Object, error) {
+	rsp, err := c.GetInstanceV2(ctx, instanceID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetInstanceV2Object(rsp)
+}
+
+// UpdateIdentitySourceV2WithBodyWithResponse request with arbitrary body returning *UpdateIdentitySourceV2Object
+func (c *ClientWithResponses) UpdateIdentitySourceV2WithBodyWithResponse(ctx context.Context, instanceID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIdentitySourceV2Object, error) {
+	rsp, err := c.UpdateIdentitySourceV2WithBody(ctx, instanceID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIdentitySourceV2Object(rsp)
+}
+
+func (c *ClientWithResponses) UpdateIdentitySourceV2WithResponse(ctx context.Context, instanceID string, body UpdateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIdentitySourceV2Object, error) {
+	rsp, err := c.UpdateIdentitySourceV2(ctx, instanceID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIdentitySourceV2Object(rsp)
 }
 
 // ParsePostOauth2TokenObject parses an HTTP response from a PostOauth2TokenWithResponse call
@@ -3948,6 +4663,141 @@ func ParseUpdateThemeTemplateObject(rsp *http.Response) (*UpdateThemeTemplateObj
 	}
 
 	response := &UpdateThemeTemplateObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetInstancesV2Object parses an HTTP response from a GetInstancesV2WithResponse call
+func ParseGetInstancesV2Object(rsp *http.Response) (*GetInstancesV2Object, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetInstancesV2Object{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IdentitySourceIntancesDataList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest0
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden0
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound0
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateIdentitySourceV2Object parses an HTTP response from a CreateIdentitySourceV2WithResponse call
+func ParseCreateIdentitySourceV2Object(rsp *http.Response) (*CreateIdentitySourceV2Object, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateIdentitySourceV2Object{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDeleteIdentitySourceV2Object parses an HTTP response from a DeleteIdentitySourceV2WithResponse call
+func ParseDeleteIdentitySourceV2Object(rsp *http.Response) (*DeleteIdentitySourceV2Object, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteIdentitySourceV2Object{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetInstanceV2Object parses an HTTP response from a GetInstanceV2WithResponse call
+func ParseGetInstanceV2Object(rsp *http.Response) (*GetInstanceV2Object, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetInstanceV2Object{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IdentitySourceInstancesData
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden0
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound0
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateIdentitySourceV2Object parses an HTTP response from a UpdateIdentitySourceV2WithResponse call
+func ParseUpdateIdentitySourceV2Object(rsp *http.Response) (*UpdateIdentitySourceV2Object, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateIdentitySourceV2Object{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
