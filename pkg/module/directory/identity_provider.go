@@ -9,6 +9,7 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
+	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
 
@@ -95,43 +96,41 @@ func (c *IdentitysourceClient) CreateIdentitysource(ctx context.Context, auth *c
 	return "Identity provider created successfully", nil
 }
 
-func (c *IdentitysourceClient) GetIdentitysource(ctx context.Context, auth *config.AuthConfig, identitysourceName string) (*IdentitySource, string, error) {
+func (c *IdentitysourceClient) GetIdentitysource(ctx context.Context, auth *config.AuthConfig, identitysourceName string) (*openapi.IdentitySourceInstancesData, string, error) {
 	vc := config.GetVerifyContext(ctx)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getIdentitysourceId(ctx, auth, identitysourceName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the group ID; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiIdentitysources, id))
-
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	response, err := c.client.Get(ctx, u, headers)
+	resp, err := client.GetInstanceV2WithResponse(ctx, id, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer "+auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to get the IdentitySource; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get IdentitySource"); err != nil {
-			vc.Logger.Errorf("unable to get the IdentitySource; err=%s", err.Error())
-			return nil, "", err
-		}
+	if resp.StatusCode() != http.StatusOK {
+		// if err := module.HandleCommonErrors(ctx, resp, "unable to get IdentitySource"); err != nil {
+		// 	vc.Logger.Errorf("unable to get the IdentitySource; err=%s", err.Error())
+		// 	return nil, "", err
+		// }
 
-		vc.Logger.Errorf("unable to get the IdentitySource; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to get the IdentitySource; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the IdentitySource")
 	}
 
-	IdentitySource := &IdentitySource{}
-	if err = json.Unmarshal(response.Body, IdentitySource); err != nil {
+	IdentitySource := &openapi.IdentitySourceInstancesData{}
+	if err = json.Unmarshal(resp.Body, IdentitySource); err != nil {
 		return nil, "", fmt.Errorf("unable to get the IdentitySource")
 	}
 
-	return IdentitySource, u.String(), nil
+	return IdentitySource, resp.HTTPResponse.Request.URL.String(), nil
 }
 
 func (c *IdentitysourceClient) GetIdentitysources(ctx context.Context, auth *config.AuthConfig, sort string, count string) (
