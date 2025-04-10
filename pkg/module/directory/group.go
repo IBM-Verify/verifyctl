@@ -19,11 +19,15 @@ type GroupPatchRequest struct {
 	SCIMPatchRequest openapi.PatchBody `json:"scimPatch" yaml:"scimPatch"`
 }
 
+type Group = openapi.GroupResponseV2
+type GroupListResponse = openapi.GetGroupsResponseV2
+type GroupPatchOperation = openapi.PatchOperation0
+
 func NewGroupClient() *GroupClient {
 	return &GroupClient{}
 }
 
-func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, groupName string) (*openapi.GroupResponseV2, string, error) {
+func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, groupName string) (*Group, string, error) {
 	vc := config.GetVerifyContext(ctx)
 	id, err := c.getGroupId(ctx, auth, groupName)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
@@ -52,7 +56,7 @@ func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, gro
 		return nil, "", fmt.Errorf("unable to get the Group")
 	}
 
-	Group := &openapi.GroupResponseV2{}
+	Group := &Group{}
 	if err = json.Unmarshal(resp.Body, Group); err != nil {
 		return nil, "", fmt.Errorf("unable to get the Group")
 	}
@@ -60,7 +64,7 @@ func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, gro
 	return Group, resp.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*openapi.GetGroupsResponseV2, string, error) {
+func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*GroupListResponse, string, error) {
 
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
@@ -94,7 +98,7 @@ func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, so
 		return nil, "", fmt.Errorf("unable to get the Groups")
 	}
 
-	GroupsResponse := &openapi.GetGroupsResponseV2{}
+	GroupsResponse := &GroupListResponse{}
 	if err = json.Unmarshal(resp.Body, &GroupsResponse); err != nil {
 		vc.Logger.Errorf("unable to get the Groups; err=%s, body=%s", err, string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Groups")
@@ -103,7 +107,7 @@ func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, so
 	return GroupsResponse, resp.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, group *openapi.GroupResponseV2) (string, error) {
+func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, group *Group) (string, error) {
 	vc := config.GetVerifyContext(ctx)
 	userClient := NewUserClient()
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
@@ -187,7 +191,7 @@ func (c *GroupClient) DeleteGroup(ctx context.Context, auth *config.AuthConfig, 
 	return nil
 }
 
-func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, groupName string, operations []openapi.PatchOperation0) error {
+func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, groupName string, operations []GroupPatchOperation) error {
 	vc := config.GetVerifyContext(ctx)
 	userClient := NewUserClient()
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))

@@ -10,7 +10,6 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/directory"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -111,7 +110,7 @@ func (o *groupOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "Group",
 			APIVersion: "2.0",
-			Data:       &openapi.GroupResponseV2{},
+			Data:       &directory.Group{},
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
@@ -146,7 +145,7 @@ func (o *groupOptions) createGroupWithData(cmd *cobra.Command, auth *config.Auth
 	vc := config.GetVerifyContext(ctx)
 
 	// unmarshal to group
-	group := &openapi.GroupResponseV2{}
+	group := &directory.Group{}
 	if err := json.Unmarshal(data, &group); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the group; err=%v", err)
 		return err
@@ -167,7 +166,7 @@ func (o *groupOptions) createGroupFromDataMap(cmd *cobra.Command, auth *config.A
 	vc := config.GetVerifyContext(ctx)
 
 	// unmarshal to group
-	group := &openapi.GroupResponseV2{}
+	group := &directory.Group{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal the data map; err=%v", err)

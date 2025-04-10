@@ -10,7 +10,6 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/directory"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -111,7 +110,7 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "User",
 			APIVersion: "2.0",
-			Data:       &openapi.UserResponseV2{},
+			Data:       &directory.User{},
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
@@ -146,7 +145,7 @@ func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	vc := config.GetVerifyContext(ctx)
 
 	// unmarshal to user
-	user := &openapi.UserV2{}
+	user := &directory.User{}
 	if err := json.Unmarshal(data, &user); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the user; err=%v", err)
 		return err
@@ -167,7 +166,7 @@ func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, auth *config.Aut
 	vc := config.GetVerifyContext(ctx)
 
 	// unmarshal to user
-	user := &openapi.UserV2{}
+	user := &directory.User{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal the data map; err=%v", err)

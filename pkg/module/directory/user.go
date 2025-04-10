@@ -16,6 +16,10 @@ type UserClient struct {
 	client xhttp.Clientx
 }
 
+type User = openapi.UserResponseV2
+type UserListResponse = openapi.GetUsersResponseV2
+type UserPatchOperation = openapi.PatchOperation0
+
 type UserPatchRequest struct {
 	UserName         string            `json:"userName" yaml:"userName"`
 	SCIMPatchRequest openapi.PatchBody `json:"scimPatch" yaml:"scimPatch"`
@@ -27,7 +31,7 @@ func NewUserClient() *UserClient {
 	}
 }
 
-func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, user *openapi.UserV2) (string, error) {
+func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, user *User) (string, error) {
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	defaultErr := fmt.Errorf("unable to create user")
@@ -70,7 +74,7 @@ func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, us
 	return fmt.Sprintf("%s/%s", resp.HTTPResponse.Request.URL.String(), id), nil
 }
 
-func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userName string) (*openapi.UserResponseV2, string, error) {
+func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userName string) (*User, string, error) {
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getUserId(ctx, auth, userName)
@@ -99,7 +103,7 @@ func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userN
 		return nil, "", fmt.Errorf("unable to get the User")
 	}
 
-	User := &openapi.UserResponseV2{}
+	User := &User{}
 	if err = json.Unmarshal(resp.Body, User); err != nil {
 		return nil, "", fmt.Errorf("unable to get the User")
 	}
@@ -107,7 +111,7 @@ func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userN
 	return User, resp.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*openapi.GetUsersResponseV2, string, error) {
+func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*UserListResponse, string, error) {
 
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
@@ -141,7 +145,7 @@ func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort
 		return nil, "", fmt.Errorf("unable to get the Users")
 	}
 
-	UsersResponse := &openapi.GetUsersResponseV2{}
+	UsersResponse := &UserListResponse{}
 	if err = json.Unmarshal(resp.Body, &UsersResponse); err != nil {
 		vc.Logger.Errorf("unable to get the Users; err=%s, body=%s", err, string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Users")
@@ -182,7 +186,7 @@ func (c *UserClient) DeleteUser(ctx context.Context, auth *config.AuthConfig, na
 	return nil
 }
 
-func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, userName string, operations []openapi.PatchOperation0) error {
+func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, userName string, operations []UserPatchOperation) error {
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getUserId(ctx, auth, userName)
