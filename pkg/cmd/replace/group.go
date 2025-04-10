@@ -105,13 +105,13 @@ func (o *groupOptions) Run(cmd *cobra.Command, args []string) error {
 		cmdutil.WriteString(cmd, entitlementsMessage+"  "+groupEntitlements)
 		return nil
 	}
-
+	id := "<id>"
 	if o.boilerplate {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "Group",
 			APIVersion: "1.0",
 			Data: &directory.Group{
-				Id:          "<id>",
+				ID:          &id,
 				DisplayName: "<name>",
 			},
 		}

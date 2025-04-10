@@ -17,11 +17,14 @@ import (
 
 type AttributeClient struct{}
 
+type Attribute = openapi.Attribute0
+type AttributeList = openapi.PaginatedAttribute0
+
 func NewAttributeClient() *AttributeClient {
 	return &AttributeClient{}
 }
 
-func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthConfig, id string) (*openapi.Attribute0, string, error) {
+func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthConfig, id string) (*Attribute, string, error) {
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	params := openapi.GetAttribute0Params{
@@ -32,7 +35,7 @@ func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthCon
 		vc.Logger.Errorf("unable to get the attribute; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the attribute")
 	}
-	attribute := &openapi.Attribute0{}
+	attribute := &Attribute{}
 
 	if err := json.Unmarshal(resp.Body, attribute); err != nil {
 		fmt.Println(err)
@@ -42,8 +45,7 @@ func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthCon
 	return attribute, auth.Tenant, nil
 }
 
-func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (
-	*openapi.PaginatedAttribute0, string, error) {
+func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (*AttributeList, string, error) {
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	params := openapi.GetAllAttributesParams{
@@ -69,7 +71,7 @@ func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthCo
 	}
 
 	resp, err := module.CustomParse(client.GetAllAttributes(ctx, &params))
-	body := &openapi.PaginatedAttribute0{}
+	body := &AttributeList{}
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -90,7 +92,7 @@ func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthCo
 }
 
 // CreateAttribute creates an attribute and returns the resource URI.
-func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *openapi.Attribute0) (string, error) {
+func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) (string, error) {
 	vc := config.GetVerifyContext(ctx)
 	defaultErr := fmt.Errorf("unable to create attribute")
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
@@ -134,7 +136,7 @@ func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.Auth
 	return resourceURI, nil
 }
 
-func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *openapi.Attribute0) error {
+func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) error {
 	vc := config.GetVerifyContext(ctx)
 	defaultErr := fmt.Errorf("unable to update attribute")
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
