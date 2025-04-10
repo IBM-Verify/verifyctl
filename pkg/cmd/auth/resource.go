@@ -3,14 +3,13 @@ package auth
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"os"
 	"strings"
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
+	"github.com/ibm-security-verify/verifyctl/pkg/module/auth"
 	"github.com/spf13/cobra"
 )
 
@@ -30,8 +29,8 @@ type AuthResource struct {
 	PrivateKeyJWK *jose.JSONWebKey `yaml:"-" json:"-"`
 }
 
-func (o *options) authenticate(cmd *cobra.Command, r *AuthResource) (*openapi.TokenResponse, error) {
-	var tokenResponse openapi.TokenResponse
+func (o *options) authenticate(cmd *cobra.Command, r *AuthResource) (*auth.TokenResponse, error) {
+	var tokenResponse *auth.TokenResponse
 	if r.User && r.UserGrantType == "auth_code" {
 		return nil, fmt.Errorf("not implemented")
 	} else if r.User && r.UserGrantType == "jwt_bearer" {
@@ -39,23 +38,10 @@ func (o *options) authenticate(cmd *cobra.Command, r *AuthResource) (*openapi.To
 	} else if r.User {
 		return nil, fmt.Errorf("not implemented")
 	} else {
-		formData := url.Values{}
-		formData.Add("client_id", r.ClientID)
-		formData.Add("client_secret", r.ClientSecret)
-		formData.Add("grant_type", "client_credentials")
-		client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", o.tenant))
-		resp, err := client.PostOauth2TokenWithBodyWithResponse(cmd.Context(), nil, "application/x-www-form-urlencoded", strings.NewReader(formData.Encode()))
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			err = json.Unmarshal(resp.Body, &tokenResponse)
-			if err != nil {
-				return nil, err
-			}
-		}
+		tokenResponse, _ = auth.GetToken(cmd.Context(), r.ClientID, r.ClientSecret, o.tenant)
 	}
 
-	return &tokenResponse, nil
+	return tokenResponse, nil
 }
 
 func (o *options) readFile(cmd *cobra.Command) (*AuthResource, error) {
