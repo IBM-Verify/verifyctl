@@ -1928,6 +1928,14 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "count",
+                        "in": "query",
+                        "description": "The prefix for the count parameter is <b>count=</b>. ",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {

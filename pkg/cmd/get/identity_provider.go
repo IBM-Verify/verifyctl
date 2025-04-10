@@ -162,7 +162,7 @@ func (o *identitysourcesOptions) handleIdentitysourceList(cmd *cobra.Command, au
 	}
 
 	items := []*resource.ResourceObject{}
-	for _, is := range iss.Identitysources {
+	for _, is := range iss.IdentitySources {
 		items = append(items, &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "IdentitySource",
 			APIVersion: "2.0",
@@ -178,7 +178,7 @@ func (o *identitysourcesOptions) handleIdentitysourceList(cmd *cobra.Command, au
 		APIVersion: "2.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: iss.TotalResults,
+			Total: int(iss.Total),
 		},
 		Items: items,
 	}

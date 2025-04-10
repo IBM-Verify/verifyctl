@@ -1727,6 +1727,9 @@ type GetInstancesV2Params struct {
 
 	// Sort The prefix for the sort parameter is <b>sort=</b>. <br>You can sort on following fields: id, sourceTypeId, instanceName, enabled<br>Specifying any other field than the allowed sort fields will result in an error.<br><br>Each sort attribute must be prefixed with either + or - (+ ascending, - descending). A list of attributes separated by a comma (,) can be specified for the second or third order of sorting. <br><br>The sort parameter value <b>MUST</b> be URL encoded.<br><b>Note:</b> Only value should be encoded; not the parameter name. Encoding is not required when using Swagger UI.<br><br><b>Examples:</b><br>a. To sort on sourceTypeId in ascending order, provide the sort parameter as follows: <br><pre>   +sourceTypeId </pre><br>or in URL encoded form as follows: <br><pre>   sort=%2BsourceTypeId </pre><br>b. To sort on sourceTypeId in ascending order and for second order sort on instanceName in descending order, provide the sort parameter as follows: <br><pre>   +sourceTypeId,-instanceName </pre><br>or in URL encoded form as follows: <br><pre>   sort=%2BsourceTypeId%2C-instanceName </pre><br>
 	Sort *string `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// Count The prefix for the count parameter is <b>count=</b>.
+	Count *string `form:"count,omitempty" json:"count,omitempty"`
 }
 
 // GetInstancesV2ParamsFilter defines parameters for GetInstancesV2.
@@ -3091,6 +3094,22 @@ func NewGetInstancesV2Request(server string, params *GetInstancesV2Params) (*htt
 		if params.Sort != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sort", runtime.ParamLocationQuery, *params.Sort); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Count != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "count", runtime.ParamLocationQuery, *params.Count); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
