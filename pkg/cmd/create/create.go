@@ -89,7 +89,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newAttributeCommand(config, streams))
 	cmd.AddCommand(newUserCommand(config, streams))
 	cmd.AddCommand(newGroupCommand(config, streams))
-	cmd.AddCommand(newApiClientCommand(config, streams))
+	cmd.AddCommand(newAPIClientCommand(config, streams))
 
 	return cmd
 }
@@ -145,9 +145,9 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		options := &groupOptions{}
 		err = options.createGroupFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 
-	case resource.ResourceTypePrefix + "Apiclient":
+	case resource.ResourceTypePrefix + "APIClient":
 		options := &apiClientOptions{}
-		err = options.createApiClientFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.createAPIClientFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err

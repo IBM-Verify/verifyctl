@@ -1,13 +1,14 @@
 package delete
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/spf13/cobra"
 	"github.ibm.com/sec-ci/devops-experiments/pkg/config"
 	"github.ibm.com/sec-ci/devops-experiments/pkg/i18n"
 	"github.ibm.com/sec-ci/devops-experiments/pkg/module"
-	"github.ibm.com/sec-ci/devops-experiments/pkg/module/directory"
+	"github.ibm.com/sec-ci/devops-experiments/pkg/module/security"
 	cmdutil "github.ibm.com/sec-ci/devops-experiments/pkg/util/cmd"
 	"github.ibm.com/sec-ci/devops-experiments/pkg/util/templates"
 )
@@ -21,7 +22,7 @@ const (
 
 var (
 	apiclientLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(apiclientMessagePrefix, `
-		Delete Verify API client based on clientName.
+		Delete API client based on clientName.
 		
 Resources managed on Verify have specific entitlements, so ensure that the application or API client used
 with the 'auth' command is configured with the appropriate entitlements.
@@ -31,25 +32,29 @@ You can identify the entitlement required by running:
   verifyctl delete apiclient --entitlements`))
 
 	apiclientExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
-		# Delete an API client
-		verifyctl delete apiclient --clientName="clientName"`,
+		# Delete an API client by name
+		verifyctl delete apiclient --clientName="clientName",
+
+		# Delete an API client by ID
+		verifyctl delete apiclient --clientId="12345"`,
 	))
 )
 
 type apiclientsOptions struct {
 	options
+	id string
 
 	config *config.CLIConfig
 }
 
-func NewAPIclientCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
+func NewAPIClientCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
 	o := &apiclientsOptions{
 		config: config,
 	}
 
 	cmd := &cobra.Command{
 		Use:                   apiclientUsage,
-		Short:                 cmdutil.TranslateShortDesc(apiclientMessagePrefix, "Delete Verify API client based on an id."),
+		Short:                 cmdutil.TranslateShortDesc(apiclientMessagePrefix, "Delete API client based on its name or id."),
 		Long:                  apiclientLongDesc,
 		Example:               apiclientExamples,
 		DisableFlagsInUseLine: true,
@@ -72,6 +77,7 @@ func NewAPIclientCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra
 func (o *apiclientsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd)
 	cmd.Flags().StringVar(&o.name, "clientName", o.name, i18n.Translate("clientName to be deleted"))
+	cmd.Flags().StringVar(&o.id, "clientId", o.id, i18n.Translate("clientId to be deleted"))
 }
 
 func (o *apiclientsOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -84,8 +90,8 @@ func (o *apiclientsOptions) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "apiclient" && o.name == "" {
-		return module.MakeSimpleError(i18n.Translate("'clientName' flag is required"))
+	if calledAs == "apiclient" && o.name == "" && o.id == "" {
+		return module.MakeSimpleError(i18n.Translate("either 'clientName' or 'clientId' flag is required"))
 	}
 	return nil
 }
@@ -109,13 +115,34 @@ func (o *apiclientsOptions) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *apiclientsOptions) handleSingleApiClient(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+	c := security.NewAPIClient()
+	var id string
+	var err error
 
-	c := directory.NewApiClient()
-	err := c.DeleteApiclient(cmd.Context(), auth, o.name)
+	if o.id != "" {
+		if o.name != "" {
+			config.GetVerifyContext(cmd.Context()).Logger.Warnf("Both clientName and clientId are provided; using clientId")
+		}
+		id = o.id
+	} else if o.name != "" {
+		id, err = c.GetAPIClientId(cmd.Context(), auth, o.name)
+		if err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("either clientName or clientId must be provided")
+	}
+
+	err = c.DeleteAPIClientById(cmd.Context(), auth, id)
 	if err != nil {
 		return err
 	}
-	cmdutil.WriteString(cmd, "Resource deleted: "+o.name)
+
+	resourceIdentifier := o.name
+	if o.id != "" {
+		resourceIdentifier = o.id
+	}
+	cmdutil.WriteString(cmd, "Resource deleted: "+resourceIdentifier)
 	return nil
 }

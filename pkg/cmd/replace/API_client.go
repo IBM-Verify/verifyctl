@@ -9,7 +9,7 @@ import (
 	"github.ibm.com/sec-ci/devops-experiments/pkg/config"
 	"github.ibm.com/sec-ci/devops-experiments/pkg/i18n"
 	"github.ibm.com/sec-ci/devops-experiments/pkg/module"
-	"github.ibm.com/sec-ci/devops-experiments/pkg/module/directory"
+	"github.ibm.com/sec-ci/devops-experiments/pkg/module/security"
 	cmdutil "github.ibm.com/sec-ci/devops-experiments/pkg/util/cmd"
 	"github.ibm.com/sec-ci/devops-experiments/pkg/util/templates"
 	"gopkg.in/yaml.v3"
@@ -49,7 +49,7 @@ type apiclientOptions struct {
 	config *config.CLIConfig
 }
 
-func newAPIclientCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
+func newAPIClientCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
 	o := &apiclientOptions{
 		config: config,
 	}
@@ -102,9 +102,9 @@ func (o *apiclientOptions) Run(cmd *cobra.Command, args []string) error {
 
 	if o.boilerplate {
 		resourceObj := &resource.ResourceObject{
-			Kind:       resource.ResourceTypePrefix + "ApiClient",
+			Kind:       resource.ResourceTypePrefix + "APIClient",
 			APIVersion: "1.0",
-			Data: &directory.Client{
+			Data: &security.Client{
 				ID:         "<id>",
 				ClientName: "<clientName>",
 			},
@@ -119,10 +119,10 @@ func (o *apiclientOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return o.updateApiClient(cmd, auth)
+	return o.updateAPIClient(cmd, auth)
 }
 
-func (o *apiclientOptions) updateApiClient(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *apiclientOptions) updateAPIClient(cmd *cobra.Command, auth *config.AuthConfig) error {
 	ctx := cmd.Context()
 	vc := config.GetVerifyContext(ctx)
 
@@ -133,22 +133,22 @@ func (o *apiclientOptions) updateApiClient(cmd *cobra.Command, auth *config.Auth
 		return err
 	}
 
-	return o.updateApiClientWithData(cmd, auth, b)
+	return o.updateAPIClientWithData(cmd, auth, b)
 }
 
-func (o *apiclientOptions) updateApiClientWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *apiclientOptions) updateAPIClientWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
 	ctx := cmd.Context()
 	vc := config.GetVerifyContext(ctx)
 
 	// unmarshal to api client object
-	apiclient := &directory.Client{}
+	apiclient := &security.Client{}
 	if err := yaml.Unmarshal(data, &apiclient); err != nil {
 		vc.Logger.Errorf("unable to unmarshal to an API client; err=%v", err)
 		return err
 	}
 
-	client := directory.NewApiClient()
-	if err := client.UpdateApiClient(ctx, auth, apiclient); err != nil {
+	client := security.NewAPIClient()
+	if err := client.UpdateAPIClient(ctx, auth, apiclient); err != nil {
 		vc.Logger.Errorf("unable to update the API client; err=%v, apiclient=%+v", err, apiclient)
 		return err
 	}
@@ -157,11 +157,11 @@ func (o *apiclientOptions) updateApiClientWithData(cmd *cobra.Command, auth *con
 	return nil
 }
 
-func (o *apiclientOptions) updateApiClientFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *apiclientOptions) updateAPIClientFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := config.GetVerifyContext(ctx)
 
-	apiclient := &directory.Client{}
+	apiclient := &security.Client{}
 	b, err := yaml.Marshal(data)
 
 	if err != nil {
@@ -174,8 +174,8 @@ func (o *apiclientOptions) updateApiClientFromDataMap(cmd *cobra.Command, auth *
 		return err
 	}
 
-	client := directory.NewApiClient()
-	if err := client.UpdateApiClient(ctx, auth, apiclient); err != nil {
+	client := security.NewAPIClient()
+	if err := client.UpdateAPIClient(ctx, auth, apiclient); err != nil {
 		vc.Logger.Errorf("unable to update the API client; err=%v, apiclient=%+v", err, apiclient)
 		return err
 	}

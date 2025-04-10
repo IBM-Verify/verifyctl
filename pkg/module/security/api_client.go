@@ -1,4 +1,4 @@
-package directory
+package security
 
 import (
 	"context"
@@ -61,13 +61,13 @@ type AdditionalConfig struct {
 	AllowedClientAssertionVerificationKeys []string `yaml:"allowedClientAssertionVerificationKeys,omitempty" json:"allowedClientAssertionVerificationKeys,omitempty"`
 }
 
-func NewApiClient() *ApiClient {
+func NewAPIClient() *ApiClient {
 	return &ApiClient{
 		client: xhttp.NewDefaultClient(),
 	}
 }
 
-func (c *ApiClient) CreateApiClient(ctx context.Context, auth *config.AuthConfig, client *Client) (string, error) {
+func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig, client *Client) (string, error) {
 	if client == nil {
 		fmt.Println("ERROR: Client object is nil!")
 		return "", fmt.Errorf("client object is nil")
@@ -119,9 +119,9 @@ func (c *ApiClient) CreateApiClient(ctx context.Context, auth *config.AuthConfig
 	return resourceURI, nil
 }
 
-func (c *ApiClient) GetApiClient(ctx context.Context, auth *config.AuthConfig, clientName string) (*Client, string, error) {
+func (c *ApiClient) GetAPIClient(ctx context.Context, auth *config.AuthConfig, clientName string) (*Client, string, error) {
 	vc := config.GetVerifyContext(ctx)
-	id, err := c.getApiclientId(ctx, auth, clientName)
+	id, err := c.GetAPIClientId(ctx, auth, clientName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the group ID; err=%s", err.Error())
 		return nil, "", err
@@ -157,7 +157,7 @@ func (c *ApiClient) GetApiClient(ctx context.Context, auth *config.AuthConfig, c
 	return Client, u.String(), nil
 }
 
-func (c *ApiClient) GetApiClients(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (
+func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (
 	*ApiClientListResponse, string, error) {
 
 	vc := config.GetVerifyContext(ctx)
@@ -218,14 +218,14 @@ func (c *ApiClient) GetApiClients(ctx context.Context, auth *config.AuthConfig, 
 	return apiclientsResponse, u.String(), nil
 }
 
-func (c *ApiClient) UpdateApiClient(ctx context.Context, auth *config.AuthConfig, client *Client) error {
+func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig, client *Client) error {
 	vc := config.GetVerifyContext(ctx)
 	if client == nil {
 		vc.Logger.Errorf("client object is nil")
 		return fmt.Errorf("client object is nil")
 	}
 
-	id, err := c.getApiclientId(ctx, auth, client.ClientName)
+	id, err := c.GetAPIClientId(ctx, auth, client.ClientName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the client ID for API client '%s'; err=%s", client.ClientName, err.Error())
 		return fmt.Errorf("unable to get the client ID for API client '%s'; err=%s", client.ClientName, err.Error())
@@ -258,7 +258,7 @@ func (c *ApiClient) UpdateApiClient(ctx context.Context, auth *config.AuthConfig
 
 }
 
-func (c *ApiClient) getApiclientId(ctx context.Context, auth *config.AuthConfig, clientName string) (string, error) {
+func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig, clientName string) (string, error) {
 	vc := config.GetVerifyContext(ctx)
 	headers := http.Header{
 		"Accept":        []string{"application/json"},
@@ -328,10 +328,10 @@ func (c *ApiClient) getApiclientId(ctx context.Context, auth *config.AuthConfig,
 	return "", fmt.Errorf("no API client found with exact clientName %s", clientName)
 }
 
-func (c *ApiClient) DeleteApiclient(ctx context.Context, auth *config.AuthConfig, clientName string) error {
+func (c *ApiClient) DeleteAPIClient(ctx context.Context, auth *config.AuthConfig, clientName string) error {
 	vc := config.GetVerifyContext(ctx)
 
-	id, err := c.getApiclientId(ctx, auth, clientName)
+	id, err := c.GetAPIClientId(ctx, auth, clientName)
 	if err != nil {
 		vc.Logger.Errorf("unable to resolve API client ID for clientName %s; err=%s", clientName, err.Error())
 		return err
@@ -359,5 +359,28 @@ func (c *ApiClient) DeleteApiclient(ctx context.Context, auth *config.AuthConfig
 		return fmt.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
 	}
 
+	return nil
+}
+
+func (c *ApiClient) DeleteAPIClientById(ctx context.Context, auth *config.AuthConfig, id string) error {
+	vc := config.GetVerifyContext(ctx)
+	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiClients, id))
+	headers := http.Header{
+		"Accept":        []string{"application/json"},
+		"Authorization": []string{"Bearer " + auth.Token},
+	}
+	response, err := c.client.Delete(ctx, u, headers)
+	if err != nil {
+		vc.Logger.Errorf("unable to delete API client; err=%s", err.Error())
+		return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
+	}
+	if response.StatusCode != http.StatusNoContent {
+		if err := module.HandleCommonErrors(ctx, response, "unable to delete API client"); err != nil {
+			vc.Logger.Errorf("unable to delete the API client; err=%s", err.Error())
+			return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
+		}
+		vc.Logger.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
+		return fmt.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
+	}
 	return nil
 }

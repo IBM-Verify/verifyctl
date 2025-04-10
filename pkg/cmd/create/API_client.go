@@ -8,7 +8,7 @@ import (
 	"github.ibm.com/sec-ci/devops-experiments/pkg/cmd/resource"
 	"github.ibm.com/sec-ci/devops-experiments/pkg/config"
 	"github.ibm.com/sec-ci/devops-experiments/pkg/module"
-	"github.ibm.com/sec-ci/devops-experiments/pkg/module/directory"
+	"github.ibm.com/sec-ci/devops-experiments/pkg/module/security"
 	cmdutil "github.ibm.com/sec-ci/devops-experiments/pkg/util/cmd"
 	"github.ibm.com/sec-ci/devops-experiments/pkg/util/templates"
 	"gopkg.in/yaml.v3"
@@ -53,7 +53,7 @@ type apiClientOptions struct {
 	config *config.CLIConfig
 }
 
-func newApiClientCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
+func newAPIClientCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
 	o := &apiClientOptions{
 		config: config,
 	}
@@ -110,7 +110,7 @@ func (o *apiClientOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "ApiClient",
 			APIVersion: "1.0",
-			Data:       &directory.Client{},
+			Data:       &security.Client{},
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
@@ -122,36 +122,32 @@ func (o *apiClientOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return o.createApiClient(cmd, auth)
+	return o.createAPIClient(cmd, auth)
 }
 
-func (o *apiClientOptions) createApiClient(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *apiClientOptions) createAPIClient(cmd *cobra.Command, auth *config.AuthConfig) error {
 	ctx := cmd.Context()
 	vc := config.GetVerifyContext(ctx)
 
-	// Read the contents of the file
 	b, err := os.ReadFile(o.file)
 	if err != nil {
 		vc.Logger.Errorf("unable to read file; filename=%s, err=%v", o.file, err)
 		return err
 	}
 
-	// Create API client with data
-	return o.createApiClientWithData(cmd, auth, b)
+	return o.createAPIClientWithData(cmd, auth, b)
 }
 
-func (o *apiClientOptions) createApiClientWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *apiClientOptions) createAPIClientWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
 	ctx := cmd.Context()
 	vc := config.GetVerifyContext(ctx)
 
-	// Unmarshal yaml into API client struct
-	apiclient := &directory.Client{}
+	apiclient := &security.Client{}
 	if err := yaml.Unmarshal(data, &apiclient); err != nil {
 		vc.Logger.Errorf("unable to unmarshal API client; err=%v", err)
 		return err
 	}
 
-	// Validate required fields
 	if apiclient.ClientName == "" {
 		return module.MakeSimpleError("clientName is required")
 	}
@@ -159,25 +155,23 @@ func (o *apiClientOptions) createApiClientWithData(cmd *cobra.Command, auth *con
 		return module.MakeSimpleError("entitlements list is required")
 	}
 
-	// Create API client
-	client := directory.NewApiClient()
-	resourceURI, err := client.CreateApiClient(ctx, auth, apiclient)
+	client := security.NewAPIClient()
+	resourceURI, err := client.CreateAPIClient(ctx, auth, apiclient)
 	if err != nil {
 		vc.Logger.Errorf("failed to create API client; err=%v", err)
 		return err
 	}
 
-	// Directly return the created resource URI
 	cmdutil.WriteString(cmd, "Resource created: "+resourceURI)
 	return nil
 }
 
-func (o *apiClientOptions) createApiClientFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := config.GetVerifyContext(ctx)
 
 	// Convert map data to JSON
-	apiclient := &directory.Client{}
+	apiclient := &security.Client{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal data; err=%v", err)
@@ -198,7 +192,7 @@ func (o *apiClientOptions) createApiClientFromDataMap(cmd *cobra.Command, auth *
 	}
 
 	// Create API client
-	client := directory.NewApiClient()
+	client := security.NewAPIClient()
 	resourceURI, err := client.CreateApiClient(ctx, auth, apiclient)
 	if err != nil {
 		vc.Logger.Errorf("failed to create API client; err=%v", err)
