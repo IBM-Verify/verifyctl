@@ -268,12 +268,12 @@ func (c *GroupClient) getGroupId(ctx context.Context, auth *config.AuthConfig, n
 		return nil
 	})
 
-	if resp.StatusCode() != http.StatusOK {
-		// if err := module.HandleCommonErrors(ctx, resp, "unable to get Group"); err != nil {
-		// 	vc.Logger.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
-		// 	return "", fmt.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
-		// }
-	}
+	// if resp.StatusCode() != http.StatusOK {
+	// if err := module.HandleCommonErrors(ctx, resp, "unable to get Group"); err != nil {
+	// 	vc.Logger.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
+	// 	return "", fmt.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
+	// }
+	// }
 
 	var data map[string]interface{}
 	if err := json.Unmarshal(resp.Body, &data); err != nil {

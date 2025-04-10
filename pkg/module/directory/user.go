@@ -241,12 +241,12 @@ func (c *UserClient) getUserId(ctx context.Context, auth *config.AuthConfig, nam
 		return nil
 	})
 
-	if response.StatusCode() != http.StatusOK {
-		// if err := module.HandleCommonErrors(ctx, response, "unable to get User"); err != nil {
-		// 	vc.Logger.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
-		// 	return "", fmt.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
-		// }
-	}
+	// if response.StatusCode() != http.StatusOK {
+	// if err := module.HandleCommonErrors(ctx, response, "unable to get User"); err != nil {
+	// 	vc.Logger.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
+	// 	return "", fmt.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
+	// }
+	// }
 
 	var data map[string]interface{}
 	if err := json.Unmarshal(response.Body, &data); err != nil {
