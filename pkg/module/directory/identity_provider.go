@@ -9,54 +9,15 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
-	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
 
-const (
-	apiIdentitysources = "v2.0/identitysources"
-)
+type IdentitysourceClient struct{}
 
-type IdentitysourceClient struct {
-	client xhttp.Clientx
-}
-
-type IdentitysourceListResponse struct {
-	TotalResults    int              `json:"total" yaml:"total"`
-	Identitysources []IdentitySource `json:"identitySources" yaml:"identitySources"`
-}
-
-type IdentitySource struct {
-	SourceTypeID      int                `json:"sourceTypeId" yaml:"sourceTypeId"`
-	InstanceName      string             `json:"instanceName" yaml:"instanceName"`
-	Enabled           bool               `json:"enabled" yaml:"enabled"`
-	Status            string             `json:"status,omitempty" yaml:"status,omitempty"`
-	Predefined        bool               `json:"predefined,omitempty" yaml:"predefined,omitempty"`
-	Properties        []Property         `json:"properties" yaml:"properties"`
-	AttributeMappings []AttributeMapping `json:"attributeMappings,omitempty" yaml:"attributeMappings,omitempty"`
-}
-
-type Property struct {
-	Sensitive bool   `json:"sensitive" yaml:"sensitive"`
-	Key       string `json:"key" yaml:"key"`
-	Value     string `json:"value" yaml:"value"`
-}
-
-type AttributeMapping struct {
-	AttrID      string    `json:"attrId" yaml:"attrId"`
-	JitpOption  string    `json:"jitpOption" yaml:"jitpOption"`
-	IdsAttrName string    `json:"idsAttrName" yaml:"idsAttrName"`
-	PostEval    *PostEval `json:"postEval,omitempty" yaml:"postEval,omitempty"`
-}
-
-type PostEval struct {
-	ID     string `json:"id,omitempty" yaml:"id,omitempty"`
-	Custom string `json:"custom,omitempty" yaml:"custom,omitempty"`
-}
+type IdentitySource = openapi.IdentitySourceInstancesData
+type IdentitySourceList = openapi.IdentitySourceIntancesDataList
 
 func NewIdentitySourceClient() *IdentitysourceClient {
-	return &IdentitysourceClient{
-		client: xhttp.NewDefaultClient(),
-	}
+	return &IdentitysourceClient{}
 }
 
 func (c *IdentitysourceClient) CreateIdentitysource(ctx context.Context, auth *config.AuthConfig, identitysource *IdentitySource) (string, error) {
@@ -94,7 +55,7 @@ func (c *IdentitysourceClient) CreateIdentitysource(ctx context.Context, auth *c
 	return "Identity provider created successfully", nil
 }
 
-func (c *IdentitysourceClient) GetIdentitysource(ctx context.Context, auth *config.AuthConfig, identitysourceName string) (*openapi.IdentitySourceInstancesData, string, error) {
+func (c *IdentitysourceClient) GetIdentitysource(ctx context.Context, auth *config.AuthConfig, identitysourceName string) (*IdentitySource, string, error) {
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getIdentitysourceId(ctx, auth, identitysourceName)
@@ -123,7 +84,7 @@ func (c *IdentitysourceClient) GetIdentitysource(ctx context.Context, auth *conf
 		return nil, "", fmt.Errorf("unable to get the IdentitySource")
 	}
 
-	IdentitySource := &openapi.IdentitySourceInstancesData{}
+	IdentitySource := &IdentitySource{}
 	if err = json.Unmarshal(resp.Body, IdentitySource); err != nil {
 		return nil, "", fmt.Errorf("unable to get the IdentitySource")
 	}
@@ -131,7 +92,7 @@ func (c *IdentitysourceClient) GetIdentitysource(ctx context.Context, auth *conf
 	return IdentitySource, resp.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *IdentitysourceClient) GetIdentitysources(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*openapi.IdentitySourceIntancesDataList, string, error) {
+func (c *IdentitysourceClient) GetIdentitysources(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*IdentitySourceList, string, error) {
 
 	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
@@ -164,7 +125,7 @@ func (c *IdentitysourceClient) GetIdentitysources(ctx context.Context, auth *con
 		return nil, "", fmt.Errorf("unable to get the Identitysources")
 	}
 
-	IdentitysourcesResponse := &openapi.IdentitySourceIntancesDataList{}
+	IdentitysourcesResponse := &IdentitySourceList{}
 	if err = json.Unmarshal(resp.Body, &IdentitysourcesResponse); err != nil {
 		vc.Logger.Errorf("unable to get the Identitysources; err=%s, body=%s", err, string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Identitysources")
