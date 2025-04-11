@@ -84,6 +84,8 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(NewThemesCommand(config, streams))
 	cmd.AddCommand(NewUsersCommand(config, streams))
 	cmd.AddCommand(NewGroupsCommand(config, streams))
+	cmd.AddCommand(NewAccesspoliciesCommand(config, streams))
+
 	return cmd
 }
 

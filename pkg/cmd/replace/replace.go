@@ -86,6 +86,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newAttributeCommand(config, streams))
 	cmd.AddCommand(newUserCommand(config, streams))
 	cmd.AddCommand(newGroupCommand(config, streams))
+	cmd.AddCommand(newAccesspolicyCommand(config, streams))
 
 	return cmd
 }
@@ -141,6 +142,9 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		options := &groupOptions{}
 		err = options.updateGroupFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 
+	case resource.ResourceTypePrefix + "AccessPolicy":
+		options := &accesspolicyOptions{}
+		err = options.updateAccesspolicyFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err

@@ -30,6 +30,7 @@ type ResourceObject struct {
 }
 
 type ResourceObjectMetadata struct {
+	ID    int    `json:"ID,omitempty" yaml:"ID,omitempty"`
 	UID   string `json:"UID,omitempty" yaml:"UID,omitempty"`
 	Name  string `json:"name,omitempty" yaml:"name,omitempty"`
 	URI   string `json:"resourceUri,omitempty" yaml:"resourceUri,omitempty"`
