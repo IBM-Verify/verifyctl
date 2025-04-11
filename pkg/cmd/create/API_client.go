@@ -5,12 +5,12 @@ import (
 	"io"
 	"os"
 
-	"github.ibm.com/sec-ci/devops-experiments/pkg/cmd/resource"
-	"github.ibm.com/sec-ci/devops-experiments/pkg/config"
-	"github.ibm.com/sec-ci/devops-experiments/pkg/module"
-	"github.ibm.com/sec-ci/devops-experiments/pkg/module/security"
-	cmdutil "github.ibm.com/sec-ci/devops-experiments/pkg/util/cmd"
-	"github.ibm.com/sec-ci/devops-experiments/pkg/util/templates"
+	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
+	"github.com/ibm-security-verify/verifyctl/pkg/config"
+	"github.com/ibm-security-verify/verifyctl/pkg/module"
+	"github.com/ibm-security-verify/verifyctl/pkg/module/security"
+	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"

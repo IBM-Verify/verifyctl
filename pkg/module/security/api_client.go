@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.ibm.com/sec-ci/devops-experiments/pkg/config"
-	"github.ibm.com/sec-ci/devops-experiments/pkg/module"
-	xhttp "github.ibm.com/sec-ci/devops-experiments/pkg/util/http"
-	typesx "github.ibm.com/sec-ci/devops-experiments/pkg/util/types"
+	"github.com/ibm-security-verify/verifyctl/pkg/config"
+	"github.com/ibm-security-verify/verifyctl/pkg/module"
+	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
+	typesx "github.com/ibm-security-verify/verifyctl/pkg/util/types"
 )
 
 const (
