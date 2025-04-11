@@ -53,7 +53,7 @@ type identitysourceOptions struct {
 	config *config.CLIConfig
 }
 
-func newidentitysourceCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
+func newIdentitysourceCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
 	o := &identitysourceOptions{
 		config: config,
 	}
