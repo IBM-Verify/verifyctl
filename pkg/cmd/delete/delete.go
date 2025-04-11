@@ -34,7 +34,7 @@ Certain resources may offer additional options and can be determined using:
 
 	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an user
-		verifyctl delete user --userName=userName`))
+		verifyctl delete [resource-type] --name=userName`))
 
 	entitlementsMessage = i18n.Translate("Choose any of the following entitlements to configure your application or API client:\n")
 )
@@ -71,6 +71,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	// add sub commands
 	cmd.AddCommand(NewUserCommand(config, streams))
 	cmd.AddCommand(NewGroupCommand(config, streams))
+	cmd.AddCommand(NewIdentitysourceCommand(config, streams))
 	return cmd
 }
 

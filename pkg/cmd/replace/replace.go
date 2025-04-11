@@ -86,6 +86,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newAttributeCommand(config, streams))
 	cmd.AddCommand(newUserCommand(config, streams))
 	cmd.AddCommand(newGroupCommand(config, streams))
+	cmd.AddCommand(newIdentitysourceCommand(config, streams))
 
 	return cmd
 }
@@ -97,7 +98,7 @@ func (o *options) addCommonFlags(cmd *cobra.Command, resourceName string) {
 
 func (o *options) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&o.file, "file", "f", "", i18n.Translate("Path to the file that contains the input data. JSON and YAML formats are supported and the files are expected to be named with the appropriate extension: json, yml or yaml."))
-	//cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Fetches the newly created resource in the indicated format. The values supported are 'json' , 'yaml' and 'raw'. Default: 'yaml'."))
+	//cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Fetches the newly created resource in the indicated format. The values supported are 'json' , 'yaml' and 'raw'. Default: 'json'."))
 }
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
@@ -141,6 +142,9 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		options := &groupOptions{}
 		err = options.updateGroupFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 
+	case resource.ResourceTypePrefix + "IdentitySource":
+		options := &identitysourceOptions{}
+		err = options.updateIdentitysourceFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err
