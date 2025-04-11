@@ -1,6 +1,7 @@
 package directory
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -62,35 +63,34 @@ func NewIdentitySourceClient() *IdentitysourceClient {
 
 func (c *IdentitysourceClient) CreateIdentitysource(ctx context.Context, auth *config.AuthConfig, identitysource *IdentitySource) (string, error) {
 	vc := config.GetVerifyContext(ctx)
-	defaultErr := fmt.Errorf("unable to create identitysource.")
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiIdentitysources))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Content-Type":  []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	defaultErr := fmt.Errorf("unable to create identitysource")
 
-	b, err := json.Marshal(identitysource)
+	body, err := json.Marshal(identitysource)
 	if err != nil {
 		vc.Logger.Errorf("Unable to marshal identitysource data; err=%v", err)
 		return "", defaultErr
 	}
 
-	response, err := c.client.Post(ctx, u, headers, b)
+	resp, err := client.CreateIdentitySourceV2WithBodyWithResponse(ctx, "application/json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
 	if err != nil {
 		vc.Logger.Errorf("Unable to create identitysource; err=%v", err)
 		return "", defaultErr
 	}
 
-	if response.StatusCode != http.StatusCreated {
-		if err := module.HandleCommonErrors(ctx, response, "unable to create identitysource"); err != nil {
-			vc.Logger.Errorf("unable to create the identitysource; err=%s", err.Error())
-			return "", fmt.Errorf("unable to create the identitysource; err=%s", err.Error())
-		}
+	if resp.StatusCode() != http.StatusCreated {
+		// if err := module.HandleCommonErrors(ctx, resp, "unable to create identitysource"); err != nil {
+		// 	vc.Logger.Errorf("unable to create the identitysource; err=%s", err.Error())
+		// 	return "", fmt.Errorf("unable to create the identitysource; err=%s", err.Error())
+		// }
 
-		vc.Logger.Errorf("unable to create the identitysource; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return "", fmt.Errorf("unable to create the identitysource; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to create the identitysource; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return "", fmt.Errorf("unable to create the identitysource; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	return "Identity provider created successfully", nil
