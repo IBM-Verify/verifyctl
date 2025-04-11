@@ -193,7 +193,7 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, auth *
 
 	// Create API client
 	client := security.NewAPIClient()
-	resourceURI, err := client.CreateApiClient(ctx, auth, apiclient)
+	resourceURI, err := client.CreateAPIClient(ctx, auth, apiclient)
 	if err != nil {
 		vc.Logger.Errorf("failed to create API client; err=%v", err)
 		return err

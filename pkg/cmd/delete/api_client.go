@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/spf13/cobra"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -110,7 +110,7 @@ func (o *apiclientsOptions) Run(cmd *cobra.Command, args []string) error {
 	// invoke the operation
 	if cmd.CalledAs() == "apiclient" || len(o.name) > 0 {
 		// deal with single API client
-		return o.handleSingleApiClient(cmd, auth, args)
+		return o.handleSingleAPIClient(cmd, auth, args)
 	}
 	return nil
 }

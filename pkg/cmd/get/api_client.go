@@ -3,7 +3,6 @@ package get
 import (
 	"io"
 
-	"github.com/spf13/cobra"
 	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
@@ -11,6 +10,7 @@ import (
 	"github.com/ibm-security-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -150,7 +150,7 @@ func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, auth *conf
 func (o *apiclientsOptions) handleAPIClientList(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
 
 	c := security.NewAPIClient()
-	apiclis, uri, err := c.GetApiClients(cmd.Context(), auth, o.search, o.sort, o.page, o.limit)
+	apiclis, uri, err := c.GetAPIClients(cmd.Context(), auth, o.search, o.sort, o.page, o.limit)
 	if err != nil {
 		return err
 	}

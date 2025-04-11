@@ -114,7 +114,7 @@ func (o *options) Validate(cmd *cobra.Command, args []string) error {
 
 func (o *options) Run(cmd *cobra.Command, args []string) error {
 	if len(o.file) == 0 {
-		return fmt.Errorf("'file' option is required.")
+		return fmt.Errorf("'file' option is required")
 	}
 
 	// read the file
