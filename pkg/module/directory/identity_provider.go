@@ -6,10 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 )
@@ -209,65 +207,64 @@ func (c *IdentitysourceClient) DeleteIdentitysource(ctx context.Context, auth *c
 
 func (c *IdentitysourceClient) UpdateIdentitysource(ctx context.Context, auth *config.AuthConfig, identitysource *IdentitySource) error {
 	vc := config.GetVerifyContext(ctx)
-	defaultErr := fmt.Errorf("unable to update identitysource.")
-
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	defaultErr := fmt.Errorf("unable to update identitysource")
 	id, err := c.getIdentitysourceId(ctx, auth, identitysource.InstanceName)
+	fmt.Println(id)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the identitysource ID; err=%s", err.Error())
 		return fmt.Errorf("unable to get the identitysource ID; err=%s", err.Error())
 	}
-
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiIdentitysources, id))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Content-Type":  []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	b, err := json.Marshal(identitysource)
+	body, err := json.Marshal(identitysource)
 	if err != nil {
 		vc.Logger.Errorf("Unable to marshal identitysource data; err=%v", err)
 		return defaultErr
 	}
 
-	response, err := c.client.Put(ctx, u, headers, b)
+	resp, err := client.UpdateIdentitySourceV2WithBodyWithResponse(ctx, id, "application/json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
 	if err != nil {
 		vc.Logger.Errorf("unable to update identitysource; err=%v", err)
 		return fmt.Errorf("unable to update identitysource; err=%v", err)
 	}
 
-	if response.StatusCode != http.StatusNoContent {
-		vc.Logger.Errorf("failed to update identitysource; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return fmt.Errorf("failed to update identitysource ; code=%d, body=%s", response.StatusCode, string(response.Body))
+	if resp.StatusCode() != http.StatusNoContent {
+		vc.Logger.Errorf("failed to update identitysource; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return fmt.Errorf("failed to update identitysource ; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	return nil
 }
 
 func (c *IdentitysourceClient) getIdentitysourceId(ctx context.Context, auth *config.AuthConfig, name string) (string, error) {
-	vc := config.GetVerifyContext(ctx)
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
+	// vc := config.GetVerifyContext(ctx)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	search := fmt.Sprintf(`instanceName = "%s"`, name)
+	params := &openapi.GetInstancesV2Params{
+		Search: &search,
 	}
+	resp, _ := client.GetInstancesV2WithResponse(ctx, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiIdentitysources))
-	q := u.Query()
-	q.Set("search", fmt.Sprintf(`instanceName = "%s"`, name))
-	u.RawQuery = q.Encode()
+	if resp.StatusCode() != http.StatusOK {
+		// if err := module.HandleCommonErrors(ctx, response, "unable to get IdentitySource"); err != nil {
+		// vc.Logger.Errorf("unable to get the IdentitySource with identitysourceName %s; err=%s", name, err.Error())
+		// return "", fmt.Errorf("unable to get the IdentitySource with identitysourceName %s; err=%s", name, err.Error())
+		// }
 
-	response, _ := c.client.Get(ctx, u, headers)
-
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get IdentitySource"); err != nil {
-			vc.Logger.Errorf("unable to get the IdentitySource with identitysourceName %s; err=%s", name, err.Error())
-			return "", fmt.Errorf("unable to get the IdentitySource with identitysourceName %s; err=%s", name, err.Error())
-		}
+		// Later need to remove this return
+		return "", fmt.Errorf("unable to get the IdentitySource with identitysourceName %s", name)
 	}
 
 	var data map[string]interface{}
-	if err := json.Unmarshal(response.Body, &data); err != nil {
+	if err := json.Unmarshal(resp.Body, &data); err != nil {
 		return "", fmt.Errorf("failed to parse response: %w", err)
 	}
 
