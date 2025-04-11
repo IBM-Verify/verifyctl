@@ -177,33 +177,31 @@ func (c *IdentitysourceClient) GetIdentitysources(ctx context.Context, auth *con
 
 func (c *IdentitysourceClient) DeleteIdentitysource(ctx context.Context, auth *config.AuthConfig, name string) error {
 	vc := config.GetVerifyContext(ctx)
-
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getIdentitysourceId(ctx, auth, name)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the identitysource ID; err=%s", err.Error())
 		return fmt.Errorf("unable to get the identitysource ID; err=%s", err.Error())
 	}
 
-	headers := http.Header{
-		"Content-Type":  []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiIdentitysources, id))
-
-	response, err := c.client.Delete(ctx, u, headers)
+	resp, err := client.DeleteIdentitySourceV2WithResponse(ctx, id, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to delete the IdentitySource; err=%s", err.Error())
 		return fmt.Errorf("unable to delete the IdentitySource; err=%s", err.Error())
 	}
 
-	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, response, "unable to delete IdentitySource"); err != nil {
-			vc.Logger.Errorf("unable to delete the IdentitySource; err=%s", err.Error())
-			return fmt.Errorf("unable to delete the IdentitySource; err=%s", err.Error())
-		}
+	if resp.StatusCode() != http.StatusNoContent {
+		// if err := module.HandleCommonErrors(ctx, response, "unable to delete IdentitySource"); err != nil {
+		// 	vc.Logger.Errorf("unable to delete the IdentitySource; err=%s", err.Error())
+		// 	return fmt.Errorf("unable to delete the IdentitySource; err=%s", err.Error())
+		// }
 
-		vc.Logger.Errorf("unable to delete the IdentitySource; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return fmt.Errorf("unable to delete the IdentitySource; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to delete the IdentitySource; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return fmt.Errorf("unable to delete the IdentitySource; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	return nil
