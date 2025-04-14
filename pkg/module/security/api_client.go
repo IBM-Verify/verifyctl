@@ -96,7 +96,7 @@ func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig
 	}
 
 	if response.StatusCode != http.StatusCreated {
-		if err := module.HandleCommonErrorsOld(ctx, response, "unable to get API client"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to create the API client; err=%s", err.Error())
 			return "", err
 		}
@@ -140,7 +140,7 @@ func (c *ApiClient) GetAPIClient(ctx context.Context, auth *config.AuthConfig, c
 	}
 
 	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrorsOld(ctx, response, "unable to get API client"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to get the API client; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -200,7 +200,7 @@ func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, 
 	}
 
 	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrorsOld(ctx, response, "unable to get API clients"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API clients"); err != nil {
 			vc.Logger.Errorf("unable to get the API clients; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -278,7 +278,7 @@ func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig,
 	}
 
 	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrorsOld(ctx, response, "unable to get API client"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
 			return "", fmt.Errorf("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
 		}
@@ -350,7 +350,7 @@ func (c *ApiClient) DeleteAPIClient(ctx context.Context, auth *config.AuthConfig
 	}
 
 	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrorsOld(ctx, response, "unable to delete API client"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to delete API client"); err != nil {
 			vc.Logger.Errorf("unable to delete the API client; err=%s", err.Error())
 			return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
 		}
@@ -375,7 +375,7 @@ func (c *ApiClient) DeleteAPIClientById(ctx context.Context, auth *config.AuthCo
 		return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
 	}
 	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrorsOld(ctx, response, "unable to delete API client"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to delete API client"); err != nil {
 			vc.Logger.Errorf("unable to delete the API client; err=%s", err.Error())
 			return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
 		}

@@ -47,7 +47,7 @@ func HandleCommonErrors(ctx context.Context, response *http.Response, defaultErr
 	return nil
 }
 
-func HandleCommonErrorsOld(ctx context.Context, response *xhttp.Response, defaultError string) error {
+func HandleCommonErrorsX(ctx context.Context, response *xhttp.Response, defaultError string) error {
 	if response.StatusCode == http.StatusUnauthorized {
 		return fmt.Errorf("Login again.")
 	}

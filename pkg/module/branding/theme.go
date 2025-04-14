@@ -99,7 +99,6 @@ func (c *ThemeClient) GetTheme(ctx context.Context, auth *config.AuthConfig, the
 		req.Header.Set("Accept", "application/octet-stream")
 		return nil
 	})
-	// response, err := c.client.Get(ctx, u, headers)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the themes; err=%s", err.Error())
 		return nil, "", err
@@ -159,7 +158,7 @@ func (c *ThemeClient) UpdateFile(ctx context.Context, auth *config.AuthConfig, t
 	}
 
 	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrorsOld(ctx, response, "unable to update the file"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to update the file"); err != nil {
 			vc.Logger.Errorf("unable to update the theme with ID %s and path %s; err=%s", themeID, path, err.Error())
 			return err
 		}
@@ -195,7 +194,7 @@ func (c *ThemeClient) UpdateTheme(ctx context.Context, auth *config.AuthConfig, 
 	}
 
 	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrorsOld(ctx, response, "unable to update the theme"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to update the theme"); err != nil {
 			vc.Logger.Errorf("unable to update the theme with ID %s; err=%s", themeID, err.Error())
 			return err
 		}
