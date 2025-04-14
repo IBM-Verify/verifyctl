@@ -111,7 +111,7 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 			Kind:       resource.ResourceTypePrefix + "User",
 			APIVersion: "2.0",
 			Data: &directory.User{
-				Id:       "<id>",
+				ID:       "<id>",
 				UserName: "<name>",
 			},
 		}
