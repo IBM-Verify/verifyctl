@@ -3192,6 +3192,328 @@
                 "x-publicAPI": "true",
                 "x-codegen-request-body-name": "body"
             }
+        },
+        "/v2.0/identitysources": {
+            "get": {
+                "tags": [
+                    "Identity Sources V2"
+                ],
+                "summary": "V2 Retrieve all the identity source instances of the tenant.",
+                "description": "The REST interface that retrieves all the identity source instances of the tenant. <br><br>NOTE: If the identity source has V1 properties, they are translated to V2 equivalents. See the table in the V2 PUT and POST descriptions<br><br>Entitlements required: <b>readIdentitySources</b>, <b>manageIdentitySources</b>",
+                "operationId": "getInstancesV2",
+                "parameters": [
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "You can use following filters to fetch the identity source instances with specific properties. <br><br><b>enduser</b>: Returns all the identity source instances that are enabled for end users, i.e. the instances with <b>show_end_user</b> property value set as <b>true</b>.<br><br><b>appscope</b>: Returns all the social identity sources, excluding the IBMid identity source, that are associated with custom applications.<br>    Regardless of this filter, Cloud Directory is included as the default provider.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "enduser",
+                                "appscope"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "The prefix for all search operations is <b>search=</b>. <br>You can search on following fields: id, sourceTypeId, instanceName, enabled<br>Specifying any other field than the allowed search fields in the criteria will result in an error.<br><br>Valid operators for strings are =, != and contains <br>Valid operators for booleans are = and !=<br>Valid operators for numbers are =, !=, >=, >, &lt=, and &lt<br>String search values must be double quoted; the numbers and booleans must be without quotes. More than one search criteria can be specified using <b>\"and\"</b> and <b>\"or\"</b> operators.<br><br>The search parameter value <b>MUST</b> be URL encoded.<br><b>Notes:</b> Only value should be encoded; not the parameter name. Encoding is not required when using Swagger UI.<br><br><b>Examples:</b><br>a. To search on instanceName, provide the search criteria as follows: <br><pre>   instanceName = \"Baidu\" </pre><br>or in URL encoded form as follows: <br><pre>   search=instanceName%20%3D%20%22Baidu%22 </pre><br>b. To search on instanceName containing \"SAML\" in it, provide the search criteria as follows: <br><pre>   instanceName contains \"SAML\" </pre><br>or in URL encoded form as follows: <br><pre>   search=instanceName%20contains%20%22SAML%22 </pre><br>c. To search the SAML Enterprise instances that have \"ABC\" in their names, provide the search criteria as follows: <br><pre>   instanceName contains \"ABC\" and sourceTypeId = 4 </pre><br>or in URL encoded form as follows: <br><pre>   search=instanceName%20contains%20%22ABC%22%20and%20sourceTypeId%20%3D%204 </pre><br>",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pagination",
+                        "in": "query",
+                        "description": "The prefix for the paging parameter is <b>pagination=</b>. <br><br>If pagination parameters are not specified, then all the results will be returned. <br><br>If pagination parameters are specified, then the results will be paginated. Following are the parameters that can be specified; these parameters will be included in the response reflecting the actual results. <br><br><b>page</b>: The page being requested, or the offset that defines the starting resource number. <br><b>limit</b>: It is a page size; it defines the total number of resources that can be included in one page. It is the maximum number of resources that will be returned in the response.<b>count</b>: The total number of resources to be returned in the response. It is an optional parameter, and it MUST be less than or equal to the limit. If not specified, then count = limit.<br><br><br>The pagination parameter value <b>MUST</b> be URL encoded.<br><b>Note:</b> Only value should be encoded; not the parameter name. Encoding is not required when using Swagger UI.<br><br><b>Note:</b> The maximum value allowed for the <b>limit</b> or <b>count</b> fields is 1000. <br><br><b>Examples:</b><br>a. To retrieve first 5 or less resources from page 1, provide pagination parameters as follows: <br><pre>   count=5&page=1&limit=10 </pre><br>or in URL encoded form as follows: <br><pre>   pagination=count%3D5%26page%3D1%26limit%3D10 </pre><br>b. To retrieve first 3 or less resources from page 2, provide pagination parameters as follows: <br><pre>   count=3&page=2&limit=10 </pre><br>or in URL encoded form as follows: <br><pre>   pagination=count%3D3%26page%3D2%26limit%3D10 </pre><br>",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "The prefix for the sort parameter is <b>sort=</b>. <br>You can sort on following fields: id, sourceTypeId, instanceName, enabled<br>Specifying any other field than the allowed sort fields will result in an error.<br><br>Each sort attribute must be prefixed with either + or - (+ ascending, - descending). A list of attributes separated by a comma (,) can be specified for the second or third order of sorting. <br><br>The sort parameter value <b>MUST</b> be URL encoded.<br><b>Note:</b> Only value should be encoded; not the parameter name. Encoding is not required when using Swagger UI.<br><br><b>Examples:</b><br>a. To sort on sourceTypeId in ascending order, provide the sort parameter as follows: <br><pre>   +sourceTypeId </pre><br>or in URL encoded form as follows: <br><pre>   sort=%2BsourceTypeId </pre><br>b. To sort on sourceTypeId in ascending order and for second order sort on instanceName in descending order, provide the sort parameter as follows: <br><pre>   +sourceTypeId,-instanceName </pre><br>or in URL encoded form as follows: <br><pre>   sort=%2BsourceTypeId%2C-instanceName </pre><br>",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "count",
+                        "in": "query",
+                        "description": "The prefix for the count parameter is <b>count=</b>. ",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success. The identity sources were retrieved.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IdentitySourceIntancesDataList"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The response JSON was malformed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BadRequest_0"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "You are not authorized to access this resource.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_0"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The search failed. The system couldn't retrieve the identity sources.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFound_0"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "post": {
+                "tags": [
+                    "Identity Sources V2"
+                ],
+                "summary": "V2 API to create an identity source instance for a tenant.",
+                "description": "The REST interface that creates an instance of particular type of identity source. <br><br>Entitlements required: <b>manageIdentitySources</b><br><br><b>Note:</b> The properties and the number of properties differ with the identity source type. More information about the payloads and properties associated with various identity source types can be found in the knowledge center <a href=\"https://www.ibm.com/support/knowledgecenter/en/SSCT62/com.ibm.iamservice.doc/references/r_idp_payloads.html\">here</a>.<br><br><b>Note:</b> V1 to V2 property changes. For identity sources types that support identity linking:<table><tr><th>V1 Property</th><th>V2 Migrated Property</th><th>Notes</th></tr><tr><td><b>identityLinkingEnabled</b></td><td><b>identityLinkingEnabled</b></td><td>No change. Enable/disable identity linking</td></tr><tr><td><b>externalId</b> (SAML only) <br> <b>external_id_attribute</b> (EnterpriseOIDC only) <br> <b>identityLinkingExternalId</b> (WeChat only) </td><td><b>identityLinkingExternalId</b></td><td>Requires identityLinkingEnable==true</td></tr><tr><td><b>externalIdTransform</b> (SAML only)</td><td><b>identityLinkingExternalIdTransform</b></td><td>Requires identityLinkingExternalId to be set</td></tr><tr><td><b>identityLinkingJitEnabled</b></td><td><b>jitEnabled</b></td><td>Does not depend on identityLinkingEnabled</td></tr><tr><td><b>identityLinkingPrincipalAttribute</b></td><td><b>principalAttribute</b></td><td>Does not depend on identityLinkingEnabled</td></tr><tr><td>--</td><td><b>principalAttributeTransform</b></td><td>Requires principalAttribute to be set</td></tr></table>",
+                "operationId": "createIdentitySourceV2",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IdentitySourceInstancesData"
+                            }
+                        }
+                    },
+                    "required": false
+                },
+                "responses": {
+                    "201": {
+                        "description": "Success. The identity source was created.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "The request json was malformed.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BadRequest_0"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "You are not authorized to access this resource.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_0"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "A conflict exists.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreateConflict"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            }
+        },
+        "/v2.0/identitysources/{instanceId}": {
+            "get": {
+                "tags": [
+                    "Identity Sources V2"
+                ],
+                "summary": "V2 Retrieve the details of a particular identity source instance of the tenant with the specified instance ID.",
+                "description": "The REST interface that retrieves the details of a particular identity source instance of the tenant. <br><br>NOTE: If the identity source has V1 properties, they are translated to V2 equivalents. See the table in the V2 PUT and POST descriptions<br><br>Entitlements required: <b>readIdentitySources</b>, <b>manageIdentitySources</b>",
+                "operationId": "getInstanceV2",
+                "parameters": [
+                    {
+                        "name": "instanceId",
+                        "in": "path",
+                        "description": "The unique ID of identity source instance.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success. The identity source was retrieved.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IdentitySourceInstancesData"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "You are not authorized to access this resource.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_0"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The retrieval failed because the resource wasn't found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFound_0"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "put": {
+                "tags": [
+                    "Identity Sources V2"
+                ],
+                "summary": "V2 Update an identity source instance of the tenant with the specified instance ID.",
+                "description": "The REST interface that updates a particular instance of identity source. <br><br>Entitlements required: <b>manageIdentitySources</b><br><br><b>Note:</b> The properties and the number of properties differ with the identity source type. More information about the properties associated with various identity source types can be found in the knowledge center <a href=\"https://www.ibm.com/support/knowledgecenter/en/SSCT62/com.ibm.iamservice.doc/references/r_idp_payloads.html\">here</a>.<br><br><b>Note:</b> V1 to V2 property changes. For identity sources types that support identity linking:<table><tr><th>V1 Property</th><th>V2 Migrated Property</th><th>Notes</th></tr><tr><td><b>identityLinkingEnabled</b></td><td><b>identityLinkingEnabled</b></td><td>No change. Enable/disable identity linking</td></tr><tr><td><b>externalId</b> (SAML only) <br> <b>external_id_attribute</b> (EnterpriseOIDC only) <br> <b>identityLinkingExternalId</b> (WeChat only) </td><td><b>identityLinkingExternalId</b></td><td>Requires identityLinkingEnable==true</td></tr><tr><td><b>externalIdTransform</b> (SAML only)</td><td><b>identityLinkingExternalIdTransform</b></td><td>Requires identityLinkingExternalId to be set</td></tr><tr><td><b>identityLinkingJitEnabled</b></td><td><b>jitEnabled</b></td><td>Does not depend on identityLinkingEnabled</td></tr><tr><td><b>identityLinkingPrincipalAttribute</b></td><td><b>principalAttribute</b></td><td>Does not depend on identityLinkingEnabled</td></tr><tr><td>--</td><td><b>principalAttributeTransform</b></td><td>Requires principalAttribute to be set</td></tr></table>",
+                "operationId": "updateIdentitySourceV2",
+                "parameters": [
+                    {
+                        "name": "instanceId",
+                        "in": "path",
+                        "description": "The unique ID of identity source instance.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IdentitySourceInstancesData"
+                            }
+                        }
+                    },
+                    "required": false
+                },
+                "responses": {
+                    "204": {
+                        "description": "Success. Identity source was updated.",
+                        "content": {}
+                    },
+                    "403": {
+                        "description": "You are not authorized to access this resource.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_0"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The update failed because resource wasn't found.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFound_0"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            },
+            "delete": {
+                "tags": [
+                    "Identity Sources V2"
+                ],
+                "summary": "V2 Delete an identity source instance of the tenant with the specified instance ID.",
+                "description": "The REST interface that deletes a particular instance of identity source. <br><br>Entitlements required: <b>manageIdentitySources</b>",
+                "operationId": "deleteIdentitySourceV2",
+                "parameters": [
+                    {
+                        "name": "instanceId",
+                        "in": "path",
+                        "description": "The unique ID of identity source instance.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success. Identity source instance was deleted.",
+                        "content": {}
+                    },
+                    "403": {
+                        "description": "You are not authorized to access this resource.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_0"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The delete failed because the resource wasn't found.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFound_0"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The delete failed because the resource is in use.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeleteConflict"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            }
         }
     },
     "components": {

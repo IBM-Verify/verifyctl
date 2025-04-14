@@ -158,7 +158,7 @@ func (c *LogsClient) getLogs(ctx context.Context, auth *config.AuthConfig, logRe
 	}
 
 	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get logs"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to get logs"); err != nil {
 			vc.Logger.Errorf("unable to get the logs; err=%s", err.Error())
 			return nil, err
 		}
