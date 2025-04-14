@@ -10,7 +10,6 @@ import (
 	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
 	"github.com/ibm-security-verify/verifyctl/pkg/module/directory"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -112,7 +111,7 @@ func (o *attributeOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "Attribute",
 			APIVersion: "1.0",
-			Data: &openapi.Attribute0{
+			Data: &directory.Attribute{
 				ID:   &id,
 				Tags: &[]string{"sso"},
 			},
@@ -150,7 +149,7 @@ func (o *attributeOptions) updateAttributeWithData(cmd *cobra.Command, auth *con
 	vc := config.GetVerifyContext(ctx)
 
 	// unmarshal to attribute
-	attribute := &openapi.Attribute0{}
+	attribute := &directory.Attribute{}
 	if err := json.Unmarshal(data, &attribute); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the attribute; err=%v", err)
 		return err
@@ -170,7 +169,7 @@ func (o *attributeOptions) updateAttributeFromDataMap(cmd *cobra.Command, auth *
 	vc := config.GetVerifyContext(ctx)
 
 	// unmarshal to attribute
-	attribute := &openapi.Attribute0{}
+	attribute := &directory.Attribute{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal the data map; err=%v", err)

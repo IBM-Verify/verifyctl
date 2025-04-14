@@ -162,7 +162,7 @@ func (o *groupsOptions) handleGroupList(cmd *cobra.Command, auth *config.AuthCon
 	}
 
 	items := []*resource.ResourceObject{}
-	for _, grp := range grps.Groups {
+	for _, grp := range *grps.Resources {
 		items = append(items, &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "Group",
 			APIVersion: "2.0",
@@ -178,7 +178,7 @@ func (o *groupsOptions) handleGroupList(cmd *cobra.Command, auth *config.AuthCon
 		APIVersion: "2.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: grps.TotalResults,
+			Total: int(grps.TotalResults),
 		},
 		Items: items,
 	}

@@ -36,9 +36,7 @@ type ListThemesResponse struct {
 }
 
 func NewThemeClient() *ThemeClient {
-	return &ThemeClient{
-		client: xhttp.NewDefaultClient(),
-	}
+	return &ThemeClient{}
 }
 
 func (c *ThemeClient) ListThemes(ctx context.Context, auth *config.AuthConfig, count int, page int, limit int) (*ListThemesResponse, string, error) {

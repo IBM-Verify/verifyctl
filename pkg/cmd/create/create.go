@@ -90,6 +90,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newUserCommand(config, streams))
 	cmd.AddCommand(newGroupCommand(config, streams))
 	cmd.AddCommand(newAccesspolicyCommand(config, streams))
+	cmd.AddCommand(newAPIClientCommand(config, streams))
 
 	return cmd
 }
@@ -114,7 +115,7 @@ func (o *options) Validate(cmd *cobra.Command, args []string) error {
 
 func (o *options) Run(cmd *cobra.Command, args []string) error {
 	if len(o.file) == 0 {
-		return fmt.Errorf("'file' option is required.")
+		return fmt.Errorf("'file' option is required")
 	}
 
 	// read the file
@@ -149,6 +150,9 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		options := &accesspolicyOptions{}
 		err = options.createAccesspolicyFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 
+	case resource.ResourceTypePrefix + "APIClient":
+		options := &apiClientOptions{}
+		err = options.createAPIClientFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err
