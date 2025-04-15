@@ -245,31 +245,32 @@ func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig
 
 func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig, clientName string) (string, error) {
 	vc := config.GetVerifyContext(ctx)
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+
+	search := fmt.Sprintf(`clientName contains "%s"`, clientName)
+	params := &openapi.GetAPIClientsParams{
+		Search: &search,
 	}
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiClients))
-	q := u.Query()
-	q.Set("search", fmt.Sprintf(`clientName contains "%s"`, clientName))
-	u.RawQuery = q.Encode()
-
-	response, err := c.client.Get(ctx, u, headers)
+	response, err := client.GetAPIClientsWithResponse(ctx, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
 	if err != nil {
 		vc.Logger.Errorf("unable to query API clients; err=%s", err.Error())
 		return "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API client"); err != nil {
+	if response.StatusCode() != http.StatusOK {
+		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
 			return "", fmt.Errorf("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
 		}
 
-		vc.Logger.Errorf("unable to get API client ID; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return "", fmt.Errorf("unable to get API client ID with clientName %s; status=%d", clientName, response.StatusCode)
+		vc.Logger.Errorf("unable to get API client ID; code=%d, body=%s", response.StatusCode(), string(response.Body))
+		return "", fmt.Errorf("unable to get API client ID with clientName %s; status=%d", clientName, response.StatusCode())
 
 	}
 
