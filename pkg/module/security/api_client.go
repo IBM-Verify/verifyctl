@@ -212,7 +212,7 @@ func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig
 		vc.Logger.Errorf("client object is nil")
 		return fmt.Errorf("client object is nil")
 	}
-
+	fmt.Println(apiClientConfig.ClientName)
 	id, err := c.GetAPIClientId(ctx, auth, apiClientConfig.ClientName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the client ID for API client '%s'; err=%s", apiClientConfig.ClientName, err.Error())
@@ -313,59 +313,25 @@ func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig,
 	return "", fmt.Errorf("no API client found with exact clientName %s", clientName)
 }
 
-func (c *ApiClient) DeleteAPIClient(ctx context.Context, auth *config.AuthConfig, clientName string) error {
-	vc := config.GetVerifyContext(ctx)
-
-	id, err := c.GetAPIClientId(ctx, auth, clientName)
-	if err != nil {
-		vc.Logger.Errorf("unable to resolve API client ID for clientName %s; err=%s", clientName, err.Error())
-		return err
-	}
-
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiClients, id))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	response, err := c.client.Delete(ctx, u, headers)
-	if err != nil {
-		vc.Logger.Errorf("unable to delete API client; err=%s", err.Error())
-		return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
-	}
-
-	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to delete API client"); err != nil {
-			vc.Logger.Errorf("unable to delete the API client; err=%s", err.Error())
-			return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
-		}
-
-		vc.Logger.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return fmt.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
-	}
-
-	return nil
-}
-
 func (c *ApiClient) DeleteAPIClientById(ctx context.Context, auth *config.AuthConfig, id string) error {
 	vc := config.GetVerifyContext(ctx)
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiClients, id))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-	response, err := c.client.Delete(ctx, u, headers)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	response, err := client.DeleteAPIClientWithResponse(ctx, id, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to delete API client; err=%s", err.Error())
 		return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
 	}
-	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to delete API client"); err != nil {
+	if response.StatusCode() != http.StatusNoContent {
+		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to delete API client"); err != nil {
 			vc.Logger.Errorf("unable to delete the API client; err=%s", err.Error())
 			return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
 		}
-		vc.Logger.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return fmt.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
+		return fmt.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
 	}
 	return nil
 }

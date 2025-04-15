@@ -11,7 +11,6 @@ import (
 	"github.com/ibm-security-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
-	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"
 )
@@ -143,7 +142,7 @@ func (o *apiClientOptions) createAPIClientWithData(cmd *cobra.Command, auth *con
 	vc := config.GetVerifyContext(ctx)
 
 	apiclient := &security.APIClientConfig{}
-	if err := yaml.Unmarshal(data, &apiclient); err != nil {
+	if err := json.Unmarshal(data, &apiclient); err != nil {
 		vc.Logger.Errorf("unable to unmarshal API client; err=%v", err)
 		return err
 	}
