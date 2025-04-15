@@ -22,6 +22,18 @@ const (
 	BasicAuthScopes = "BasicAuth.Scopes"
 )
 
+// Defines values for APIClientConfigIPFilterOp.
+const (
+	APIClientConfigIPFilterOpAllow APIClientConfigIPFilterOp = "allow"
+	APIClientConfigIPFilterOpDeny  APIClientConfigIPFilterOp = "deny"
+)
+
+// Defines values for APIClientConfigRequestIPFilterOp.
+const (
+	APIClientConfigRequestIPFilterOpAllow APIClientConfigRequestIPFilterOp = "allow"
+	APIClientConfigRequestIPFilterOpDeny  APIClientConfigRequestIPFilterOp = "deny"
+)
+
 // Defines values for AddressType.
 const (
 	AddressTypeWork AddressType = "work"
@@ -57,6 +69,17 @@ const (
 	Attribute0SourceTypeProfile    Attribute0SourceType = "profile"
 	Attribute0SourceTypeSchema     Attribute0SourceType = "schema"
 	Attribute0SourceTypeStatic     Attribute0SourceType = "static"
+)
+
+// Defines values for BulkResultOp.
+const (
+	BulkResultOpRemove BulkResultOp = "remove"
+)
+
+// Defines values for BulkResultResult.
+const (
+	BulkResultResultFailure BulkResultResult = "failure"
+	BulkResultResultSuccess BulkResultResult = "success"
 )
 
 // Defines values for CICCustomGroupResponseGroupType.
@@ -383,6 +406,124 @@ const (
 	GetInstancesV2ParamsFilterEnduser  GetInstancesV2ParamsFilter = "enduser"
 )
 
+// APIClientAdditionalConfig defines model for APIClientAdditionalConfig.
+type APIClientAdditionalConfig struct {
+	// AllowedClientAssertionVerificationKeys a list of the allowed client assertion verification keys
+	AllowedClientAssertionVerificationKeys *[]string `json:"allowedClientAssertionVerificationKeys,omitempty"`
+
+	// ClientAuthMethod the authentication method type
+	ClientAuthMethod *string `json:"clientAuthMethod,omitempty"`
+
+	// ValidateClientAssertionJti a Boolean value that indicates whether or not to validate the client assertion JTI
+	ValidateClientAssertionJti *bool `json:"validateClientAssertionJti,omitempty"`
+}
+
+// APIClientConfig defines model for APIClientConfig.
+type APIClientConfig struct {
+	AdditionalConfig *APIClientAdditionalConfig `json:"additionalConfig,omitempty"`
+
+	// AdditionalProperties additional properties for the client
+	AdditionalProperties *map[string]interface{} `json:"additionalProperties,omitempty"`
+
+	// ClientID the generated client id for authorization
+	ClientID *string `json:"clientId,omitempty"`
+
+	// ClientName the friendly name of the client
+	ClientName string `json:"clientName"`
+
+	// ClientSecret the generated client secret for authorization
+	ClientSecret *string `json:"clientSecret,omitempty"`
+
+	// Description a description of the client
+	Description *string `json:"description,omitempty"`
+
+	// Enabled whether or not the client can be used to generate tokens
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Entitlements the list of entitlements assigned to the client
+	Entitlements []string `json:"entitlements"`
+
+	// ID the unique id for the client
+	ID *string `json:"id,omitempty"`
+
+	// IPFilterOp the operation of the ip filter. The default setting is null, which means that the ip filter is disabled
+	IPFilterOp *APIClientConfigIPFilterOp `json:"ipFilterOp,omitempty"`
+
+	// IPFilters the list of ips
+	IPFilters *[]string `json:"ipFilters,omitempty"`
+
+	// JwkURI the JSON web key URI endpoint
+	JwkURI           *string                    `json:"jwkUri,omitempty"`
+	OverrideSettings *APIClientOverrideSettings `json:"overrideSettings,omitempty"`
+}
+
+// APIClientConfigIPFilterOp the operation of the ip filter. The default setting is null, which means that the ip filter is disabled
+type APIClientConfigIPFilterOp string
+
+// APIClientConfigPaginatedResponseContainer defines model for APIClientConfigPaginatedResponseContainer.
+type APIClientConfigPaginatedResponseContainer struct {
+	APIClients *[]APIClientConfig `json:"apiClients,omitempty"`
+	Count      *int32             `json:"count,omitempty"`
+	Limit      *int32             `json:"limit,omitempty"`
+	Page       *int32             `json:"page,omitempty"`
+	Total      *int32             `json:"total,omitempty"`
+}
+
+// APIClientConfigRequest defines model for APIClientConfigRequest.
+type APIClientConfigRequest struct {
+	AdditionalConfig *APIClientAdditionalConfig `json:"additionalConfig,omitempty"`
+
+	// AdditionalProperties additional properties for the client
+	AdditionalProperties *map[string]map[string]interface{} `json:"additionalProperties,omitempty"`
+
+	// ClientID the unique identifier of the client
+	ClientID *string `json:"clientId,omitempty"`
+
+	// ClientName the friendly name of the client
+	ClientName string `json:"clientName"`
+
+	// ClientSecret the generated client secret for authorization. If unspecified, a random client secret is generated
+	ClientSecret *string `json:"clientSecret,omitempty"`
+
+	// Description a description of the client
+	Description *string `json:"description,omitempty"`
+
+	// Enabled whether or not the client can be used to generate tokens
+	Enabled bool `json:"enabled"`
+
+	// Entitlements the list of entitlements assigned to the client
+	Entitlements []string `json:"entitlements"`
+
+	// IPFilterOp the operation of the ip filter. The default setting is null, which means that the ip filter is disabled
+	IPFilterOp *APIClientConfigRequestIPFilterOp `json:"ipFilterOp,omitempty"`
+
+	// IPFilters the list of ips
+	IPFilters *[]string `json:"ipFilters,omitempty"`
+
+	// JwkURI the JSON web key URI endpoint
+	JwkURI           *string                    `json:"jwkUri,omitempty"`
+	OverrideSettings *APIClientOverrideSettings `json:"overrideSettings,omitempty"`
+}
+
+// APIClientConfigRequestIPFilterOp the operation of the ip filter. The default setting is null, which means that the ip filter is disabled
+type APIClientConfigRequestIPFilterOp string
+
+// APIClientOverrideSettings defines model for APIClientOverrideSettings.
+type APIClientOverrideSettings struct {
+	// RestrictScopes boolean value that determines whether or not to restrict scopes
+	RestrictScopes *bool              `json:"restrictScopes,omitempty"`
+	Scopes         *[]APIClientScopes `json:"scopes,omitempty"`
+}
+
+// APIClientScopes defines model for APIClientScopes.
+type APIClientScopes struct {
+	// Description a description of the scope
+	Description *string `json:"description,omitempty"`
+
+	// Name the name of the scope
+	Name *string `json:"name,omitempty"`
+}
+
 // Address defines model for Address.
 type Address struct {
 	// Country The country name component. Maximum length is 128 characters.
@@ -545,6 +686,37 @@ type BadRequest0 struct {
 
 // BufferedReader defines model for BufferedReader.
 type BufferedReader = map[string]interface{}
+
+// BulkOperation defines model for BulkOperation.
+type BulkOperation struct {
+	Op   *string `json:"op,omitempty"`
+	Path *string `json:"path,omitempty"`
+}
+
+// BulkResponse defines model for BulkResponse.
+type BulkResponse struct {
+	// MessageDescription Requester locale specific descriptive message.
+	MessageDescription *string `json:"messageDescription,omitempty"`
+
+	// MessageID The message key identifier.
+	MessageID *string       `json:"messageId,omitempty"`
+	Results   *[]BulkResult `json:"results,omitempty"`
+}
+
+// BulkResult defines model for BulkResult.
+type BulkResult struct {
+	// Error this field will not be included if the operation was successful
+	Error  *string           `json:"error,omitempty"`
+	Op     *BulkResultOp     `json:"op,omitempty"`
+	Path   *string           `json:"path,omitempty"`
+	Result *BulkResultResult `json:"result,omitempty"`
+}
+
+// BulkResultOp defines model for BulkResult.Op.
+type BulkResultOp string
+
+// BulkResultResult defines model for BulkResult.Result.
+type BulkResultResult string
 
 // CICCustomGroup defines model for CICCustomGroup.
 type CICCustomGroup struct {
@@ -1053,6 +1225,15 @@ type ErrorBean struct {
 
 	// MessageID The message key identifier
 	MessageID string `json:"messageId"`
+}
+
+// ErrorResponse defines model for ErrorResponse.
+type ErrorResponse struct {
+	// MessageDescription Requester locale specific descriptive message.
+	MessageDescription *string `json:"messageDescription,omitempty"`
+
+	// MessageID The message key identifier.
+	MessageID *string `json:"messageId,omitempty"`
 }
 
 // Error0 defines model for Error_0.
@@ -2384,6 +2565,24 @@ type PostOauth2TokenParams struct {
 	Authorization *string `json:"Authorization,omitempty"`
 }
 
+// GetAPIClientsParams defines parameters for GetAPIClients.
+type GetAPIClientsParams struct {
+	// Pagination The prefix for the paging parameter is "pagination=". If no pagination parameters are passed in, all results are returned. The maximum allowed value for limit or count is 1000. <br><b>count</b> is the total number of results to be returned from the data store.<br><b>page</b> is which page we are requesting, or the offset. <br><b>limit</b> is the total number of results to return in one page.<br><br>The pagination parameter value <b>must</b> be HTML encoded.<br>Note: This is not required when using the Swagger UI.<br><br><b>Example:</b> Paginate on count=10&page=1&limit=5<br>pagination=count%3D10%26page%3D1%26limit%3D5
+	Pagination *string `form:"pagination,omitempty" json:"pagination,omitempty"`
+
+	// Sort The prefix for the sort parameter is "sort=". Each attribute must be prefixed with either + or - (+ ascending, - descending). Multiple attributes must be separated by a comma (,).<br><br>The valid fields for sorting are: clientId, clientName, and enabled.<br><br>The sort parameter value <b>must</b> be HTML encoded.<br>Note: This is not required when using the Swagger UI.<br><br><b>Example:</b> Sort on -enabled,+clientId<br>sort=-enabled%2C%2BclientId
+	Sort *string `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// Search The prefix for all search operations is "search=".<br>Valid operators for strings are = , !=  and contains <br>Valid operators for booleans are = and !=<br>Valid operators for numbers are >=, >, &lt=, &lt, = and !=<br>String search values must be double quoted, numbers and booleans must not.<br><br>The valid fields for sorting are: clientId, clientName, and enabled.<br><br>The search parameter value <b>must</b> be HTML encoded.<br>Note: This is not required when using the Swagger UI.<br><br><b>Example:</b> Search on clientId contains "ABCDEF"&enabled=true<br>search=clientId%20contains%20%22ABCDEF%22%26enabled%3Dtrue
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+
+	// Filter The prefix for the filter parameter is "filter="<br>Valid formats are either inclusive only or exclusive only. These must not be intermingled. Multiple filter parameters must be separated by a comma (,).<br><br>The valid fields for filtering are: id, clientId, clientName, clientSecret, entitlements, and enabled.<br><br>The filter parameter value <b>must</b> be HTML encoded.<br>Note: This is not required when using the Swagger UI.<br><br><b>Examples</b><br>Filter to only return clientId:<br>filter=clientId<br><br>Filter to exclude clientSecret and enabled:<br>filter=%21clientSecret,enabled
+	Filter *string `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// BulkDeleteAPIClientJSONBody defines parameters for BulkDeleteAPIClient.
+type BulkDeleteAPIClientJSONBody = []BulkOperation
+
 // GetAllAttributesParams defines parameters for GetAllAttributes.
 type GetAllAttributesParams struct {
 	// Search Returns results based on the search criteria.<br><br>The format to use the search query parameter is 'search={parameter}{operator}{value}<br><br>The following search parameters are allowed: name, credname, tags, sourcetype, id, scope.<br><br>Parameters name, credname, tags, sourcetype, id, scope only support search by string values.<br><br>Valid operators for string values are =, !=, contains, startswith, endswith, and exists.<br> Only for the 'exists' operator, there is no need to specify search value. <br> And for all rest operators, use double quotation marks for the search values.<br><br>Multiple search conditions can be combined using either the & (AND) or | (OR) operators.<br><br>Conditions in parentheses () have a higher priority and are evaluated first. Without parentheses, & (AND) is evaluated first.<br><b>Example</b>: (tags="sso"|name="email")&id="10"<br><b>Note</b>: Nested parentheses are not supported.<br><br><b>Example</b>: Search for attributes with 'sso' tag: search=tags="sso"<br><b>Example</b>: Search for attributes with name startwith 'pre': search=name%20startswith%20"pre"<br><b>Example</b>: Search for attributes with tag: search=tags%20exists<br>
@@ -2679,6 +2878,15 @@ type GetInstancesV2ParamsFilter string
 // PostOauth2TokenFormdataRequestBody defines body for PostOauth2Token for application/x-www-form-urlencoded ContentType.
 type PostOauth2TokenFormdataRequestBody = TokenRequest
 
+// BulkDeleteAPIClientJSONRequestBody defines body for BulkDeleteAPIClient for application/json ContentType.
+type BulkDeleteAPIClientJSONRequestBody = BulkDeleteAPIClientJSONBody
+
+// CreateAPIClientJSONRequestBody defines body for CreateAPIClient for application/json ContentType.
+type CreateAPIClientJSONRequestBody = APIClientConfigRequest
+
+// UpdateAPIClientJSONRequestBody defines body for UpdateAPIClient for application/json ContentType.
+type UpdateAPIClientJSONRequestBody = APIClientConfig
+
 // RegisterThemeTemplatesMultipartRequestBody defines body for RegisterThemeTemplates for multipart/form-data ContentType.
 type RegisterThemeTemplatesMultipartRequestBody RegisterThemeTemplatesMultipartBody
 
@@ -2873,6 +3081,30 @@ type ClientInterface interface {
 
 	PostOauth2TokenWithFormdataBody(ctx context.Context, params *PostOauth2TokenParams, body PostOauth2TokenFormdataRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetAPIClients request
+	GetAPIClients(ctx context.Context, params *GetAPIClientsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BulkDeleteAPIClientWithBody request with any body
+	BulkDeleteAPIClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BulkDeleteAPIClient(ctx context.Context, body BulkDeleteAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateAPIClientWithBody request with any body
+	CreateAPIClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAPIClient(ctx context.Context, body CreateAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAPIClient request
+	DeleteAPIClient(ctx context.Context, clientID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAPIClient request
+	GetAPIClient(ctx context.Context, clientID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAPIClientWithBody request with any body
+	UpdateAPIClientWithBody(ctx context.Context, clientID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateAPIClient(ctx context.Context, clientID string, body UpdateAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetAllAttributes request
 	GetAllAttributes(ctx context.Context, params *GetAllAttributesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3000,6 +3232,114 @@ func (c *Client) PostOauth2TokenWithBody(ctx context.Context, params *PostOauth2
 
 func (c *Client) PostOauth2TokenWithFormdataBody(ctx context.Context, params *PostOauth2TokenParams, body PostOauth2TokenFormdataRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostOauth2TokenRequestWithFormdataBody(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAPIClients(ctx context.Context, params *GetAPIClientsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAPIClientsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkDeleteAPIClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkDeleteAPIClientRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkDeleteAPIClient(ctx context.Context, body BulkDeleteAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkDeleteAPIClientRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAPIClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAPIClientRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAPIClient(ctx context.Context, body CreateAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAPIClientRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAPIClient(ctx context.Context, clientID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAPIClientRequest(c.Server, clientID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAPIClient(ctx context.Context, clientID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAPIClientRequest(c.Server, clientID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAPIClientWithBody(ctx context.Context, clientID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAPIClientRequestWithBody(c.Server, clientID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAPIClient(ctx context.Context, clientID string, body UpdateAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAPIClientRequest(c.Server, clientID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3541,6 +3881,298 @@ func NewPostOauth2TokenRequestWithBody(server string, params *PostOauth2TokenPar
 		}
 
 	}
+
+	return req, nil
+}
+
+// NewGetAPIClientsRequest generates requests for GetAPIClients
+func NewGetAPIClientsRequest(server string, params *GetAPIClientsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1.0/apiclients")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Pagination != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "pagination", runtime.ParamLocationQuery, *params.Pagination); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sort != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sort", runtime.ParamLocationQuery, *params.Sort); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Search != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "search", runtime.ParamLocationQuery, *params.Search); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Filter != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "filter", runtime.ParamLocationQuery, *params.Filter); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewBulkDeleteAPIClientRequest calls the generic BulkDeleteAPIClient builder with application/json body
+func NewBulkDeleteAPIClientRequest(server string, body BulkDeleteAPIClientJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkDeleteAPIClientRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewBulkDeleteAPIClientRequestWithBody generates requests for BulkDeleteAPIClient with any type of body
+func NewBulkDeleteAPIClientRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1.0/apiclients")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateAPIClientRequest calls the generic CreateAPIClient builder with application/json body
+func NewCreateAPIClientRequest(server string, body CreateAPIClientJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAPIClientRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateAPIClientRequestWithBody generates requests for CreateAPIClient with any type of body
+func NewCreateAPIClientRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1.0/apiclients")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteAPIClientRequest generates requests for DeleteAPIClient
+func NewDeleteAPIClientRequest(server string, clientID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clientId", runtime.ParamLocationPath, clientID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1.0/apiclients/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAPIClientRequest generates requests for GetAPIClient
+func NewGetAPIClientRequest(server string, clientID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clientId", runtime.ParamLocationPath, clientID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1.0/apiclients/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateAPIClientRequest calls the generic UpdateAPIClient builder with application/json body
+func NewUpdateAPIClientRequest(server string, clientID string, body UpdateAPIClientJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAPIClientRequestWithBody(server, clientID, "application/json", bodyReader)
+}
+
+// NewUpdateAPIClientRequestWithBody generates requests for UpdateAPIClient with any type of body
+func NewUpdateAPIClientRequestWithBody(server string, clientID string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clientId", runtime.ParamLocationPath, clientID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1.0/apiclients/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -5743,6 +6375,30 @@ type ClientWithResponsesInterface interface {
 
 	PostOauth2TokenWithFormdataBodyWithResponse(ctx context.Context, params *PostOauth2TokenParams, body PostOauth2TokenFormdataRequestBody, reqEditors ...RequestEditorFn) (*PostOauth2TokenObject, error)
 
+	// GetAPIClientsWithResponse request
+	GetAPIClientsWithResponse(ctx context.Context, params *GetAPIClientsParams, reqEditors ...RequestEditorFn) (*GetAPIClientsObject, error)
+
+	// BulkDeleteAPIClientWithBodyWithResponse request with any body
+	BulkDeleteAPIClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkDeleteAPIClientObject, error)
+
+	BulkDeleteAPIClientWithResponse(ctx context.Context, body BulkDeleteAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkDeleteAPIClientObject, error)
+
+	// CreateAPIClientWithBodyWithResponse request with any body
+	CreateAPIClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAPIClientObject, error)
+
+	CreateAPIClientWithResponse(ctx context.Context, body CreateAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAPIClientObject, error)
+
+	// DeleteAPIClientWithResponse request
+	DeleteAPIClientWithResponse(ctx context.Context, clientID string, reqEditors ...RequestEditorFn) (*DeleteAPIClientObject, error)
+
+	// GetAPIClientWithResponse request
+	GetAPIClientWithResponse(ctx context.Context, clientID string, reqEditors ...RequestEditorFn) (*GetAPIClientObject, error)
+
+	// UpdateAPIClientWithBodyWithResponse request with any body
+	UpdateAPIClientWithBodyWithResponse(ctx context.Context, clientID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAPIClientObject, error)
+
+	UpdateAPIClientWithResponse(ctx context.Context, clientID string, body UpdateAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAPIClientObject, error)
+
 	// GetAllAttributesWithResponse request
 	GetAllAttributesWithResponse(ctx context.Context, params *GetAllAttributesParams, reqEditors ...RequestEditorFn) (*GetAllAttributesObject, error)
 
@@ -5874,6 +6530,140 @@ func (r PostOauth2TokenObject) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r PostOauth2TokenObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAPIClientsObject struct {
+	Body                   []byte
+	HTTPResponse           *http.Response
+	ApplicationScimJSON200 *APIClientConfigPaginatedResponseContainer
+	JSON400                *ErrorResponse
+	JSON500                *ErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAPIClientsObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAPIClientsObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type BulkDeleteAPIClientObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON207      *BulkResponse
+	JSON400      *ErrorResponse
+	JSON500      *ErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkDeleteAPIClientObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkDeleteAPIClientObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAPIClientObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAPIClientObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAPIClientObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAPIClientObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAPIClientObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAPIClientObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAPIClientObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *ErrorResponse
+	JSON500      *ErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAPIClientObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAPIClientObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateAPIClientObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAPIClientObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAPIClientObject) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6679,6 +7469,84 @@ func (c *ClientWithResponses) PostOauth2TokenWithFormdataBodyWithResponse(ctx co
 	return ParsePostOauth2TokenObject(rsp)
 }
 
+// GetAPIClientsWithResponse request returning *GetAPIClientsObject
+func (c *ClientWithResponses) GetAPIClientsWithResponse(ctx context.Context, params *GetAPIClientsParams, reqEditors ...RequestEditorFn) (*GetAPIClientsObject, error) {
+	rsp, err := c.GetAPIClients(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAPIClientsObject(rsp)
+}
+
+// BulkDeleteAPIClientWithBodyWithResponse request with arbitrary body returning *BulkDeleteAPIClientObject
+func (c *ClientWithResponses) BulkDeleteAPIClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkDeleteAPIClientObject, error) {
+	rsp, err := c.BulkDeleteAPIClientWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkDeleteAPIClientObject(rsp)
+}
+
+func (c *ClientWithResponses) BulkDeleteAPIClientWithResponse(ctx context.Context, body BulkDeleteAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkDeleteAPIClientObject, error) {
+	rsp, err := c.BulkDeleteAPIClient(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkDeleteAPIClientObject(rsp)
+}
+
+// CreateAPIClientWithBodyWithResponse request with arbitrary body returning *CreateAPIClientObject
+func (c *ClientWithResponses) CreateAPIClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAPIClientObject, error) {
+	rsp, err := c.CreateAPIClientWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAPIClientObject(rsp)
+}
+
+func (c *ClientWithResponses) CreateAPIClientWithResponse(ctx context.Context, body CreateAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAPIClientObject, error) {
+	rsp, err := c.CreateAPIClient(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAPIClientObject(rsp)
+}
+
+// DeleteAPIClientWithResponse request returning *DeleteAPIClientObject
+func (c *ClientWithResponses) DeleteAPIClientWithResponse(ctx context.Context, clientID string, reqEditors ...RequestEditorFn) (*DeleteAPIClientObject, error) {
+	rsp, err := c.DeleteAPIClient(ctx, clientID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAPIClientObject(rsp)
+}
+
+// GetAPIClientWithResponse request returning *GetAPIClientObject
+func (c *ClientWithResponses) GetAPIClientWithResponse(ctx context.Context, clientID string, reqEditors ...RequestEditorFn) (*GetAPIClientObject, error) {
+	rsp, err := c.GetAPIClient(ctx, clientID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAPIClientObject(rsp)
+}
+
+// UpdateAPIClientWithBodyWithResponse request with arbitrary body returning *UpdateAPIClientObject
+func (c *ClientWithResponses) UpdateAPIClientWithBodyWithResponse(ctx context.Context, clientID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAPIClientObject, error) {
+	rsp, err := c.UpdateAPIClientWithBody(ctx, clientID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAPIClientObject(rsp)
+}
+
+func (c *ClientWithResponses) UpdateAPIClientWithResponse(ctx context.Context, clientID string, body UpdateAPIClientJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAPIClientObject, error) {
+	rsp, err := c.UpdateAPIClient(ctx, clientID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAPIClientObject(rsp)
+}
+
 // GetAllAttributesWithResponse request returning *GetAllAttributesObject
 func (c *ClientWithResponses) GetAllAttributesWithResponse(ctx context.Context, params *GetAllAttributesParams, reqEditors ...RequestEditorFn) (*GetAllAttributesObject, error) {
 	rsp, err := c.GetAllAttributes(ctx, params, reqEditors...)
@@ -7066,6 +7934,167 @@ func ParsePostOauth2TokenObject(rsp *http.Response) (*PostOauth2TokenObject, err
 		}
 		response.JSON500 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseGetAPIClientsObject parses an HTTP response from a GetAPIClientsWithResponse call
+func ParseGetAPIClientsObject(rsp *http.Response) (*GetAPIClientsObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAPIClientsObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest APIClientConfigPaginatedResponseContainer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.ApplicationScimJSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBulkDeleteAPIClientObject parses an HTTP response from a BulkDeleteAPIClientWithResponse call
+func ParseBulkDeleteAPIClientObject(rsp *http.Response) (*BulkDeleteAPIClientObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkDeleteAPIClientObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 207:
+		var dest BulkResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON207 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAPIClientObject parses an HTTP response from a CreateAPIClientWithResponse call
+func ParseCreateAPIClientObject(rsp *http.Response) (*CreateAPIClientObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAPIClientObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAPIClientObject parses an HTTP response from a DeleteAPIClientWithResponse call
+func ParseDeleteAPIClientObject(rsp *http.Response) (*DeleteAPIClientObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAPIClientObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetAPIClientObject parses an HTTP response from a GetAPIClientWithResponse call
+func ParseGetAPIClientObject(rsp *http.Response) (*GetAPIClientObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAPIClientObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAPIClientObject parses an HTTP response from a UpdateAPIClientWithResponse call
+func ParseUpdateAPIClientObject(rsp *http.Response) (*UpdateAPIClientObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAPIClientObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
