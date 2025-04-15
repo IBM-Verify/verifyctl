@@ -161,12 +161,12 @@ func (o *apiclientsOptions) handleAPIClientList(cmd *cobra.Command, auth *config
 	}
 
 	items := []*resource.ResourceObject{}
-	for _, apic := range apiclis.Clients {
+	for _, apic := range *apiclis.APIClients {
 		items = append(items, &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "APIClient",
 			APIVersion: "1.0",
 			Metadata: &resource.ResourceObjectMetadata{
-				UID:  apic.ClientID,
+				UID:  *apic.ClientID,
 				Name: apic.ClientName,
 			},
 			Data: apic,
@@ -178,7 +178,7 @@ func (o *apiclientsOptions) handleAPIClientList(cmd *cobra.Command, auth *config
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: apiclis.Total,
+			Total: int(*apiclis.Total),
 		},
 		Items: items,
 	}

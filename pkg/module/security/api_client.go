@@ -9,6 +9,7 @@ import (
 
 	"github.com/ibm-security-verify/verifyctl/pkg/config"
 	"github.com/ibm-security-verify/verifyctl/pkg/module"
+	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
 	typesx "github.com/ibm-security-verify/verifyctl/pkg/util/types"
 )
@@ -21,13 +22,7 @@ type ApiClient struct {
 	client xhttp.Clientx
 }
 
-type ApiClientListResponse struct {
-	Limit   int       `json:"limit,omitempty" yaml:"limit,omitempty"`
-	Page    int       `json:"page,omitempty" yaml:"page,omitempty"`
-	Total   int       `json:"total,omitempty" yaml:"total,omitempty"`
-	Count   int       `json:"count,omitempty" yaml:"count,omitempty"`
-	Clients []*Client `json:"apiclients" yaml:"apiclients"`
-}
+type APIClientListResponse = openapi.APIClientConfigPaginatedResponseContainer
 
 type Client struct {
 	ID               string                 `yaml:"id,omitempty" json:"id,omitempty"`
@@ -157,23 +152,15 @@ func (c *ApiClient) GetAPIClient(ctx context.Context, auth *config.AuthConfig, c
 	return Client, u.String(), nil
 }
 
-func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (
-	*ApiClientListResponse, string, error) {
-
+func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (*APIClientListResponse, string, error) {
 	vc := config.GetVerifyContext(ctx)
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiClients))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	q := u.Query()
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	params := &openapi.GetAPIClientsParams{}
 	if len(search) > 0 {
-		q.Set("search", search)
+		params.Search = &search
 	}
-
 	if len(sort) > 0 {
-		q.Set("sort", sort)
+		params.Sort = &sort
 	}
 
 	pagination := url.Values{}
@@ -186,36 +173,38 @@ func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, 
 	}
 
 	if len(pagination) > 0 {
-		q.Set("pagination", pagination.Encode())
+		paginationStr := pagination.Encode()
+		params.Pagination = &paginationStr
 	}
 
-	if len(q) > 0 {
-		u.RawQuery = q.Encode()
-	}
+	response, err := client.GetAPIClientsWithResponse(ctx, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
-	response, err := c.client.Get(ctx, u, headers)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the API clients; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API clients"); err != nil {
+	if response.StatusCode() != http.StatusOK {
+		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API clients"); err != nil {
 			vc.Logger.Errorf("unable to get the API clients; err=%s", err.Error())
 			return nil, "", err
 		}
 
-		vc.Logger.Errorf("unable to get the API clients; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to get the API clients; code=%d, body=%s", response.StatusCode(), string(response.Body))
 		return nil, "", fmt.Errorf("unable to get the API clients")
 	}
 
-	apiclientsResponse := &ApiClientListResponse{}
+	apiclientsResponse := &APIClientListResponse{}
 	if err = json.Unmarshal(response.Body, &apiclientsResponse); err != nil {
 		vc.Logger.Errorf("unable to get the API clients; err=%s, body=%s", err, string(response.Body))
 		return nil, "", fmt.Errorf("unable to get the API clients")
 	}
 
-	return apiclientsResponse, u.String(), nil
+	return apiclientsResponse, response.HTTPResponse.Request.URL.String(), nil
 }
 
 func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig, client *Client) error {
