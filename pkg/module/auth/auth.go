@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
+	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
 )
 
 type TokenResponse = openapi.TokenResponse

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/google/uuid"
-	"github.com/ibm-security-verify/verifyctl/x/logx"
+	"github.com/ibm-verify/verifyctl/x/logx"
 )
 
 const (
