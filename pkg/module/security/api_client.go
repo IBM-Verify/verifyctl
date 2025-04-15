@@ -1,6 +1,7 @@
 package security
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -62,41 +63,39 @@ func NewAPIClient() *ApiClient {
 	}
 }
 
-func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig, client *Client) (string, error) {
-	if client == nil {
+func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig, apiClientConfig *APIClientConfig) (string, error) {
+	if apiClientConfig == nil {
 		fmt.Println("ERROR: Client object is nil!")
 		return "", fmt.Errorf("client object is nil")
 	}
 
 	vc := config.GetVerifyContext(ctx)
 	defaultErr := fmt.Errorf("unable to create API client")
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiClients))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Content-Type":  []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	b, err := json.Marshal(client)
+	body, err := json.Marshal(apiClientConfig)
 	if err != nil {
 		vc.Logger.Errorf("Unable to marshal API client data; err=%v", err)
 		return "", defaultErr
 	}
 
-	response, err := c.client.Post(ctx, u, headers, b)
+	response, err := client.CreateAPIClientWithBodyWithResponse(ctx, "application/json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("Unable to create API client; err=%v", err)
 		return "", defaultErr
 	}
 
-	if response.StatusCode != http.StatusCreated {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API client"); err != nil {
+	if response.StatusCode() != http.StatusCreated {
+		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to create the API client; err=%s", err.Error())
 			return "", err
 		}
 
-		vc.Logger.Errorf("unable to create the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to create the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
 		return "", defaultErr
 	}
 
@@ -105,10 +104,10 @@ func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig
 	resourceURI := ""
 	if err := json.Unmarshal(response.Body, &m); err != nil {
 		vc.Logger.Warnf("unable to unmarshal the response body to get the 'id'")
-		resourceURI = response.Headers.Get("Location")
+		resourceURI = response.HTTPResponse.Header.Get("Location")
 	} else {
 		id := typesx.Map(m).SafeString("id", "")
-		resourceURI = fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiClients, id)
+		resourceURI = fmt.Sprintf("%s/%s", response.HTTPResponse.Request.URL.String(), id)
 	}
 
 	return resourceURI, nil
