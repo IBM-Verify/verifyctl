@@ -15,10 +15,6 @@ import (
 	typesx "github.com/ibm-verify/verifyctl/pkg/util/types"
 )
 
-const (
-	apiClients = "v1.0/apiclients"
-)
-
 type ApiClient struct {
 	client xhttp.Clientx
 }
