@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/go-jose/go-jose/v4"
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/auth"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/module/auth"
 	"github.com/spf13/cobra"
 )
 

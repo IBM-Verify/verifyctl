@@ -6,7 +6,7 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
-	"github.com/ibm-security-verify/verifyctl/x/randx"
+	"github.com/ibm-verify/verifyctl/x/randx"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )

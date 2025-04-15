@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )

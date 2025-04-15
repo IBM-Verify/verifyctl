@@ -7,8 +7,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
-	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
+	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
+	xhttp "github.com/ibm-verify/verifyctl/pkg/util/http"
 )
 
 type VerifyError struct {

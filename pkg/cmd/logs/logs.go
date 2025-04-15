@@ -3,11 +3,11 @@ package logs
 import (
 	"io"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/logs"
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
-	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-verify/verifyctl/pkg/module/logs"
+	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 )
 

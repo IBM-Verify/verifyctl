@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
+	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"gopkg.in/yaml.v3"
 )
 

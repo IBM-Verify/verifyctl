@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 
-	"github.com/ibm-security-verify/verifyctl/x/logx"
+	"github.com/ibm-verify/verifyctl/x/logx"
 )
 
 type ContextKey string
