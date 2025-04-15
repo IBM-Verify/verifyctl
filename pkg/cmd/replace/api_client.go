@@ -1,6 +1,7 @@
 package replace
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 
@@ -12,7 +13,6 @@ import (
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -141,8 +141,8 @@ func (o *apiclientOptions) updateAPIClientWithData(cmd *cobra.Command, auth *con
 	vc := config.GetVerifyContext(ctx)
 
 	// unmarshal to api client object
-	apiclient := &security.Client{}
-	if err := yaml.Unmarshal(data, &apiclient); err != nil {
+	apiclient := &security.APIClientConfig{}
+	if err := json.Unmarshal(data, &apiclient); err != nil {
 		vc.Logger.Errorf("unable to unmarshal to an API client; err=%v", err)
 		return err
 	}
@@ -161,19 +161,18 @@ func (o *apiclientOptions) updateAPIClientFromDataMap(cmd *cobra.Command, auth *
 	ctx := cmd.Context()
 	vc := config.GetVerifyContext(ctx)
 
-	apiclient := &security.Client{}
-	b, err := yaml.Marshal(data)
+	apiclient := &security.APIClientConfig{}
+	b, err := json.Marshal(data)
 
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal the data map; err=%v", err)
 		return err
 	}
 
-	if err := yaml.Unmarshal(b, apiclient); err != nil {
+	if err := json.Unmarshal(b, apiclient); err != nil {
 		vc.Logger.Errorf("unable to unmarshal to a API client; err=%v", err)
 		return err
 	}
-
 	client := security.NewAPIClient()
 	if err := client.UpdateAPIClient(ctx, auth, apiclient); err != nil {
 		vc.Logger.Errorf("unable to update the API client; err=%v, apiclient=%+v", err, apiclient)

@@ -1,6 +1,7 @@
 package security
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,26 +10,17 @@ import (
 
 	"github.com/ibm-verify/verifyctl/pkg/config"
 	"github.com/ibm-verify/verifyctl/pkg/module"
+	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-verify/verifyctl/pkg/util/http"
 	typesx "github.com/ibm-verify/verifyctl/pkg/util/types"
-)
-
-const (
-	apiClients = "v1.0/apiclients"
 )
 
 type ApiClient struct {
 	client xhttp.Clientx
 }
 
-type ApiClientListResponse struct {
-	Limit   int       `json:"limit,omitempty" yaml:"limit,omitempty"`
-	Page    int       `json:"page,omitempty" yaml:"page,omitempty"`
-	Total   int       `json:"total,omitempty" yaml:"total,omitempty"`
-	Count   int       `json:"count,omitempty" yaml:"count,omitempty"`
-	Clients []*Client `json:"apiclients" yaml:"apiclients"`
-}
-
+type APIClientListResponse = openapi.APIClientConfigPaginatedResponseContainer
+type APIClientConfig = openapi.APIClientConfig
 type Client struct {
 	ID               string                 `yaml:"id,omitempty" json:"id,omitempty"`
 	ClientID         string                 `yaml:"clientId,omitempty" json:"clientId,omitempty"`
@@ -67,41 +59,39 @@ func NewAPIClient() *ApiClient {
 	}
 }
 
-func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig, client *Client) (string, error) {
-	if client == nil {
+func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig, apiClientConfig *APIClientConfig) (string, error) {
+	if apiClientConfig == nil {
 		fmt.Println("ERROR: Client object is nil!")
 		return "", fmt.Errorf("client object is nil")
 	}
 
 	vc := config.GetVerifyContext(ctx)
 	defaultErr := fmt.Errorf("unable to create API client")
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiClients))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Content-Type":  []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	b, err := json.Marshal(client)
+	body, err := json.Marshal(apiClientConfig)
 	if err != nil {
 		vc.Logger.Errorf("Unable to marshal API client data; err=%v", err)
 		return "", defaultErr
 	}
 
-	response, err := c.client.Post(ctx, u, headers, b)
+	response, err := client.CreateAPIClientWithBodyWithResponse(ctx, "application/json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("Unable to create API client; err=%v", err)
 		return "", defaultErr
 	}
 
-	if response.StatusCode != http.StatusCreated {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API client"); err != nil {
+	if response.StatusCode() != http.StatusCreated {
+		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to create the API client; err=%s", err.Error())
 			return "", err
 		}
 
-		vc.Logger.Errorf("unable to create the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to create the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
 		return "", defaultErr
 	}
 
@@ -110,70 +100,61 @@ func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig
 	resourceURI := ""
 	if err := json.Unmarshal(response.Body, &m); err != nil {
 		vc.Logger.Warnf("unable to unmarshal the response body to get the 'id'")
-		resourceURI = response.Headers.Get("Location")
+		resourceURI = response.HTTPResponse.Header.Get("Location")
 	} else {
 		id := typesx.Map(m).SafeString("id", "")
-		resourceURI = fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiClients, id)
+		resourceURI = fmt.Sprintf("%s/%s", response.HTTPResponse.Request.URL.String(), id)
 	}
 
 	return resourceURI, nil
 }
 
-func (c *ApiClient) GetAPIClient(ctx context.Context, auth *config.AuthConfig, clientName string) (*Client, string, error) {
+func (c *ApiClient) GetAPIClient(ctx context.Context, auth *config.AuthConfig, clientName string) (*APIClientConfig, string, error) {
 	vc := config.GetVerifyContext(ctx)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.GetAPIClientId(ctx, auth, clientName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the group ID; err=%s", err.Error())
 		return nil, "", err
 	}
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiClients, id))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
 
-	vc.Logger.Debugf("Fetching API client with ID %s; URL=%s", id, u.String())
-	response, err := c.client.Get(ctx, u, headers)
+	response, err := client.GetAPIClientWithResponse(ctx, id, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to get the API client; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API client"); err != nil {
+	if response.StatusCode() != http.StatusOK {
+		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to get the API client; err=%s", err.Error())
 			return nil, "", err
 		}
 
-		vc.Logger.Errorf("unable to get the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return nil, "", fmt.Errorf("unable to get the API client with clientName %s; status=%d", clientName, response.StatusCode)
+		vc.Logger.Errorf("unable to get the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
+		return nil, "", fmt.Errorf("unable to get the API client with clientName %s; status=%d", clientName, response.StatusCode())
 	}
 
-	Client := &Client{}
+	Client := &APIClientConfig{}
 	if err = json.Unmarshal(response.Body, Client); err != nil {
 		return nil, "", fmt.Errorf("unable to get the API client")
 	}
 
-	return Client, u.String(), nil
+	return Client, response.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (
-	*ApiClientListResponse, string, error) {
-
+func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (*APIClientListResponse, string, error) {
 	vc := config.GetVerifyContext(ctx)
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiClients))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	q := u.Query()
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	params := &openapi.GetAPIClientsParams{}
 	if len(search) > 0 {
-		q.Set("search", search)
+		params.Search = &search
 	}
-
 	if len(sort) > 0 {
-		q.Set("sort", sort)
+		params.Sort = &sort
 	}
 
 	pagination := url.Values{}
@@ -186,72 +167,72 @@ func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, 
 	}
 
 	if len(pagination) > 0 {
-		q.Set("pagination", pagination.Encode())
+		paginationStr := pagination.Encode()
+		params.Pagination = &paginationStr
 	}
 
-	if len(q) > 0 {
-		u.RawQuery = q.Encode()
-	}
+	response, err := client.GetAPIClientsWithResponse(ctx, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
-	response, err := c.client.Get(ctx, u, headers)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the API clients; err=%s", err.Error())
 		return nil, "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API clients"); err != nil {
+	if response.StatusCode() != http.StatusOK {
+		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API clients"); err != nil {
 			vc.Logger.Errorf("unable to get the API clients; err=%s", err.Error())
 			return nil, "", err
 		}
 
-		vc.Logger.Errorf("unable to get the API clients; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to get the API clients; code=%d, body=%s", response.StatusCode(), string(response.Body))
 		return nil, "", fmt.Errorf("unable to get the API clients")
 	}
 
-	apiclientsResponse := &ApiClientListResponse{}
+	apiclientsResponse := &APIClientListResponse{}
 	if err = json.Unmarshal(response.Body, &apiclientsResponse); err != nil {
 		vc.Logger.Errorf("unable to get the API clients; err=%s, body=%s", err, string(response.Body))
 		return nil, "", fmt.Errorf("unable to get the API clients")
 	}
 
-	return apiclientsResponse, u.String(), nil
+	return apiclientsResponse, response.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig, client *Client) error {
+func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig, apiClientConfig *APIClientConfig) error {
 	vc := config.GetVerifyContext(ctx)
-	if client == nil {
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	if apiClientConfig == nil {
 		vc.Logger.Errorf("client object is nil")
 		return fmt.Errorf("client object is nil")
 	}
-
-	id, err := c.GetAPIClientId(ctx, auth, client.ClientName)
+	fmt.Println(apiClientConfig.ClientName)
+	id, err := c.GetAPIClientId(ctx, auth, apiClientConfig.ClientName)
 	if err != nil {
-		vc.Logger.Errorf("unable to get the client ID for API client '%s'; err=%s", client.ClientName, err.Error())
-		return fmt.Errorf("unable to get the client ID for API client '%s'; err=%s", client.ClientName, err.Error())
+		vc.Logger.Errorf("unable to get the client ID for API client '%s'; err=%s", apiClientConfig.ClientName, err.Error())
+		return fmt.Errorf("unable to get the client ID for API client '%s'; err=%s", apiClientConfig.ClientName, err.Error())
 	}
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiClients, id))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Content-Type":  []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	b, err := json.Marshal(client)
+	body, err := json.Marshal(apiClientConfig)
 	if err != nil {
 		vc.Logger.Errorf("unable to marshal the API client; err=%v", err)
 		return fmt.Errorf("unable to marshal the API client; err=%v", err)
 	}
 
-	response, err := c.client.Put(ctx, u, headers, b)
+	response, err := client.UpdateAPIClientWithBodyWithResponse(ctx, id, "application/json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to update API client; err=%v", err)
 		return fmt.Errorf("unable to update API client; err=%v", err)
 	}
-	if response.StatusCode != http.StatusNoContent {
-		vc.Logger.Errorf("failed to update API client; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return fmt.Errorf("failed to update API client ; code=%d, body=%s", response.StatusCode, string(response.Body))
+	if response.StatusCode() != http.StatusNoContent {
+		vc.Logger.Errorf("failed to update API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
+		return fmt.Errorf("failed to update API client ; code=%d, body=%s", response.StatusCode(), string(response.Body))
 	}
 
 	return nil
@@ -260,31 +241,32 @@ func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig
 
 func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig, clientName string) (string, error) {
 	vc := config.GetVerifyContext(ctx)
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+
+	search := fmt.Sprintf(`clientName contains "%s"`, clientName)
+	params := &openapi.GetAPIClientsParams{
+		Search: &search,
 	}
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiClients))
-	q := u.Query()
-	q.Set("search", fmt.Sprintf(`clientName contains "%s"`, clientName))
-	u.RawQuery = q.Encode()
-
-	response, err := c.client.Get(ctx, u, headers)
+	response, err := client.GetAPIClientsWithResponse(ctx, params, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 
 	if err != nil {
 		vc.Logger.Errorf("unable to query API clients; err=%s", err.Error())
 		return "", err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to get API client"); err != nil {
+	if response.StatusCode() != http.StatusOK {
+		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
 			return "", fmt.Errorf("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
 		}
 
-		vc.Logger.Errorf("unable to get API client ID; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return "", fmt.Errorf("unable to get API client ID with clientName %s; status=%d", clientName, response.StatusCode)
+		vc.Logger.Errorf("unable to get API client ID; code=%d, body=%s", response.StatusCode(), string(response.Body))
+		return "", fmt.Errorf("unable to get API client ID with clientName %s; status=%d", clientName, response.StatusCode())
 
 	}
 
@@ -328,59 +310,25 @@ func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig,
 	return "", fmt.Errorf("no API client found with exact clientName %s", clientName)
 }
 
-func (c *ApiClient) DeleteAPIClient(ctx context.Context, auth *config.AuthConfig, clientName string) error {
-	vc := config.GetVerifyContext(ctx)
-
-	id, err := c.GetAPIClientId(ctx, auth, clientName)
-	if err != nil {
-		vc.Logger.Errorf("unable to resolve API client ID for clientName %s; err=%s", clientName, err.Error())
-		return err
-	}
-
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiClients, id))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	response, err := c.client.Delete(ctx, u, headers)
-	if err != nil {
-		vc.Logger.Errorf("unable to delete API client; err=%s", err.Error())
-		return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
-	}
-
-	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to delete API client"); err != nil {
-			vc.Logger.Errorf("unable to delete the API client; err=%s", err.Error())
-			return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
-		}
-
-		vc.Logger.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return fmt.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
-	}
-
-	return nil
-}
-
 func (c *ApiClient) DeleteAPIClientById(ctx context.Context, auth *config.AuthConfig, id string) error {
 	vc := config.GetVerifyContext(ctx)
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiClients, id))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-	response, err := c.client.Delete(ctx, u, headers)
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	response, err := client.DeleteAPIClientWithResponse(ctx, id, func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to delete API client; err=%s", err.Error())
 		return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
 	}
-	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrorsX(ctx, response, "unable to delete API client"); err != nil {
+	if response.StatusCode() != http.StatusNoContent {
+		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to delete API client"); err != nil {
 			vc.Logger.Errorf("unable to delete the API client; err=%s", err.Error())
 			return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
 		}
-		vc.Logger.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return fmt.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode, string(response.Body))
+		vc.Logger.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
+		return fmt.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
 	}
 	return nil
 }

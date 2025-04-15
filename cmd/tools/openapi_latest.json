@@ -3514,6 +3514,371 @@
                 },
                 "x-publicAPI": "true"
             }
+        },
+        "/v1.0/apiclients": {
+            "get": {
+                "tags": [
+                    "API Clients"
+                ],
+                "summary": "Lists the API Clients",
+                "description": "Gets a list of the configured API clients. Note: The response contains the API client ID and secret for each API client. The API client secret is privileged information.<br><br>Entitlements required: manageAPIClients (Manage API clients) or readAPIClients (Read API clients)",
+                "operationId": "getAPIClients",
+                "parameters": [
+                    {
+                        "name": "pagination",
+                        "in": "query",
+                        "description": "The prefix for the paging parameter is \"pagination=\". If no pagination parameters are passed in, all results are returned. The maximum allowed value for limit or count is 1000. <br><b>count</b> is the total number of results to be returned from the data store.<br><b>page</b> is which page we are requesting, or the offset. <br><b>limit</b> is the total number of results to return in one page.<br><br>The pagination parameter value <b>must</b> be HTML encoded.<br>Note: This is not required when using the Swagger UI.<br><br><b>Example:</b> Paginate on count=10&page=1&limit=5<br>pagination=count%3D10%26page%3D1%26limit%3D5",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "The prefix for the sort parameter is \"sort=\". Each attribute must be prefixed with either + or - (+ ascending, - descending). Multiple attributes must be separated by a comma (,).<br><br>The valid fields for sorting are: clientId, clientName, and enabled.<br><br>The sort parameter value <b>must</b> be HTML encoded.<br>Note: This is not required when using the Swagger UI.<br><br><b>Example:</b> Sort on -enabled,+clientId<br>sort=-enabled%2C%2BclientId",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "The prefix for all search operations is \"search=\".<br>Valid operators for strings are = , !=  and contains <br>Valid operators for booleans are = and !=<br>Valid operators for numbers are >=, >, &lt=, &lt, = and !=<br>String search values must be double quoted, numbers and booleans must not.<br><br>The valid fields for sorting are: clientId, clientName, and enabled.<br><br>The search parameter value <b>must</b> be HTML encoded.<br>Note: This is not required when using the Swagger UI.<br><br><b>Example:</b> Search on clientId contains \"ABCDEF\"&enabled=true<br>search=clientId%20contains%20%22ABCDEF%22%26enabled%3Dtrue",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "The prefix for the filter parameter is \"filter=\"<br>Valid formats are either inclusive only or exclusive only. These must not be intermingled. Multiple filter parameters must be separated by a comma (,).<br><br>The valid fields for filtering are: id, clientId, clientName, clientSecret, entitlements, and enabled.<br><br>The filter parameter value <b>must</b> be HTML encoded.<br>Note: This is not required when using the Swagger UI.<br><br><b>Examples</b><br>Filter to only return clientId:<br>filter=clientId<br><br>Filter to exclude clientSecret and enabled:<br>filter=%21clientSecret,enabled",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The operation was successful.",
+                        "content": {
+                            "application/scim+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/APIClientConfigPaginatedResponseContainer"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The query parameters contained invalid values.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The access token does not allow access to the requested resource.",
+                        "content": {}
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "post": {
+                "tags": [
+                    "API Clients"
+                ],
+                "summary": "Create an API Client",
+                "description": "Creates an API client with a random client ID and secret and assigns the given entitlements. The client is configured with the client_credentials grant type. You must perform a GET operation on the returned location header to get the generated client ID and secret.<br><br>The entitlements array can contain any combination of entitlements.<br><br><details><summary>List of API Client entitlements:</summary><br><table><tr><th>Entitlement</th><th>Description</th><th>Offering</th></tr><tr><td>manageDeployment</td><td>Manage deployment</td><td>any</td></tr><tr><td>manageCerts</td><td>Manage certificates</td><td>any</td></tr><tr><td>readCerts</td><td>Read certificates</td><td>any</td></tr><tr><td>manageAPIClients</td><td>Manage API clients</td><td>any</td></tr><tr><td>readAPIClients</td><td>Read API clients</td><td>any</td></tr><tr><td>manageIdentitySources</td><td>Manage identity providers</td><td>any</td></tr><tr><td>readIdentitySources</td><td>Read identity providers</td><td>any</td></tr><tr><td>manageMFAMethods</td><td>Manage second-factor authentication method configuration</td><td>CIC</td></tr><tr><td>readMFAMethods</td><td>Read second-factor authentication method configuration</td><td>CIC</td></tr><tr><td>manageEnrollMFAMethodAnyUser</td><td>Manage second-factor authentication enrollment for all users</td><td>CIV</td></tr><tr><td>readEnrollMFAMethodAnyUser</td><td>Read second-factor authentication enrollment for all users</td><td>CIV</td></tr><tr><td>authnAnyUser</td><td>Authenticate any user</td><td>CIV</td></tr><tr><td>manageAuthenticatorsConfig</td><td>Manage authenticator configuration</td><td>CIV</td></tr><tr><td>readAuthenticatorsConfig</td><td>Read authenticator configuration</td><td>CIV</td></tr><tr><td>manageAuthenticatorsAnyUser</td><td>Manage authenticator registrations for all users</td><td>CIV</td></tr><tr><td>readAuthenticatorsAnyUser</td><td>Read authenticator registrations for all users</td><td>CIV</td></tr><tr><td>manageUserGroups</td><td>Manage users and groups</td><td>any</td></tr><tr><td>readUserGroups</td><td>Read users and groups</td><td>any</td></tr><tr><td>manageAllUserGroups</td><td>Synchronize users and groups</td><td>any</td></tr><tr><td>manageUsersPwdReset</td><td>Manage users and their pwdReset attribute</td><td>any</td></tr><tr><td>manageUserStandardGroups</td><td>Manage users and standard groups</td><td>any</td></tr><tr><td>manageAdminGroup</td><td>Manage administrator group</td><td>any</td></tr><tr><td>readAdminGroup</td><td>Read administrator group</td><td>any</td></tr><tr><td>managePwdPolicy</td><td>Manage password policy</td><td>any</td></tr><tr><td>readPwdPolicy</td><td>Read password policy</td><td>any</td></tr><tr><td>AnalyticsDataSyncToCloud</td><td></td><td>CIA</td></tr><tr><td>AnalyticsSatelliteOnBoard</td><td></td><td>CIA</td></tr><tr><td>manageOIDCGrants</td><td>Manage OAuth tokens</td><td>any</td></tr><tr><td>readOIDCGrants</td><td>Read OAuth tokens</td><td>any</td></tr><tr><td>recoverUsername</td><td>Recover user name</td><td>any</td></tr><tr><td>manageFederations</td><td>Manage federations\t</td><td>any</td></tr><tr><td>readFederations</td><td>Read federations\t</td><td>any</td></tr><tr><td>resetPassword</td><td>Reset password\t</td><td>any</td></tr><tr><td>manageAppAccessAdmin</td><td>Manage application lifecycle</td><td>any</td></tr><tr><td>manageAppAccessOwner</td><td>Manage application entitlements</td><td>any</td></tr><tr><td>manageSubscriptions</td><td>Manage subscriptions</td><td>ISC</td></tr><tr><td>manageAccessPolicies</td><td>Manage access policies</td><td>any</td></tr><tr><td>readAccessPolicies</td><td>Read access policies</td><td>any</td></tr><tr><td>managePushCreds</td><td>Manage Push notification credentials</td><td>any</td></tr><tr><td>readPushCreds</td><td>Read Push notification credentials</td><td>any</td></tr><tr><td>manageAccessRequest</td><td>Manage access request</td><td>CIG</td></tr><tr><td>manageAccessWorkflow</td><td>Manage access request work flows</td><td>CIG</td></tr><tr><td>manageOIDCConsents</td><td>Manage OAuth consents</td><td>any</td></tr><tr><td>readOIDCConsents</td><td>Read OAuth consents</td><td>any</td></tr><tr><td>manageReports</td><td>Manage reports</td><td>any. Exception: application usage reports can only be exported by CIC.</td></tr><tr><td>readReports</td><td>Read reports</td><td>any. Exception: application usage reports can only be accessed by CIC.</td></tr><tr><td>updateAnyUser</td><td>Update any user</td><td>any</td></tr><tr><td>resetPasswordAnyUser</td><td>Reset password of any user</td><td>any</td></tr><tr><td>readTenantProperties</td><td>Read tenant properties</td><td>any</td></tr><tr><td>manageTenantProperties</td><td>Manage tenant properties</td><td>any</td></tr><tr><td>manageAttributes</td><td>Manage attribute sources</td><td>any</td></tr><tr><td>readAttributes</td><td>Read attribute sources</td><td>any</td></tr><tr><td>generateOTP</td><td>Generate OTP</td><td>CIV</td></tr><tr><td>readAppConfig</td><td>Read application configuration</td><td>any</td></tr><tr><td>manageTemplates</td><td>Manage templates and themes</td><td>any</td></tr><tr><td>readTemplates</td><td>Read templates and themes</td><td>any</td></tr><tr><td>reviewCertRecords</td><td>Review certification records</td><td>CIG</td></tr><tr><td>readEntitlements</td><td>Read configurable entitlements</td><td>any</td></tr><tr><td>manageNotificationProviders</td><td>Manage notification providers</td><td>any</td></tr><tr><td>readNotificationProviders</td><td>Read notification providers</td><td>any</td></tr><tr><td>manageCertifications</td><td>Manage certifications</td><td>CIG</td></tr><tr><td>readExternalAgents</td><td>Read external agents</td><td>any</td></tr><tr><td>manageExternalAgents</td><td>Manage external agents</td><td>any</td></tr><tr><td>runExternalAgent</td><td>Enable external agent runtime functions</td><td>any</td></tr><tr><td>manageOidcDynamicClient</td><td>Manage OIDC client registration dynamically</td><td>any</td></tr><tr><td>readPurpose</td><td>Read privacy purposes and EULA</td><td>any</td></tr><tr><td>managePurpose</td><td>Manage privacy purposes and EULA</td><td>any</td></tr><tr><td>manageAppPurpose</td><td>Manage application privacy purposes</td><td>any</td></tr><tr><td>readPrivacyConsent</td><td>Read privacy consents</td><td>any</td></tr><tr><td>managePrivacyConsent</td><td>Manage privacy consents</td><td>any</td></tr><tr><td>readPrivacyPolicy</td><td>Read privacy rules and policy</td><td>any</td></tr><tr><td>managePrivacyPolicy</td><td>Manage privacy rules and policy</td><td>any</td></tr><tr><td>createPrivacyConsent</td><td>Create privacy consent records</td><td>any</td></tr><tr><td>performDSP</td><td>Retrieve privacy purposes and associated user's consent</td><td>any</td></tr><tr><td>performDUA</td><td>Check for data usage approval</td><td>any</td></tr><tr><td>certCampaignSupervisor</td><td>Monitor certification campaigns</td><td>CIG</td></tr><tr><td>managePwdVaultAnyUser</td><td>Manage password vault for all users</td><td>CIC, CIV</td></tr><tr><td>managePwdVault</td><td>Manage own password vault</td><td>CIC, CIV</td></tr><tr><td>readPwdVaultAnyUser</td><td>Read password vault for all users</td><td>CIC, CIV</td></tr><tr><td>readPwdVault</td><td>Read own password vault</td><td>CIC, CIV</td></tr><tr><td>managePwdVaultConfig</td><td>Manage password vault configuration</td><td>CIC, CIV</td></tr><tr><td>readPwdVaultConfig</td><td>Read password vault configuration</td><td>CIC, CIV</td></tr><tr><td>mfaPush</td><td>Send second-factor push notifications</td><td>CIV</td></tr><tr><td>readPrivacyProfile</td><td>Read privacy profiles</td><td>any</td></tr><tr><td>managePrivacyProfile</td><td>Manage privacy profiles</td><td>any</td></tr><tr><td>manageEntitlements</td><td>Manage entitlements</td><td>any</td></tr><tr><td>manageDevicesAnyUser</td><td>Manage devices for all users</td><td>any</td></tr><tr><td>readDevicesAnyUser</td><td>Read devices for all users</td><td>any</td></tr><tr><td>manageDevices</td><td>Manage only your devices</td><td>any</td></tr><tr><td>readDevices</td><td>Read only your devices</td><td>any</td></tr><tr><td>manageRecaptcha</td><td>Manage reCAPTCHA configuration</td><td>any</td></tr><tr><td>readRecaptcha</td><td>Read reCAPTCHA configuration</td><td>any</td></tr><tr><td>manageLoginSessions</td><td>Manage login sessions</td><td>any</td></tr><tr><td>manageRelyingParty</td><td>Manage relying party configuration</td><td>any</td></tr><tr><td>readRelyingParty</td><td>Read relying party configuration</td><td>any</td></tr><tr><td>manageWebhooks</td><td>Manage webhooks <td>any</td></tr><tr><td>readWebhooks</td><td>Read webhooks </td><td>any</td></tr><tr><td>readSTSClients</td><td>Read STS clients and token types</td><td>any</td></tr><tr><td>manageSTSClients</td><td>Manage STS clients and token types</td><td>any</td></tr><tr><td>manageVerifiableLinks</td><td>Manage verifiable links configuration</td><td>any</td></tr><tr><td>readSelfOidcGrants</td><td>Read your OIDC and OAuth grants</td><td>any</td></tr><tr><td>manageSelfOidcGrants</td><td>Manage your OIDC and OAuth grants</td><td>any</td></tr><tr><td>diManageAgency</td><td>Manage Decentralized Identity Agency Configuration</td><td>any</td></tr><tr><td>diReadAgency</td><td>Read Decentralized Identity Agency Configuration</td><td>any</td></tr><tr><td>diManageAgentsAny</td><td>Manage Decentralized Identity Agents</td><td>any</td></tr><tr><td>diReadAgentsAny</td><td>Read Decentralized Identity Agents</td><td>any</td></tr><tr><td>manageMyOrg</td><td>Manage my organization</td><td>CIG</td></tr><tr><td>diIssueCredentials</td><td>Issue Decentralized Identity Verifiable Credentials</td><td>CIV</td></tr><tr><td>diVerifyCredentials</td><td>Verify Decentralized Identity Verifiable Credentials</td><td>CIV</td></tr></table></details><br><br>Entitlements required: manageAPIClients (Manage API clients)",
+                "operationId": "createAPIClient",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/APIClientConfigRequest"
+                            }
+                        }
+                    },
+                    "required": false
+                },
+                "responses": {
+                    "201": {
+                        "description": "The API client was created successfully.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "The JSON input was invalid.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The access token does not allow access to the requested resource.",
+                        "content": {}
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            },
+            "patch": {
+                "tags": [
+                    "API Clients"
+                ],
+                "summary": "Bulk deletes the API clients",
+                "description": "Deletes all of the specified API clients. A successful response is returned even if the object does not exist.<br><br>Entitlements required: manageAPIClients (Manage API clients)",
+                "operationId": "bulkDeleteAPIClient",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/BulkOperation"
+                                }
+                            }
+                        }
+                    },
+                    "required": false
+                },
+                "responses": {
+                    "204": {
+                        "description": "All operations were successful",
+                        "content": {}
+                    },
+                    "207": {
+                        "description": "Not all operations were successful.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BulkResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "One or more invalid input parameters.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The access token does not allow access to the requested resource.",
+                        "content": {}
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            }
+        },
+        "/v1.0/apiclients/{clientId}": {
+            "get": {
+                "tags": [
+                    "API Clients"
+                ],
+                "summary": "Gets a specific API client",
+                "description": "Gets the API client with the specified ID. Note: The response contains the API client ID and secret. The API client secret is privileged information.<br><br>Entitlements required: manageAPIClients (Manage API clients) or readAPIClients (Read API clients)",
+                "operationId": "getAPIClient",
+                "parameters": [
+                    {
+                        "name": "clientId",
+                        "in": "path",
+                        "description": "The unique ID of a client.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The API client was retrieved successfully.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "One or more invalid input parameters.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The access token does not allow access to the requested resource.",
+                        "content": {}
+                    },
+                    "404": {
+                        "description": "The requested API client does not exist.",
+                        "content": {}
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "put": {
+                "tags": [
+                    "API Clients"
+                ],
+                "summary": "Updates a specific API client",
+                "description": "Updates the specified API client properties except for the ID and the client ID which cannot be modified. If the client secret is not specified, then a new client secret will be generated.<br><br>The entitlements array can contain any combination of entitlements.<br><br><details><summary>List of API Client entitlements:</summary><br><table><tr><th>Entitlement</th><th>Description</th><th>Offering</th></tr><tr><td>manageDeployment</td><td>Manage deployment</td><td>any</td></tr><tr><td>manageCerts</td><td>Manage certificates</td><td>any</td></tr><tr><td>readCerts</td><td>Read certificates</td><td>any</td></tr><tr><td>manageAPIClients</td><td>Manage API clients</td><td>any</td></tr><tr><td>readAPIClients</td><td>Read API clients</td><td>any</td></tr><tr><td>manageIdentitySources</td><td>Manage identity providers</td><td>any</td></tr><tr><td>readIdentitySources</td><td>Read identity providers</td><td>any</td></tr><tr><td>manageMFAMethods</td><td>Manage second-factor authentication method configuration</td><td>CIC</td></tr><tr><td>readMFAMethods</td><td>Read second-factor authentication method configuration</td><td>CIC</td></tr><tr><td>manageEnrollMFAMethodAnyUser</td><td>Manage second-factor authentication enrollment for all users</td><td>CIV</td></tr><tr><td>readEnrollMFAMethodAnyUser</td><td>Read second-factor authentication enrollment for all users</td><td>CIV</td></tr><tr><td>authnAnyUser</td><td>Authenticate any user</td><td>CIV</td></tr><tr><td>manageAuthenticatorsConfig</td><td>Manage authenticator configuration</td><td>CIV</td></tr><tr><td>readAuthenticatorsConfig</td><td>Read authenticator configuration</td><td>CIV</td></tr><tr><td>manageAuthenticatorsAnyUser</td><td>Manage authenticator registrations for all users</td><td>CIV</td></tr><tr><td>readAuthenticatorsAnyUser</td><td>Read authenticator registrations for all users</td><td>CIV</td></tr><tr><td>manageUserGroups</td><td>Manage users and groups</td><td>any</td></tr><tr><td>readUserGroups</td><td>Read users and groups</td><td>any</td></tr><tr><td>manageAllUserGroups</td><td>Synchronize users and groups</td><td>any</td></tr><tr><td>manageUsersPwdReset</td><td>Manage users and their pwdReset attribute</td><td>any</td></tr><tr><td>manageUserStandardGroups</td><td>Manage users and standard groups</td><td>any</td></tr><tr><td>manageAdminGroup</td><td>Manage administrator group</td><td>any</td></tr><tr><td>readAdminGroup</td><td>Read administrator group</td><td>any</td></tr><tr><td>managePwdPolicy</td><td>Manage password policy</td><td>any</td></tr><tr><td>readPwdPolicy</td><td>Read password policy</td><td>any</td></tr><tr><td>AnalyticsDataSyncToCloud</td><td></td><td>CIA</td></tr><tr><td>AnalyticsSatelliteOnBoard</td><td></td><td>CIA</td></tr><tr><td>manageOIDCGrants</td><td>Manage OAuth tokens</td><td>any</td></tr><tr><td>readOIDCGrants</td><td>Read OAuth tokens</td><td>any</td></tr><tr><td>recoverUsername</td><td>Recover user name</td><td>any</td></tr><tr><td>manageFederations</td><td>Manage federations\t</td><td>any</td></tr><tr><td>readFederations</td><td>Read federations\t</td><td>any</td></tr><tr><td>resetPassword</td><td>Reset password\t</td><td>any</td></tr><tr><td>manageAppAccessAdmin</td><td>Manage application lifecycle</td><td>any</td></tr><tr><td>manageAppAccessOwner</td><td>Manage application entitlements</td><td>any</td></tr><tr><td>manageSubscriptions</td><td>Manage subscriptions</td><td>ISC</td></tr><tr><td>manageAccessPolicies</td><td>Manage access policies</td><td>any</td></tr><tr><td>readAccessPolicies</td><td>Read access policies</td><td>any</td></tr><tr><td>managePushCreds</td><td>Manage Push notification credentials</td><td>any</td></tr><tr><td>readPushCreds</td><td>Read Push notification credentials</td><td>any</td></tr><tr><td>manageAccessRequest</td><td>Manage access request</td><td>CIG</td></tr><tr><td>manageAccessWorkflow</td><td>Manage access request work flows</td><td>CIG</td></tr><tr><td>manageOIDCConsents</td><td>Manage OAuth consents</td><td>any</td></tr><tr><td>readOIDCConsents</td><td>Read OAuth consents</td><td>any</td></tr><tr><td>manageReports</td><td>Manage reports</td><td>any. Exception: application usage reports can only be exported by CIC.</td></tr><tr><td>readReports</td><td>Read reports</td><td>any. Exception: application usage reports can only be accessed by CIC.</td></tr><tr><td>updateAnyUser</td><td>Update any user</td><td>any</td></tr><tr><td>resetPasswordAnyUser</td><td>Reset password of any user</td><td>any</td></tr><tr><td>readTenantProperties</td><td>Read tenant properties</td><td>any</td></tr><tr><td>manageTenantProperties</td><td>Manage tenant properties</td><td>any</td></tr><tr><td>manageAttributes</td><td>Manage attribute sources</td><td>any</td></tr><tr><td>readAttributes</td><td>Read attribute sources</td><td>any</td></tr><tr><td>generateOTP</td><td>Generate OTP</td><td>CIV</td></tr><tr><td>readAppConfig</td><td>Read application configuration</td><td>any</td></tr><tr><td>manageTemplates</td><td>Manage templates and themes</td><td>any</td></tr><tr><td>readTemplates</td><td>Read templates and themes</td><td>any</td></tr><tr><td>reviewCertRecords</td><td>Review certification records</td><td>CIG</td></tr><tr><td>readEntitlements</td><td>Read configurable entitlements</td><td>any</td></tr><tr><td>manageNotificationProviders</td><td>Manage notification providers</td><td>any</td></tr><tr><td>readNotificationProviders</td><td>Read notification providers</td><td>any</td></tr><tr><td>manageCertifications</td><td>Manage certifications</td><td>CIG</td></tr><tr><td>readExternalAgents</td><td>Read external agents</td><td>any</td></tr><tr><td>manageExternalAgents</td><td>Manage external agents</td><td>any</td></tr><tr><td>runExternalAgent</td><td>Enable external agent runtime functions</td><td>any</td></tr><tr><td>manageOidcDynamicClient</td><td>Manage OIDC client registration dynamically</td><td>any</td></tr><tr><td>readPurpose</td><td>Read privacy purposes and EULA</td><td>any</td></tr><tr><td>managePurpose</td><td>Manage privacy purposes and EULA</td><td>any</td></tr><tr><td>manageAppPurpose</td><td>Manage application privacy purposes</td><td>any</td></tr><tr><td>readPrivacyConsent</td><td>Read privacy consents</td><td>any</td></tr><tr><td>managePrivacyConsent</td><td>Manage privacy consents</td><td>any</td></tr><tr><td>readPrivacyPolicy</td><td>Read privacy rules and policy</td><td>any</td></tr><tr><td>managePrivacyPolicy</td><td>Manage privacy rules and policy</td><td>any</td></tr><tr><td>createPrivacyConsent</td><td>Create privacy consent records</td><td>any</td></tr><tr><td>performDSP</td><td>Retrieve privacy purposes and associated user's consent</td><td>any</td></tr><tr><td>performDUA</td><td>Check for data usage approval</td><td>any</td></tr><tr><td>certCampaignSupervisor</td><td>Monitor certification campaigns</td><td>CIG</td></tr><tr><td>managePwdVaultAnyUser</td><td>Manage password vault for all users</td><td>CIC, CIV</td></tr><tr><td>managePwdVault</td><td>Manage own password vault</td><td>CIC, CIV</td></tr><tr><td>readPwdVaultAnyUser</td><td>Read password vault for all users</td><td>CIC, CIV</td></tr><tr><td>readPwdVault</td><td>Read own password vault</td><td>CIC, CIV</td></tr><tr><td>managePwdVaultConfig</td><td>Manage password vault configuration</td><td>CIC, CIV</td></tr><tr><td>readPwdVaultConfig</td><td>Read password vault configuration</td><td>CIC, CIV</td></tr><tr><td>mfaPush</td><td>Send second-factor push notifications</td><td>CIV</td></tr><tr><td>readPrivacyProfile</td><td>Read privacy profiles</td><td>any</td></tr><tr><td>managePrivacyProfile</td><td>Manage privacy profiles</td><td>any</td></tr><tr><td>manageEntitlements</td><td>Manage entitlements</td><td>any</td></tr><tr><td>manageDevicesAnyUser</td><td>Manage devices for all users</td><td>any</td></tr><tr><td>readDevicesAnyUser</td><td>Read devices for all users</td><td>any</td></tr><tr><td>manageDevices</td><td>Manage only your devices</td><td>any</td></tr><tr><td>readDevices</td><td>Read only your devices</td><td>any</td></tr><tr><td>manageRecaptcha</td><td>Manage reCAPTCHA configuration</td><td>any</td></tr><tr><td>readRecaptcha</td><td>Read reCAPTCHA configuration</td><td>any</td></tr><tr><td>manageLoginSessions</td><td>Manage login sessions</td><td>any</td></tr><tr><td>manageRelyingParty</td><td>Manage relying party configuration</td><td>any</td></tr><tr><td>readRelyingParty</td><td>Read relying party configuration</td><td>any</td></tr><tr><td>manageWebhooks</td><td>Manage webhooks <td>any</td></tr><tr><td>readWebhooks</td><td>Read webhooks </td><td>any</td></tr><tr><td>readSTSClients</td><td>Read STS clients and token types</td><td>any</td></tr><tr><td>manageSTSClients</td><td>Manage STS clients and token types</td><td>any</td></tr><tr><td>manageVerifiableLinks</td><td>Manage verifiable links configuration</td><td>any</td></tr><tr><td>readSelfOidcGrants</td><td>Read your OIDC and OAuth grants</td><td>any</td></tr><tr><td>manageSelfOidcGrants</td><td>Manage your OIDC and OAuth grants</td><td>any</td></tr><tr><td>diManageAgency</td><td>Manage Decentralized Identity Agency Configuration</td><td>any</td></tr><tr><td>diReadAgency</td><td>Read Decentralized Identity Agency Configuration</td><td>any</td></tr><tr><td>diManageAgentsAny</td><td>Manage Decentralized Identity Agents</td><td>any</td></tr><tr><td>diReadAgentsAny</td><td>Read Decentralized Identity Agents</td><td>any</td></tr><tr><td>manageMyOrg</td><td>Manage my organization</td><td>CIG</td></tr><tr><td>diIssueCredentials</td><td>Issue Decentralized Identity Verifiable Credentials</td><td>CIV</td></tr><tr><td>diVerifyCredentials</td><td>Verify Decentralized Identity Verifiable Credentials</td><td>CIV</td></tr></table></details><br><br>Entitlements required: manageAPIClients (Manage API clients)",
+                "operationId": "updateAPIClient",
+                "parameters": [
+                    {
+                        "name": "clientId",
+                        "in": "path",
+                        "description": "The unique ID of a client.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/APIClientConfig"
+                            }
+                        }
+                    },
+                    "required": false
+                },
+                "responses": {
+                    "204": {
+                        "description": "The API client was updated.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "One or more invalid input parameters.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The access token does not allow access to the requested resource.",
+                        "content": {}
+                    },
+                    "404": {
+                        "description": "The requested API client does not exist",
+                        "content": {}
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            },
+            "delete": {
+                "tags": [
+                    "API Clients"
+                ],
+                "summary": "Deletes an API client",
+                "description": "Deletes the specified API client. A successful response is returned even if the object does not exist.<br><br>Entitlements required: manageAPIClients (Manage API clients)",
+                "operationId": "deleteAPIClient",
+                "parameters": [
+                    {
+                        "name": "clientId",
+                        "in": "path",
+                        "description": "The unique ID of a client",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "The API client was removed.",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "One or more invalid input parameters.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The access token does not allow access to the requested resource.",
+                        "content": {}
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            }
         }
     },
     "components": {
@@ -4957,10 +5322,6 @@
                     },
                     "additionalProperties": {
                         "type": "object",
-                        "additionalProperties": {
-                            "type": "object",
-                            "properties": {}
-                        },
                         "description": "additional properties for the client"
                     },
                     "ipFilterOp": {
