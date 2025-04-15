@@ -205,40 +205,38 @@ func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, 
 	return apiclientsResponse, response.HTTPResponse.Request.URL.String(), nil
 }
 
-func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig, client *Client) error {
+func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig, apiClientConfig *APIClientConfig) error {
 	vc := config.GetVerifyContext(ctx)
-	if client == nil {
+	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
+	if apiClientConfig == nil {
 		vc.Logger.Errorf("client object is nil")
 		return fmt.Errorf("client object is nil")
 	}
 
-	id, err := c.GetAPIClientId(ctx, auth, client.ClientName)
+	id, err := c.GetAPIClientId(ctx, auth, apiClientConfig.ClientName)
 	if err != nil {
-		vc.Logger.Errorf("unable to get the client ID for API client '%s'; err=%s", client.ClientName, err.Error())
-		return fmt.Errorf("unable to get the client ID for API client '%s'; err=%s", client.ClientName, err.Error())
+		vc.Logger.Errorf("unable to get the client ID for API client '%s'; err=%s", apiClientConfig.ClientName, err.Error())
+		return fmt.Errorf("unable to get the client ID for API client '%s'; err=%s", apiClientConfig.ClientName, err.Error())
 	}
 
-	u, _ := url.Parse(fmt.Sprintf("https://%s/%s/%s", auth.Tenant, apiClients, id))
-	headers := http.Header{
-		"Accept":        []string{"application/json"},
-		"Content-Type":  []string{"application/json"},
-		"Authorization": []string{"Bearer " + auth.Token},
-	}
-
-	b, err := json.Marshal(client)
+	body, err := json.Marshal(apiClientConfig)
 	if err != nil {
 		vc.Logger.Errorf("unable to marshal the API client; err=%v", err)
 		return fmt.Errorf("unable to marshal the API client; err=%v", err)
 	}
 
-	response, err := c.client.Put(ctx, u, headers, b)
+	response, err := client.UpdateAPIClientWithBodyWithResponse(ctx, id, "application/json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", auth.Token))
+		return nil
+	})
 	if err != nil {
 		vc.Logger.Errorf("unable to update API client; err=%v", err)
 		return fmt.Errorf("unable to update API client; err=%v", err)
 	}
-	if response.StatusCode != http.StatusNoContent {
-		vc.Logger.Errorf("failed to update API client; code=%d, body=%s", response.StatusCode, string(response.Body))
-		return fmt.Errorf("failed to update API client ; code=%d, body=%s", response.StatusCode, string(response.Body))
+	if response.StatusCode() != http.StatusNoContent {
+		vc.Logger.Errorf("failed to update API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
+		return fmt.Errorf("failed to update API client ; code=%d, body=%s", response.StatusCode(), string(response.Body))
 	}
 
 	return nil
