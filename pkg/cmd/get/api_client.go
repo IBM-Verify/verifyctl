@@ -131,7 +131,7 @@ func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, auth *conf
 		Kind:       resource.ResourceTypePrefix + "APIClient",
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
-			UID:  apic.ClientID,
+			UID:  *apic.ClientID,
 			Name: apic.ClientName,
 			URI:  uri,
 		},
