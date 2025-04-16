@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
-	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	xhttp "github.com/ibm-verify/verifyctl/pkg/util/http"
 )
 
 const (
@@ -133,7 +133,7 @@ func (c *PolicyClient) CreateAccesspolicy(ctx context.Context, auth *config.Auth
 	}
 
 	if response.StatusCode != http.StatusCreated {
-		if err := module.HandleCommonErrors(ctx, response, "unable to create accesspolicy"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to create accesspolicy"); err != nil {
 			vc.Logger.Errorf("unable to create the accesspolicy; err=%s", err.Error())
 			return "", fmt.Errorf("unable to create the accesspolicy; err=%s", err.Error())
 		}
@@ -175,7 +175,7 @@ func (c *PolicyClient) GetAccesspolicy(ctx context.Context, auth *config.AuthCon
 	}
 
 	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get Access Policy"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to get Access Policy"); err != nil {
 			vc.Logger.Errorf("unable to get the Access Policy; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -210,7 +210,7 @@ func (c *PolicyClient) GetAccesspolicies(ctx context.Context, auth *config.AuthC
 	}
 
 	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get Access Policies"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to get Access Policies"); err != nil {
 			vc.Logger.Errorf("unable to get the Access Policies; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -250,7 +250,7 @@ func (c *PolicyClient) DeleteAccesspolicy(ctx context.Context, auth *config.Auth
 	}
 
 	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, response, "unable to delete Access Policy"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to delete Access Policy"); err != nil {
 			vc.Logger.Errorf("unable to delete the Access Policy; err=%s", err.Error())
 			return fmt.Errorf("unable to delete the Access Policy; err=%s", err.Error())
 		}
@@ -314,7 +314,7 @@ func (c *PolicyClient) getAccesspolicyId(ctx context.Context, auth *config.AuthC
 	response, _ := c.client.Get(ctx, u, headers)
 
 	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get Access Policy"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to get Access Policy"); err != nil {
 			vc.Logger.Errorf("unable to get the Access Policy with accesspolicyName %s; err=%s", name, err.Error())
 			return "", fmt.Errorf("unable to get the Access Policy with accesspolicyName %s; err=%s", name, err.Error())
 		}
