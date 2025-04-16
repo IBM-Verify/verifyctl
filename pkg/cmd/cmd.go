@@ -3,16 +3,16 @@ package cmd
 import (
 	"io"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/auth"
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/create"
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/delete"
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/get"
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/logs"
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/replace"
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
-	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/auth"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/create"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/delete"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/get"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/logs"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/replace"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/i18n"
+	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ func NewRootCmd(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 		Short: cmdutil.TranslateShortDesc(messagePrefix, "verifyctl controls the IBM Security Verify tenant."),
 		Long: templates.LongDesc(cmdutil.TranslateLongDesc(messagePrefix, `verifyctl controls the IBM Security Verify tenant.
 
-  Find more information at: https://github.com/ibm-security-verify/verifyctl`)),
+  Find more information at: https://github.com/ibm-verify/verifyctl`)),
 	}
 
 	cmd.SetOut(streams)

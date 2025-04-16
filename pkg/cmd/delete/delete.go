@@ -3,10 +3,10 @@ package delete
 import (
 	"io"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
-	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/i18n"
+	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +34,7 @@ Certain resources may offer additional options and can be determined using:
 
 	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an user
-		verifyctl delete user --userName=userName`))
+		verifyctl delete [resource-type] --name=userName`))
 
 	entitlementsMessage = i18n.Translate("Choose any of the following entitlements to configure your application or API client:\n")
 )
@@ -72,6 +72,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(NewUserCommand(config, streams))
 	cmd.AddCommand(NewGroupCommand(config, streams))
 	cmd.AddCommand(NewAccessPolicyCommand(config, streams))
+	cmd.AddCommand(NewIdentitysourceCommand(config, streams))
 	cmd.AddCommand(NewAPIClientCommand(config, streams))
 
 	return cmd

@@ -14,10 +14,10 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
-	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	xhttp "github.com/ibm-verify/verifyctl/pkg/util/http"
 )
 
 const (
@@ -158,7 +158,7 @@ func (c *LogsClient) getLogs(ctx context.Context, auth *config.AuthConfig, logRe
 	}
 
 	if response.StatusCode != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response, "unable to get logs"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to get logs"); err != nil {
 			vc.Logger.Errorf("unable to get the logs; err=%s", err.Error())
 			return nil, err
 		}

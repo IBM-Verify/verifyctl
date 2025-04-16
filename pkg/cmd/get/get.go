@@ -3,11 +3,11 @@ package get
 import (
 	"io"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
-	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 )
 
@@ -85,6 +85,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(NewUsersCommand(config, streams))
 	cmd.AddCommand(NewGroupsCommand(config, streams))
 	cmd.AddCommand(NewAccesspoliciesCommand(config, streams))
+	cmd.AddCommand(NewIdentitysourceCommand(config, streams))
 	cmd.AddCommand(NewAPIClientsCommand(config, streams))
 
 	return cmd

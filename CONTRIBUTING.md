@@ -8,7 +8,7 @@ Please run `golangci-lint run` and fix any issues found.
 
 ## Issues and Questions
 
-If you encounter an issue, have a question or want to suggest an enhancement, you are welcome to submit a [request](https://github.com/ibm-security-verify/verifyctl/issues).
+If you encounter an issue, have a question or want to suggest an enhancement, you are welcome to submit a [request](https://github.com/ibm-verify/verifyctl/issues).
 Before that, please search for similar issues. It's possible somebody has encountered this issue already.
 
 ## Pull Requests

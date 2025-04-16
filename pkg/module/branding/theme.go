@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
-	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
+	xhttp "github.com/ibm-verify/verifyctl/pkg/util/http"
 )
 
 const (
@@ -71,10 +71,10 @@ func (c *ThemeClient) ListThemes(ctx context.Context, auth *config.AuthConfig, c
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		// if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get themes"); err != nil {
-		// 	vc.Logger.Errorf("unable to get the themes; err=%s", err.Error())
-		// 	return nil, "", err
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get themes"); err != nil {
+			vc.Logger.Errorf("unable to get the themes; err=%s", err.Error())
+			return nil, "", err
+		}
 
 		vc.Logger.Errorf("unable to get the themes; responseCode=%d, responseBody=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the themes")
@@ -99,17 +99,16 @@ func (c *ThemeClient) GetTheme(ctx context.Context, auth *config.AuthConfig, the
 		req.Header.Set("Accept", "application/octet-stream")
 		return nil
 	})
-	// response, err := c.client.Get(ctx, u, headers)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the themes; err=%s", err.Error())
 		return nil, "", err
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		// if err := module.HandleCommonErrors(ctx, resp, "unable to get the theme"); err != nil {
-		// 	vc.Logger.Errorf("unable to get the theme with ID %s; err=%s", themeID, err.Error())
-		// 	return nil, "", err
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get the theme"); err != nil {
+			vc.Logger.Errorf("unable to get the theme with ID %s; err=%s", themeID, err.Error())
+			return nil, "", err
+		}
 
 		vc.Logger.Errorf("unable to get the theme with ID %s; responseCode=%d, responseBody=%s", themeID, resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the theme")
@@ -130,10 +129,10 @@ func (c *ThemeClient) GetFile(ctx context.Context, auth *config.AuthConfig, them
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		// if err := module.HandleCommonErrors(ctx, resp, "unable to get the file"); err != nil {
-		// 	vc.Logger.Errorf("unable to get the theme with ID %s and path %s; err=%s", themeID, path, err.Error())
-		// 	return nil, "", err
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get the file"); err != nil {
+			vc.Logger.Errorf("unable to get the theme with ID %s and path %s; err=%s", themeID, path, err.Error())
+			return nil, "", err
+		}
 
 		vc.Logger.Errorf("unable to get the theme with ID %s and path %s; responseCode=%d, responseBody=%s", themeID, path, resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the file")
@@ -159,7 +158,7 @@ func (c *ThemeClient) UpdateFile(ctx context.Context, auth *config.AuthConfig, t
 	}
 
 	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, response, "unable to update the file"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to update the file"); err != nil {
 			vc.Logger.Errorf("unable to update the theme with ID %s and path %s; err=%s", themeID, path, err.Error())
 			return err
 		}
@@ -195,7 +194,7 @@ func (c *ThemeClient) UpdateTheme(ctx context.Context, auth *config.AuthConfig, 
 	}
 
 	if response.StatusCode != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, response, "unable to update the theme"); err != nil {
+		if err := module.HandleCommonErrorsX(ctx, response, "unable to update the theme"); err != nil {
 			vc.Logger.Errorf("unable to update the theme with ID %s; err=%s", themeID, err.Error())
 			return err
 		}

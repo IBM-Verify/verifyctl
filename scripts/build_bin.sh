@@ -1,6 +1,6 @@
 #!/bin/bash
 
-package=github.com/ibm-security-verify/verifyctl/cmd/verifyctl
+package=github.com/ibm-verify/verifyctl/cmd/verifyctl
 bin_name=verifyctl
 
 # use go env if noset

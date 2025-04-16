@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
 )
 
 type GroupClient struct{}
@@ -47,10 +48,10 @@ func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, gro
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		// if err := module.HandleCommonErrors(ctx, response, "unable to get Group"); err != nil {
-		// 	vc.Logger.Errorf("unable to get the Group; err=%s", err.Error())
-		// 	return nil, "", err
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Group"); err != nil {
+			vc.Logger.Errorf("unable to get the Group; err=%s", err.Error())
+			return nil, "", err
+		}
 
 		vc.Logger.Errorf("unable to get the Group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Group")
@@ -89,10 +90,10 @@ func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, so
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		// if err := module.HandleCommonErrors(ctx, resp, "unable to get Groups"); err != nil {
-		// 	vc.Logger.Errorf("unable to get the Groups; err=%s", err.Error())
-		// 	return nil, "", err
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Groups"); err != nil {
+			vc.Logger.Errorf("unable to get the Groups; err=%s", err.Error())
+			return nil, "", err
+		}
 
 		vc.Logger.Errorf("unable to get the Groups; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Groups")
@@ -179,10 +180,10 @@ func (c *GroupClient) DeleteGroup(ctx context.Context, auth *config.AuthConfig, 
 	}
 
 	if resp.StatusCode() != http.StatusNoContent {
-		// if err := module.HandleCommonErrors(ctx, resp, "unable to delete Group"); err != nil {
-		// 	vc.Logger.Errorf("unable to delete the Group; err=%s", err.Error())
-		// 	return fmt.Errorf("unable to delete the Group; err=%s", err.Error())
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to delete Group"); err != nil {
+			vc.Logger.Errorf("unable to delete the Group; err=%s", err.Error())
+			return fmt.Errorf("unable to delete the Group; err=%s", err.Error())
+		}
 
 		vc.Logger.Errorf("unable to delete the Group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return fmt.Errorf("unable to delete the Group")
@@ -256,7 +257,7 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 }
 
 func (c *GroupClient) getGroupId(ctx context.Context, auth *config.AuthConfig, name string) (string, error) {
-	// vc := config.GetVerifyContext(ctx)
+	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	filter := fmt.Sprintf(`displayName eq "%s"`, name)
 	params := &openapi.GetGroupsParams{
@@ -268,12 +269,12 @@ func (c *GroupClient) getGroupId(ctx context.Context, auth *config.AuthConfig, n
 		return nil
 	})
 
-	// if resp.StatusCode() != http.StatusOK {
-	// if err := module.HandleCommonErrors(ctx, resp, "unable to get Group"); err != nil {
-	// 	vc.Logger.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
-	// 	return "", fmt.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
-	// }
-	// }
+	if resp.StatusCode() != http.StatusOK {
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Group"); err != nil {
+			vc.Logger.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
+			return "", fmt.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
+		}
+	}
 
 	var data map[string]interface{}
 	if err := json.Unmarshal(resp.Body, &data); err != nil {

@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
-	typesx "github.com/ibm-security-verify/verifyctl/pkg/util/types"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
+	typesx "github.com/ibm-verify/verifyctl/pkg/util/types"
 )
 
 type AttributeClient struct{}
@@ -114,10 +114,10 @@ func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.Auth
 		return "", defaultErr
 	}
 	if resp.StatusCode() != http.StatusCreated {
-		// if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get attributes"); err != nil {
-		// 	vc.Logger.Errorf("unable to create the attribute; err=%s", err.Error())
-		// 	return "", err
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get attributes"); err != nil {
+			vc.Logger.Errorf("unable to create the attribute; err=%s", err.Error())
+			return "", err
+		}
 
 		vc.Logger.Errorf("unable to create the attribute; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return "", defaultErr
@@ -158,10 +158,10 @@ func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.Auth
 		return defaultErr
 	}
 	if resp.StatusCode() != http.StatusNoContent {
-		// if err := module.HandleCommonErrors(ctx, response, "unable to get attributes"); err != nil {
-		// 	vc.Logger.Errorf("unable to update the attribute; err=%s", err.Error())
-		// 	return err
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get attributes"); err != nil {
+			vc.Logger.Errorf("unable to update the attribute; err=%s", err.Error())
+			return err
+		}
 
 		vc.Logger.Errorf("unable to update the attribute; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return defaultErr

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
-	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 )
 
@@ -87,6 +87,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newUserCommand(config, streams))
 	cmd.AddCommand(newGroupCommand(config, streams))
 	cmd.AddCommand(newAccesspolicyCommand(config, streams))
+	cmd.AddCommand(newIdentitysourceCommand(config, streams))
 	cmd.AddCommand(newAPIClientCommand(config, streams))
 
 	return cmd
@@ -99,7 +100,7 @@ func (o *options) addCommonFlags(cmd *cobra.Command, resourceName string) {
 
 func (o *options) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&o.file, "file", "f", "", i18n.Translate("Path to the file that contains the input data. JSON and YAML formats are supported and the files are expected to be named with the appropriate extension: json, yml or yaml."))
-	//cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Fetches the newly created resource in the indicated format. The values supported are 'json' , 'yaml' and 'raw'. Default: 'yaml'."))
+	//cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Fetches the newly created resource in the indicated format. The values supported are 'json' , 'yaml' and 'raw'. Default: 'json'."))
 }
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
@@ -146,6 +147,10 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	case resource.ResourceTypePrefix + "AccessPolicy":
 		options := &accesspolicyOptions{}
 		err = options.updateAccesspolicyFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+
+	case resource.ResourceTypePrefix + "IdentitySource":
+		options := &identitysourceOptions{}
+		err = options.updateIdentitysourceFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "APIClient":
 		options := &apiclientOptions{}

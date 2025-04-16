@@ -3,13 +3,13 @@ package get
 import (
 	"io"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/security"
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
-	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	"github.com/ibm-verify/verifyctl/pkg/module/security"
+	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 )
 
@@ -131,7 +131,7 @@ func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, auth *conf
 		Kind:       resource.ResourceTypePrefix + "APIClient",
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
-			UID:  apic.ClientID,
+			UID:  *apic.ClientID,
 			Name: apic.ClientName,
 			URI:  uri,
 		},
@@ -161,12 +161,12 @@ func (o *apiclientsOptions) handleAPIClientList(cmd *cobra.Command, auth *config
 	}
 
 	items := []*resource.ResourceObject{}
-	for _, apic := range apiclis.Clients {
+	for _, apic := range *apiclis.APIClients {
 		items = append(items, &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "APIClient",
 			APIVersion: "1.0",
 			Metadata: &resource.ResourceObjectMetadata{
-				UID:  apic.ClientID,
+				UID:  *apic.ClientID,
 				Name: apic.ClientName,
 			},
 			Data: apic,
@@ -178,7 +178,7 @@ func (o *apiclientsOptions) handleAPIClientList(cmd *cobra.Command, auth *config
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: apiclis.Total,
+			Total: int(*apiclis.Total),
 		},
 		Items: items,
 	}

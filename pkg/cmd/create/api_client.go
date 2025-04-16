@@ -5,13 +5,12 @@ import (
 	"io"
 	"os"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/security"
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
-	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
-	"gopkg.in/yaml.v3"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	"github.com/ibm-verify/verifyctl/pkg/module/security"
+	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 
 	"github.com/spf13/cobra"
 )
@@ -142,8 +141,8 @@ func (o *apiClientOptions) createAPIClientWithData(cmd *cobra.Command, auth *con
 	ctx := cmd.Context()
 	vc := config.GetVerifyContext(ctx)
 
-	apiclient := &security.Client{}
-	if err := yaml.Unmarshal(data, &apiclient); err != nil {
+	apiclient := &security.APIClientConfig{}
+	if err := json.Unmarshal(data, &apiclient); err != nil {
 		vc.Logger.Errorf("unable to unmarshal API client; err=%v", err)
 		return err
 	}
@@ -171,7 +170,7 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, auth *
 	vc := config.GetVerifyContext(ctx)
 
 	// Convert map data to JSON
-	apiclient := &security.Client{}
+	apiclient := &security.APIClientConfig{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal data; err=%v", err)

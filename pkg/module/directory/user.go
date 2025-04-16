@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/module/openapi"
-	xhttp "github.com/ibm-security-verify/verifyctl/pkg/util/http"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
+	xhttp "github.com/ibm-verify/verifyctl/pkg/util/http"
 )
 
 type UserClient struct {
@@ -56,10 +57,10 @@ func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, us
 	}
 
 	if resp.StatusCode() != http.StatusCreated {
-		// if err := module.HandleCommonErrors(ctx, resp, "unable to create user"); err != nil {
-		// 	vc.Logger.Errorf("unable to create the user; err=%s", err.Error())
-		// 	return "", fmt.Errorf("unable to create the user; err=%s", err.Error())
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to create user"); err != nil {
+			vc.Logger.Errorf("unable to create the user; err=%s", err.Error())
+			return "", fmt.Errorf("unable to create the user; err=%s", err.Error())
+		}
 
 		vc.Logger.Errorf("unable to create the user; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return "", fmt.Errorf("unable to create the user; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
@@ -94,10 +95,10 @@ func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userN
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		// if err := module.HandleCommonErrors(ctx, resp, "unable to get User"); err != nil {
-		// 	vc.Logger.Errorf("unable to get the User; err=%s", err.Error())
-		// 	return nil, "", err
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get User"); err != nil {
+			vc.Logger.Errorf("unable to get the User; err=%s", err.Error())
+			return nil, "", err
+		}
 
 		vc.Logger.Errorf("unable to get the User; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the User")
@@ -136,10 +137,10 @@ func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		// if err := module.HandleCommonErrors(ctx, resp, "unable to get Users"); err != nil {
-		// 	vc.Logger.Errorf("unable to get the Users; err=%s", err.Error())
-		// 	return nil, "", err
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Users"); err != nil {
+			vc.Logger.Errorf("unable to get the Users; err=%s", err.Error())
+			return nil, "", err
+		}
 
 		vc.Logger.Errorf("unable to get the Users; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return nil, "", fmt.Errorf("unable to get the Users")
@@ -174,10 +175,10 @@ func (c *UserClient) DeleteUser(ctx context.Context, auth *config.AuthConfig, na
 	}
 
 	if resp.StatusCode() != http.StatusNoContent {
-		// if err := module.HandleCommonErrors(ctx, response, "unable to delete User"); err != nil {
-		// 	vc.Logger.Errorf("unable to delete the User; err=%s", err.Error())
-		// 	return fmt.Errorf("unable to delete the User; err=%s", err.Error())
-		// }
+		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to delete User"); err != nil {
+			vc.Logger.Errorf("unable to delete the User; err=%s", err.Error())
+			return fmt.Errorf("unable to delete the User; err=%s", err.Error())
+		}
 
 		vc.Logger.Errorf("unable to delete the User; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 		return fmt.Errorf("unable to delete the User; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
@@ -229,7 +230,7 @@ func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, us
 }
 
 func (c *UserClient) getUserId(ctx context.Context, auth *config.AuthConfig, name string) (string, error) {
-	// vc := config.GetVerifyContext(ctx)
+	vc := config.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	filter := fmt.Sprintf(`userName eq "%s"`, name)
 	params := &openapi.GetUsersParams{
@@ -241,12 +242,12 @@ func (c *UserClient) getUserId(ctx context.Context, auth *config.AuthConfig, nam
 		return nil
 	})
 
-	// if response.StatusCode() != http.StatusOK {
-	// if err := module.HandleCommonErrors(ctx, response, "unable to get User"); err != nil {
-	// 	vc.Logger.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
-	// 	return "", fmt.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
-	// }
-	// }
+	if response.StatusCode() != http.StatusOK {
+		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get User"); err != nil {
+			vc.Logger.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
+			return "", fmt.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
+		}
+	}
 
 	var data map[string]interface{}
 	if err := json.Unmarshal(response.Body, &data); err != nil {

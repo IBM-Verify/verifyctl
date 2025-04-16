@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/ibm-security-verify/verifyctl/pkg/cmd/resource"
-	"github.com/ibm-security-verify/verifyctl/pkg/config"
-	"github.com/ibm-security-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-security-verify/verifyctl/pkg/module"
-	cmdutil "github.com/ibm-security-verify/verifyctl/pkg/util/cmd"
-	"github.com/ibm-security-verify/verifyctl/pkg/util/templates"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
+	"github.com/ibm-verify/verifyctl/pkg/config"
+	"github.com/ibm-verify/verifyctl/pkg/i18n"
+	"github.com/ibm-verify/verifyctl/pkg/module"
+	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
+	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 )
 
@@ -90,6 +90,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newUserCommand(config, streams))
 	cmd.AddCommand(newGroupCommand(config, streams))
 	cmd.AddCommand(newAccesspolicyCommand(config, streams))
+	cmd.AddCommand(newIdentitysourceCommand(config, streams))
 	cmd.AddCommand(newAPIClientCommand(config, streams))
 
 	return cmd
@@ -149,6 +150,10 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	case resource.ResourceTypePrefix + "AccessPolicy":
 		options := &accesspolicyOptions{}
 		err = options.createAccesspolicyFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+
+	case resource.ResourceTypePrefix + "IdentitySource":
+		options := &identitysourceOptions{}
+		err = options.createIdentitySourceFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "APIClient":
 		options := &apiClientOptions{}
