@@ -2,7 +2,9 @@ package auth
 
 import (
 	"io"
+	"net/url"
 
+	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 	"github.com/ibm-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/module"
@@ -12,7 +14,7 @@ import (
 )
 
 const (
-	usage         = "auth [hostname] [flags]"
+	usage         = "auth [flags]"
 	messagePrefix = "Auth"
 )
 
@@ -28,24 +30,24 @@ There are two methods to generate the authorized token, based on flags:
   - As a user providing credentials
   - As an API client
 		
-In both cases, an OAuth token is generated with specific entitlements.`))
+In both cases, an OAuth token is generated with specific entitlements.
+
+The auth resource file can be generated using:
+
+  verifyctl auth --boilerplate`))
 
 	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
-		# Login interactively as a user. This uses a valid OAuth client registered on the tenant
-		# that is enabled with device flow grant type.
+		# Login interactively as a user or an API client. For user login, the application on Verify
+		# should be configured with the OAuth 2.0 Device Flow.
 		#
 		# The connection created is permitted to perform actions based on the entitlements that
 		# are configured on the OAuth client and the entitlements of the user based on assigned groups and roles.
-		verifyctl auth abc.verify.ibm.com -u --clientId=cli_user_client --clientSecret=cli_user_secret
-
-		# Authenticate an API client to get an authorized token.
-		#
-		# The connection created is permitted to perform actions based on the entitlements that
-		# are configured on the API client.
-		verifyctl auth abc.verify.ibm.com --clientId=cli_api_client --clientSecret=cli_api_secret`))
+		verifyctl auth -f=login.yaml
+	`))
 )
 
 type options struct {
+	boilerplate  bool
 	user         bool
 	clientID     string
 	clientSecret string
@@ -86,25 +88,30 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 }
 
 func (o *options) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().BoolVarP(&o.user, "user", "u", o.user, i18n.Translate("Specify if a user login should be initiated."))
-	cmd.Flags().StringVar(&o.clientID, "clientId", o.clientID, i18n.Translate("Client ID of the API client or application enabled the appropriate grant type."))
-	cmd.Flags().StringVar(&o.clientSecret, "clientSecret", o.clientSecret, i18n.Translate("Client Secret of the API client or application enabled the appropriate grant type. This is optional if the application is configured as a public client."))
-	cmd.Flags().StringVarP(&o.file, "file", "f", "", i18n.Translate("Path to the file that contains the input data. JSON and YAML formats are supported and the files are expected to be named with the appropriate extension: json, yml or yaml."))
+	cmd.Flags().BoolVar(&o.boilerplate, "boilerplate", o.boilerplate, i18n.TranslateWithArgs("Generate an empty %s file. This will be in YAML format.", "auth"))
+	cmd.Flags().StringVarP(&o.file, "file", "f", "", i18n.Translate("Path to the file parameters used to authenticate the request. JSON and YAML formats are supported and the files are expected to be named with the appropriate extension: json, yml or yaml."))
 	cmd.Flags().BoolVar(&o.printOnly, "print", false, i18n.Translate("Specify if the OAuth 2.0 access token should only be displayed and not persisted. Note that this means subsequent commands will not be able to make use of this token."))
+	cmd.Flags().BoolVarP(&o.user, "user", "u", o.user, i18n.Translate("(Deprecated) Specify if a user login should be initiated."))
+	cmd.Flags().StringVar(&o.clientID, "clientId", o.clientID, i18n.Translate("(Deprecated) Client ID of the API client or application enabled the appropriate grant type."))
+	cmd.Flags().StringVar(&o.clientSecret, "clientSecret", o.clientSecret, i18n.Translate("(Deprecated) Client Secret of the API client or application enabled the appropriate grant type. This is optional if the application is configured as a public client."))
+
 }
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
-	if len(args) < 1 {
-		return module.MakeSimpleError(i18n.Translate("Tenant is required."))
+	o.user = cmd.Flag("user").Changed
+	if len(args) == 0 {
+		return nil
 	}
 
 	o.tenant = args[0]
-	o.user = cmd.Flag("user").Changed
-
 	return nil
 }
 
 func (o *options) Validate(cmd *cobra.Command, args []string) error {
+	if o.boilerplate {
+		return nil
+	}
+
 	if len(o.clientID) == 0 && len(o.file) == 0 {
 		return module.MakeSimpleError(i18n.Translate("'clientId' is required."))
 	}
@@ -116,6 +123,24 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 	vc := config.GetVerifyContext(ctx)
 
+	if o.boilerplate {
+		resourceObj := &resource.ResourceObject{
+			Kind:       resource.ResourceTypePrefix + "Auth",
+			APIVersion: "1.0",
+			Data: &AuthResource{
+				Tenant: "abc.verify.ibm.com",
+				Parameters: url.Values{
+					"foo": []string{"bar"},
+				},
+				ClientAuthType: "private_key_jwt",
+				PrivateKeyRaw:  "<serialized_jwk> when auth_type is private_key_jwt",
+			},
+		}
+
+		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
+		return nil
+	}
+
 	token := ""
 	var authResource *AuthResource
 	var err error
@@ -126,14 +151,23 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+
+		if len(authResource.Tenant) == 0 {
+			authResource.Tenant = o.tenant
+		}
 	} else {
 		// for backward compatibility
 		cmdutil.WriteString(cmd, "(deprecated) Use the '-f' argument to provide auth properties")
 		authResource = &AuthResource{
+			Tenant:       o.tenant,
 			ClientID:     o.clientID,
 			ClientSecret: o.clientSecret,
 			User:         o.user,
 		}
+	}
+
+	if len(authResource.Tenant) == 0 {
+		return module.MakeSimpleError(i18n.Translate("'tenant' is required."))
 	}
 
 	if tokenResponse, err := o.authenticate(cmd, authResource); err != nil {
