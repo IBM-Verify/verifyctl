@@ -6,9 +6,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ibm-verify/verifyctl/pkg/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 )
 
 const (
@@ -41,7 +42,7 @@ type ResourceObjectMetadata struct {
 
 func (r *ResourceObject) LoadFromFile(cmd *cobra.Command, file string, format string) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	var b []byte
 	var err error

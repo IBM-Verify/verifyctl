@@ -1,11 +1,13 @@
 package config
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"gopkg.in/yaml.v3"
 )
@@ -107,6 +109,20 @@ func (o *CLIConfig) GetCurrentAuth() (*AuthConfig, error) {
 	}
 
 	return nil, fmt.Errorf("No login session available. Use:\n  verifyctl login -h")
+}
+
+func (o *CLIConfig) SetAuthToContext(ctx context.Context) (*AuthConfig, error) {
+	auth, err := o.GetCurrentAuth()
+	if err != nil {
+		return nil, err
+	}
+
+	// hydrate the verify context with current auth information
+	vc := contextx.GetVerifyContext(ctx)
+	vc.Tenant = auth.Tenant
+	vc.Token = auth.Token
+
+	return auth, nil
 }
 
 func (o *AuthConfig) Merge(c *AuthConfig) {

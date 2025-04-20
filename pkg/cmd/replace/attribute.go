@@ -13,6 +13,8 @@ import (
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 )
 
 const (
@@ -121,7 +123,7 @@ func (o *attributeOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	auth, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -131,7 +133,7 @@ func (o *attributeOptions) Run(cmd *cobra.Command, args []string) error {
 
 func (o *attributeOptions) updateAttribute(cmd *cobra.Command, auth *config.AuthConfig) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// get the contents of the file
 	b, err := os.ReadFile(o.file)
@@ -146,7 +148,7 @@ func (o *attributeOptions) updateAttribute(cmd *cobra.Command, auth *config.Auth
 
 func (o *attributeOptions) updateAttributeWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to attribute
 	attribute := &directory.Attribute{}
@@ -166,7 +168,7 @@ func (o *attributeOptions) updateAttributeWithData(cmd *cobra.Command, auth *con
 
 func (o *attributeOptions) updateAttributeFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to attribute
 	attribute := &directory.Attribute{}

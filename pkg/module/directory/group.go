@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"regexp"
 
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
 )
 
@@ -29,7 +30,7 @@ func NewGroupClient() *GroupClient {
 }
 
 func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, groupName string) (*Group, string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	id, err := c.getGroupId(ctx, auth, groupName)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	if err != nil {
@@ -48,7 +49,7 @@ func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, gro
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Group"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Group"); err != nil {
 			vc.Logger.Errorf("unable to get the Group; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -67,7 +68,7 @@ func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, gro
 
 func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*GroupListResponse, string, error) {
 
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
 	params := &openapi.GetGroupsParams{}
@@ -90,7 +91,7 @@ func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, so
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Groups"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Groups"); err != nil {
 			vc.Logger.Errorf("unable to get the Groups; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -109,7 +110,7 @@ func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, so
 }
 
 func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, group *Group) (string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	userClient := NewUserClient()
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
@@ -161,7 +162,7 @@ func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, 
 }
 
 func (c *GroupClient) DeleteGroup(ctx context.Context, auth *config.AuthConfig, groupName string) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getGroupId(ctx, auth, groupName)
 	if err != nil {
@@ -180,7 +181,7 @@ func (c *GroupClient) DeleteGroup(ctx context.Context, auth *config.AuthConfig, 
 	}
 
 	if resp.StatusCode() != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to delete Group"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to delete Group"); err != nil {
 			vc.Logger.Errorf("unable to delete the Group; err=%s", err.Error())
 			return fmt.Errorf("unable to delete the Group; err=%s", err.Error())
 		}
@@ -193,7 +194,7 @@ func (c *GroupClient) DeleteGroup(ctx context.Context, auth *config.AuthConfig, 
 }
 
 func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, groupName string, operations []GroupPatchOperation) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	userClient := NewUserClient()
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	groupID, err := c.getGroupId(ctx, auth, groupName)
@@ -257,7 +258,7 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 }
 
 func (c *GroupClient) getGroupId(ctx context.Context, auth *config.AuthConfig, name string) (string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	filter := fmt.Sprintf(`displayName eq "%s"`, name)
 	params := &openapi.GetGroupsParams{
@@ -270,7 +271,7 @@ func (c *GroupClient) getGroupId(ctx context.Context, auth *config.AuthConfig, n
 	})
 
 	if resp.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Group"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Group"); err != nil {
 			vc.Logger.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
 			return "", fmt.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
 		}

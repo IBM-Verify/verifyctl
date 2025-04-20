@@ -9,12 +9,12 @@ import (
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
-	"github.com/ibm-verify/verifyctl/pkg/config"
 	"github.com/ibm-verify/verifyctl/pkg/i18n"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/spf13/cobra"
 
 	oidc "github.com/ibm-verify/verify-sdk-go/pkg/auth"
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 )
 
 type AuthResource struct {
@@ -61,7 +61,7 @@ func (r *AuthResource) ConvertToClient() *oidc.Client {
 
 func (o *options) authenticate(cmd *cobra.Command, r *AuthResource) (*oidc.TokenResponse, error) {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client := r.ConvertToClient()
 
 	if r.User {
@@ -93,7 +93,7 @@ func (o *options) authenticate(cmd *cobra.Command, r *AuthResource) (*oidc.Token
 
 func (o *options) readFile(cmd *cobra.Command) (*AuthResource, error) {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	resourceObject := &resource.ResourceObject{}
 	if err := resourceObject.LoadFromFile(cmd, o.file, ""); err != nil {

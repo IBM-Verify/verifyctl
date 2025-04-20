@@ -11,6 +11,8 @@ import (
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 )
 
 const (
@@ -128,7 +130,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		return module.MakeSimpleError(i18n.Translate("No 'kind' defined. Resource type cannot be identified."))
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	auth, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -160,7 +162,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 
 func (o *options) readFile(cmd *cobra.Command) (*resource.ResourceObject, error) {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	resourceObject := &resource.ResourceObject{}
 	if err := resourceObject.LoadFromFile(cmd, o.file, ""); err != nil {

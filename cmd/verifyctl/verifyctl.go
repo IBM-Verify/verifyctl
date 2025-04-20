@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	"github.com/ibm-verify/verifyctl/pkg/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
@@ -29,7 +30,7 @@ func main() {
 		}
 	}()
 
-	ctx, err := config.NewContextWithVerifyContext(context.Background(), logger)
+	ctx, err := contextx.NewContextWithVerifyContext(context.Background(), logger)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

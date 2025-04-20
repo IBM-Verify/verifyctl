@@ -8,8 +8,10 @@ import (
 	"net/http"
 
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 type IdentitysourceClient struct{}
@@ -22,7 +24,7 @@ func NewIdentitySourceClient() *IdentitysourceClient {
 }
 
 func (c *IdentitysourceClient) CreateIdentitysource(ctx context.Context, auth *config.AuthConfig, identitysource *IdentitySource) (string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	defaultErr := fmt.Errorf("unable to create identitysource")
 
@@ -44,7 +46,7 @@ func (c *IdentitysourceClient) CreateIdentitysource(ctx context.Context, auth *c
 	}
 
 	if resp.StatusCode() != http.StatusCreated {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to create identitysource"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to create identitysource"); err != nil {
 			vc.Logger.Errorf("unable to create the identitysource; err=%s", err.Error())
 			return "", fmt.Errorf("unable to create the identitysource; err=%s", err.Error())
 		}
@@ -57,7 +59,7 @@ func (c *IdentitysourceClient) CreateIdentitysource(ctx context.Context, auth *c
 }
 
 func (c *IdentitysourceClient) GetIdentitysource(ctx context.Context, auth *config.AuthConfig, identitysourceName string) (*IdentitySource, string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getIdentitysourceId(ctx, auth, identitysourceName)
 	if err != nil {
@@ -76,7 +78,7 @@ func (c *IdentitysourceClient) GetIdentitysource(ctx context.Context, auth *conf
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get IdentitySource"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get IdentitySource"); err != nil {
 			vc.Logger.Errorf("unable to get the IdentitySource; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -95,7 +97,7 @@ func (c *IdentitysourceClient) GetIdentitysource(ctx context.Context, auth *conf
 
 func (c *IdentitysourceClient) GetIdentitysources(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*IdentitySourceList, string, error) {
 
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	params := &openapi.GetInstancesV2Params{}
 	if len(sort) > 0 {
@@ -117,7 +119,7 @@ func (c *IdentitysourceClient) GetIdentitysources(ctx context.Context, auth *con
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Identitysources"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Identitysources"); err != nil {
 			vc.Logger.Errorf("unable to get the Identitysources; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -136,7 +138,7 @@ func (c *IdentitysourceClient) GetIdentitysources(ctx context.Context, auth *con
 }
 
 func (c *IdentitysourceClient) DeleteIdentitysource(ctx context.Context, auth *config.AuthConfig, name string) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getIdentitysourceId(ctx, auth, name)
 	if err != nil {
@@ -155,7 +157,7 @@ func (c *IdentitysourceClient) DeleteIdentitysource(ctx context.Context, auth *c
 	}
 
 	if resp.StatusCode() != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to delete IdentitySource"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to delete IdentitySource"); err != nil {
 			vc.Logger.Errorf("unable to delete the IdentitySource; err=%s", err.Error())
 			return fmt.Errorf("unable to delete the IdentitySource; err=%s", err.Error())
 		}
@@ -168,7 +170,7 @@ func (c *IdentitysourceClient) DeleteIdentitysource(ctx context.Context, auth *c
 }
 
 func (c *IdentitysourceClient) UpdateIdentitysource(ctx context.Context, auth *config.AuthConfig, identitysource *IdentitySource) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	defaultErr := fmt.Errorf("unable to update identitysource")
 	id, err := c.getIdentitysourceId(ctx, auth, identitysource.InstanceName)
@@ -203,7 +205,7 @@ func (c *IdentitysourceClient) UpdateIdentitysource(ctx context.Context, auth *c
 }
 
 func (c *IdentitysourceClient) getIdentitysourceId(ctx context.Context, auth *config.AuthConfig, name string) (string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	search := fmt.Sprintf(`instanceName = "%s"`, name)
 	params := &openapi.GetInstancesV2Params{
@@ -216,7 +218,7 @@ func (c *IdentitysourceClient) getIdentitysourceId(ctx context.Context, auth *co
 	})
 
 	if resp.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get IdentitySource"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get IdentitySource"); err != nil {
 			vc.Logger.Errorf("unable to get the IdentitySource with identitysourceName %s; err=%s", name, err.Error())
 			return "", fmt.Errorf("unable to get the IdentitySource with identitysourceName %s; err=%s", name, err.Error())
 		}
