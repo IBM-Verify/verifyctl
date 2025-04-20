@@ -14,6 +14,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 	"github.com/ibm-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/module"
@@ -78,7 +79,7 @@ func NewLogsClient() *LogsClient {
 }
 
 func (c *LogsClient) PrintLogs(ctx context.Context, auth *config.AuthConfig, writer io.Writer, params *LogParameters) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	currTime := time.Now()
 	endTime := currTime.UnixMilli()
@@ -138,7 +139,7 @@ func (c *LogsClient) printLogs(_ context.Context, w *tabwriter.Writer, logs []lo
 }
 
 func (c *LogsClient) getLogs(ctx context.Context, auth *config.AuthConfig, logReq *logRequest) ([]log, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiLogsQuery))
 
 	body, err := json.Marshal(logReq)

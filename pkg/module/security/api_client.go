@@ -8,11 +8,12 @@ import (
 	"net/http"
 	"net/url"
 
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	typesx "github.com/ibm-verify/verify-sdk-go/x/types"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-verify/verifyctl/pkg/util/http"
-	typesx "github.com/ibm-verify/verifyctl/pkg/util/types"
 )
 
 type ApiClient struct {
@@ -65,7 +66,7 @@ func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig
 		return "", fmt.Errorf("client object is nil")
 	}
 
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	defaultErr := fmt.Errorf("unable to create API client")
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
@@ -86,7 +87,7 @@ func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig
 	}
 
 	if response.StatusCode() != http.StatusCreated {
-		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to create the API client; err=%s", err.Error())
 			return "", err
 		}
@@ -110,7 +111,7 @@ func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig
 }
 
 func (c *ApiClient) GetAPIClient(ctx context.Context, auth *config.AuthConfig, clientName string) (*APIClientConfig, string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.GetAPIClientId(ctx, auth, clientName)
 	if err != nil {
@@ -129,7 +130,7 @@ func (c *ApiClient) GetAPIClient(ctx context.Context, auth *config.AuthConfig, c
 	}
 
 	if response.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to get the API client; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -147,7 +148,7 @@ func (c *ApiClient) GetAPIClient(ctx context.Context, auth *config.AuthConfig, c
 }
 
 func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (*APIClientListResponse, string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	params := &openapi.GetAPIClientsParams{}
 	if len(search) > 0 {
@@ -183,7 +184,7 @@ func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, 
 	}
 
 	if response.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API clients"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API clients"); err != nil {
 			vc.Logger.Errorf("unable to get the API clients; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -202,7 +203,7 @@ func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, 
 }
 
 func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig, apiClientConfig *APIClientConfig) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	if apiClientConfig == nil {
 		vc.Logger.Errorf("client object is nil")
@@ -240,7 +241,7 @@ func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig
 }
 
 func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig, clientName string) (string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
 	search := fmt.Sprintf(`clientName contains "%s"`, clientName)
@@ -260,7 +261,7 @@ func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig,
 	}
 
 	if response.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
 			return "", fmt.Errorf("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
 		}
@@ -311,7 +312,7 @@ func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig,
 }
 
 func (c *ApiClient) DeleteAPIClientById(ctx context.Context, auth *config.AuthConfig, id string) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	response, err := client.DeleteAPIClientWithResponse(ctx, id, func(ctx context.Context, req *http.Request) error {
 		req.Header.Set("Accept", "application/json")
@@ -323,7 +324,7 @@ func (c *ApiClient) DeleteAPIClientById(ctx context.Context, auth *config.AuthCo
 		return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
 	}
 	if response.StatusCode() != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to delete API client"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, response.HTTPResponse, "unable to delete API client"); err != nil {
 			vc.Logger.Errorf("unable to delete the API client; err=%s", err.Error())
 			return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
 		}

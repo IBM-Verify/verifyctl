@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -13,6 +14,9 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/module"
 	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
 	typesx "github.com/ibm-verify/verifyctl/pkg/util/types"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 type AttributeClient struct{}
@@ -25,7 +29,7 @@ func NewAttributeClient() *AttributeClient {
 }
 
 func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthConfig, id string) (*Attribute, string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	params := openapi.GetAttribute0Params{
 		Authorization: fmt.Sprintf("Bearer %s", auth.Token),
@@ -46,7 +50,7 @@ func (c *AttributeClient) GetAttribute(ctx context.Context, auth *config.AuthCon
 }
 
 func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthConfig, search string, sort string, page int, limit int) (*AttributeList, string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	params := openapi.GetAllAttributesParams{
 		Authorization: fmt.Sprintf("Bearer %s", auth.Token),
@@ -70,7 +74,7 @@ func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthCo
 		params.Pagination = &paginationStr
 	}
 
-	resp, err := module.CustomParse(client.GetAllAttributes(ctx, &params))
+	resp, err := customParse(client.GetAllAttributes(ctx, &params))
 	body := &AttributeList{}
 	if err != nil {
 		fmt.Println(err)
@@ -93,7 +97,7 @@ func (c *AttributeClient) GetAttributes(ctx context.Context, auth *config.AuthCo
 
 // CreateAttribute creates an attribute and returns the resource URI.
 func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) (string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	defaultErr := fmt.Errorf("unable to create attribute")
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	params := &openapi.CreateAttributeParams{
@@ -114,7 +118,7 @@ func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.Auth
 		return "", defaultErr
 	}
 	if resp.StatusCode() != http.StatusCreated {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get attributes"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get attributes"); err != nil {
 			vc.Logger.Errorf("unable to create the attribute; err=%s", err.Error())
 			return "", err
 		}
@@ -137,7 +141,7 @@ func (c *AttributeClient) CreateAttribute(ctx context.Context, auth *config.Auth
 }
 
 func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.AuthConfig, attribute *Attribute) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	defaultErr := fmt.Errorf("unable to update attribute")
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
@@ -158,7 +162,7 @@ func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.Auth
 		return defaultErr
 	}
 	if resp.StatusCode() != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get attributes"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get attributes"); err != nil {
 			vc.Logger.Errorf("unable to update the attribute; err=%s", err.Error())
 			return err
 		}
@@ -168,4 +172,21 @@ func (c *AttributeClient) UpdateAttribute(ctx context.Context, auth *config.Auth
 	}
 
 	return nil
+}
+
+// when any API can generete multiple response structure for same response code
+// we use this custom parse method to parse the response
+func customParse(rsp *http.Response, rspErr error) (*openapi.GetAllAttributesObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &openapi.GetAllAttributesObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
 }

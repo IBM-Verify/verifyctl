@@ -102,7 +102,7 @@ func (o *groupsOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	auth, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}

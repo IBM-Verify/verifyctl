@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"net/http"
 
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	"github.com/ibm-verify/verifyctl/pkg/module/openapi"
 	xhttp "github.com/ibm-verify/verifyctl/pkg/util/http"
 )
@@ -33,7 +34,7 @@ func NewUserClient() *UserClient {
 }
 
 func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, user *User) (string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	defaultErr := fmt.Errorf("unable to create user")
 	body, err := json.Marshal(user)
@@ -57,7 +58,7 @@ func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, us
 	}
 
 	if resp.StatusCode() != http.StatusCreated {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to create user"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to create user"); err != nil {
 			vc.Logger.Errorf("unable to create the user; err=%s", err.Error())
 			return "", fmt.Errorf("unable to create the user; err=%s", err.Error())
 		}
@@ -76,7 +77,7 @@ func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, us
 }
 
 func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userName string) (*User, string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getUserId(ctx, auth, userName)
 	if err != nil {
@@ -95,7 +96,7 @@ func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userN
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get User"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get User"); err != nil {
 			vc.Logger.Errorf("unable to get the User; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -114,7 +115,7 @@ func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userN
 
 func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort string, count string) (*UserListResponse, string, error) {
 
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
 	params := &openapi.GetUsersParams{}
@@ -137,7 +138,7 @@ func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Users"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Users"); err != nil {
 			vc.Logger.Errorf("unable to get the Users; err=%s", err.Error())
 			return nil, "", err
 		}
@@ -156,7 +157,7 @@ func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort
 }
 
 func (c *UserClient) DeleteUser(ctx context.Context, auth *config.AuthConfig, name string) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	id, err := c.getUserId(ctx, auth, name)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	if err != nil {
@@ -175,7 +176,7 @@ func (c *UserClient) DeleteUser(ctx context.Context, auth *config.AuthConfig, na
 	}
 
 	if resp.StatusCode() != http.StatusNoContent {
-		if err := module.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to delete User"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to delete User"); err != nil {
 			vc.Logger.Errorf("unable to delete the User; err=%s", err.Error())
 			return fmt.Errorf("unable to delete the User; err=%s", err.Error())
 		}
@@ -188,7 +189,7 @@ func (c *UserClient) DeleteUser(ctx context.Context, auth *config.AuthConfig, na
 }
 
 func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, userName string, operations []UserPatchOperation) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	id, err := c.getUserId(ctx, auth, userName)
 	if err != nil {
@@ -230,7 +231,7 @@ func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, us
 }
 
 func (c *UserClient) getUserId(ctx context.Context, auth *config.AuthConfig, name string) (string, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	filter := fmt.Sprintf(`userName eq "%s"`, name)
 	params := &openapi.GetUsersParams{
@@ -243,7 +244,7 @@ func (c *UserClient) getUserId(ctx context.Context, auth *config.AuthConfig, nam
 	})
 
 	if response.StatusCode() != http.StatusOK {
-		if err := module.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get User"); err != nil {
+		if err := errorsx.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get User"); err != nil {
 			vc.Logger.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
 			return "", fmt.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
 		}

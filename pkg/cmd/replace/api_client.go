@@ -13,6 +13,8 @@ import (
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 )
 
 const (
@@ -114,7 +116,7 @@ func (o *apiclientOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	auth, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -124,7 +126,7 @@ func (o *apiclientOptions) Run(cmd *cobra.Command, args []string) error {
 
 func (o *apiclientOptions) updateAPIClient(cmd *cobra.Command, auth *config.AuthConfig) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// read the file
 	b, err := os.ReadFile(o.file)
@@ -138,7 +140,7 @@ func (o *apiclientOptions) updateAPIClient(cmd *cobra.Command, auth *config.Auth
 
 func (o *apiclientOptions) updateAPIClientWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to api client object
 	apiclient := &security.APIClientConfig{}
@@ -159,7 +161,7 @@ func (o *apiclientOptions) updateAPIClientWithData(cmd *cobra.Command, auth *con
 
 func (o *apiclientOptions) updateAPIClientFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	apiclient := &security.APIClientConfig{}
 	b, err := json.Marshal(data)

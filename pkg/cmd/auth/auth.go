@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/url"
 
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 	"github.com/ibm-verify/verifyctl/pkg/i18n"
@@ -121,7 +122,7 @@ func (o *options) Validate(cmd *cobra.Command, args []string) error {
 
 func (o *options) Run(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	if o.boilerplate {
 		resourceObj := &resource.ResourceObject{

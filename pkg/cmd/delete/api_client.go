@@ -11,6 +11,8 @@ import (
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 )
 
 const (
@@ -102,7 +104,7 @@ func (o *apiclientsOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	auth, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -122,7 +124,7 @@ func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, auth *conf
 
 	if o.id != "" {
 		if o.name != "" {
-			config.GetVerifyContext(cmd.Context()).Logger.Warnf("Both clientName and clientId are provided; using clientId")
+			contextx.GetVerifyContext(cmd.Context()).Logger.Warnf("Both clientName and clientId are provided; using clientId")
 		}
 		id = o.id
 	} else if o.name != "" {

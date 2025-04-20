@@ -13,6 +13,8 @@ import (
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 )
 
 const (
@@ -117,7 +119,7 @@ func (o *identitysourceOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	auth, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -127,7 +129,7 @@ func (o *identitysourceOptions) Run(cmd *cobra.Command, args []string) error {
 
 func (o *identitysourceOptions) createIdentitySource(cmd *cobra.Command, auth *config.AuthConfig) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// get the contents of the file
 	b, err := os.ReadFile(o.file)
@@ -142,7 +144,7 @@ func (o *identitysourceOptions) createIdentitySource(cmd *cobra.Command, auth *c
 
 func (o *identitysourceOptions) createIdentitySourceWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to identitysource
 	identitysource := &directory.IdentitySource{}
@@ -163,7 +165,7 @@ func (o *identitysourceOptions) createIdentitySourceWithData(cmd *cobra.Command,
 
 func (o *identitysourceOptions) createIdentitySourceFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to identitysource
 	identitysource := &directory.IdentitySource{}
