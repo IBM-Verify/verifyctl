@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/branding"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -97,15 +97,15 @@ func (o *themesOptions) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if o.id == "" {
-		return module.MakeSimpleError(i18n.Translate("'id' flag is required."))
+		return errorsx.G11NError("'id' flag is required.")
 	}
 
 	if len(o.path) > 0 && len(o.file) == 0 {
-		return module.MakeSimpleError(i18n.TranslateWithArgs("'%s' flag is required.", "file"))
+		return errorsx.G11NError("'%s' flag is required.", "file")
 	}
 
 	if len(o.directory) == 0 && len(o.file) == 0 {
-		return module.MakeSimpleError(i18n.Translate("Either 'dir' or 'file' flag is required."))
+		return errorsx.G11NError("Either 'dir' or 'file' flag is required.")
 	}
 
 	return nil

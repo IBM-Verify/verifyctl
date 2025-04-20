@@ -55,12 +55,12 @@ func (c *GroupClient) GetGroup(ctx context.Context, auth *config.AuthConfig, gro
 		}
 
 		vc.Logger.Errorf("unable to get the Group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return nil, "", fmt.Errorf("unable to get the Group")
+		return nil, "", errorsx.G11NError("unable to get the Group")
 	}
 
 	Group := &Group{}
 	if err = json.Unmarshal(resp.Body, Group); err != nil {
-		return nil, "", fmt.Errorf("unable to get the Group")
+		return nil, "", errorsx.G11NError("unable to get the Group")
 	}
 
 	return Group, resp.HTTPResponse.Request.URL.String(), nil
@@ -97,13 +97,13 @@ func (c *GroupClient) GetGroups(ctx context.Context, auth *config.AuthConfig, so
 		}
 
 		vc.Logger.Errorf("unable to get the Groups; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return nil, "", fmt.Errorf("unable to get the Groups")
+		return nil, "", errorsx.G11NError("unable to get the Groups")
 	}
 
 	GroupsResponse := &GroupListResponse{}
 	if err = json.Unmarshal(resp.Body, &GroupsResponse); err != nil {
 		vc.Logger.Errorf("unable to get the Groups; err=%s, body=%s", err, string(resp.Body))
-		return nil, "", fmt.Errorf("unable to get the Groups")
+		return nil, "", errorsx.G11NError("unable to get the Groups")
 	}
 
 	return GroupsResponse, resp.HTTPResponse.Request.URL.String(), nil
@@ -121,7 +121,7 @@ func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, 
 		userID, err := userClient.getUserId(ctx, auth, username)
 		if err != nil {
 			vc.Logger.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
-			return "", fmt.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
+			return "", errorsx.G11NError("unable to get user ID for username %s; err=%s", username, err.Error())
 		}
 
 		// Update the member's Value with the obtained user ID.
@@ -149,12 +149,12 @@ func (c *GroupClient) CreateGroup(ctx context.Context, auth *config.AuthConfig, 
 
 	if resp.StatusCode() != http.StatusCreated {
 		vc.Logger.Errorf("Failed to create group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return "", fmt.Errorf("failed to create group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return "", errorsx.G11NError("failed to create group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	m := map[string]interface{}{}
 	if err := json.Unmarshal(resp.Body, &m); err != nil {
-		return "", fmt.Errorf("failed to parse response")
+		return "", errorsx.G11NError("failed to parse response")
 	}
 
 	id := m["id"].(string)
@@ -167,7 +167,7 @@ func (c *GroupClient) DeleteGroup(ctx context.Context, auth *config.AuthConfig, 
 	id, err := c.getGroupId(ctx, auth, groupName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the group ID; err=%s", err.Error())
-		return fmt.Errorf("unable to get the group ID; err=%s", err.Error())
+		return errorsx.G11NError("unable to get the group ID; err=%s", err.Error())
 	}
 
 	resp, err := client.DeleteGroupWithResponse(ctx, id, &openapi.DeleteGroupParams{}, func(ctx context.Context, req *http.Request) error {
@@ -177,17 +177,17 @@ func (c *GroupClient) DeleteGroup(ctx context.Context, auth *config.AuthConfig, 
 	})
 	if err != nil {
 		vc.Logger.Errorf("unable to delete the Group; err=%s", err.Error())
-		return fmt.Errorf("unable to delete the Group; err=%s", err.Error())
+		return errorsx.G11NError("unable to delete the Group; err=%s", err.Error())
 	}
 
 	if resp.StatusCode() != http.StatusNoContent {
 		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to delete Group"); err != nil {
 			vc.Logger.Errorf("unable to delete the Group; err=%s", err.Error())
-			return fmt.Errorf("unable to delete the Group; err=%s", err.Error())
+			return errorsx.G11NError("unable to delete the Group; err=%s", err.Error())
 		}
 
 		vc.Logger.Errorf("unable to delete the Group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return fmt.Errorf("unable to delete the Group")
+		return errorsx.G11NError("unable to delete the Group")
 	}
 
 	return nil
@@ -200,7 +200,7 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 	groupID, err := c.getGroupId(ctx, auth, groupName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the group ID; err=%s", err.Error())
-		return fmt.Errorf("unable to get the group ID; err=%s", err.Error())
+		return errorsx.G11NError("unable to get the group ID; err=%s", err.Error())
 	}
 
 	for i, op := range operations {
@@ -212,7 +212,7 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 							userID, err := userClient.getUserId(ctx, auth, username)
 							if err != nil {
 								vc.Logger.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
-								return fmt.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
+								return errorsx.G11NError("unable to get user ID for username %s; err=%s", username, err.Error())
 							}
 							(*operations[i].Value).([]interface{})[j].(map[string]interface{})["value"] = userID
 						}
@@ -225,7 +225,7 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 				userID, err := userClient.getUserId(ctx, auth, username)
 				if err != nil {
 					vc.Logger.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
-					return fmt.Errorf("unable to get user ID for username %s; err=%s", username, err.Error())
+					return errorsx.G11NError("unable to get user ID for username %s; err=%s", username, err.Error())
 				}
 				operations[i].Path = fmt.Sprintf("members[value eq \"%s\"]", userID)
 			}
@@ -238,7 +238,7 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 	body, err := json.Marshal(patchRequest)
 	if err != nil {
 		vc.Logger.Errorf("unable to marshal the patch request; err=%v", err)
-		return fmt.Errorf("unable to marshal the patch request; err=%v", err)
+		return errorsx.G11NError("unable to marshal the patch request; err=%v", err)
 	}
 	resp, err := client.PatchGroupWithBodyWithResponse(ctx, groupID, &openapi.PatchGroupParams{}, "application/scim+json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
 		req.Header.Set("Accept", "application/scim+json")
@@ -247,11 +247,11 @@ func (c *GroupClient) UpdateGroup(ctx context.Context, auth *config.AuthConfig, 
 	})
 	if err != nil {
 		vc.Logger.Errorf("unable to update group; err=%v", err)
-		return fmt.Errorf("unable to update group; err=%v", err)
+		return errorsx.G11NError("unable to update group; err=%v", err)
 	}
 	if resp.StatusCode() != http.StatusNoContent {
 		vc.Logger.Errorf("failed to update group; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return fmt.Errorf("failed to update group ; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return errorsx.G11NError("failed to update group ; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	return nil
@@ -273,28 +273,28 @@ func (c *GroupClient) getGroupId(ctx context.Context, auth *config.AuthConfig, n
 	if resp.StatusCode() != http.StatusOK {
 		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to get Group"); err != nil {
 			vc.Logger.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
-			return "", fmt.Errorf("unable to get the Group with groupName %s; err=%s", name, err.Error())
+			return "", errorsx.G11NError("unable to get the Group with groupName %s; err=%s", name, err.Error())
 		}
 	}
 
 	var data map[string]interface{}
 	if err := json.Unmarshal(resp.Body, &data); err != nil {
-		return "", fmt.Errorf("failed to parse response: %w", err)
+		return "", errorsx.G11NError("failed to parse response: %w", err)
 	}
 
 	resources, ok := data["Resources"].([]interface{})
 	if !ok || len(resources) == 0 {
-		return "", fmt.Errorf("no group found with group name %s", name)
+		return "", errorsx.G11NError("no group found with group name %s", name)
 	}
 
 	firstResource, ok := resources[0].(map[string]interface{})
 	if !ok {
-		return "", fmt.Errorf("invalid resource format")
+		return "", errorsx.G11NError("invalid resource format")
 	}
 
 	id, ok := firstResource["id"].(string)
 	if !ok {
-		return "", fmt.Errorf("ID not found or invalid type")
+		return "", errorsx.G11NError("ID not found or invalid type")
 	}
 
 	return id, nil

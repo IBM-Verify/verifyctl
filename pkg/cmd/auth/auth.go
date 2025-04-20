@@ -5,10 +5,10 @@ import (
 	"net/url"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -114,7 +114,7 @@ func (o *options) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(o.clientID) == 0 && len(o.file) == 0 {
-		return module.MakeSimpleError(i18n.Translate("'clientId' is required."))
+		return errorsx.G11NError("'clientId' is required.")
 	}
 
 	return nil
@@ -168,7 +168,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(authResource.Tenant) == 0 {
-		return module.MakeSimpleError(i18n.Translate("'tenant' is required."))
+		return errorsx.G11NError("'tenant' is required.")
 	}
 
 	if tokenResponse, err := o.authenticate(cmd, authResource); err != nil {

@@ -1,18 +1,17 @@
 package replace
 
 import (
-	"fmt"
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 const (
@@ -114,7 +113,7 @@ func (o *options) Validate(cmd *cobra.Command, args []string) error {
 
 func (o *options) Run(cmd *cobra.Command, args []string) error {
 	if len(o.file) == 0 {
-		return fmt.Errorf("'file' option is required.")
+		return errorsx.G11NError("'file' option is required.")
 	}
 
 	// read the file
@@ -124,7 +123,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(resourceObject.Kind) == 0 {
-		return module.MakeSimpleError(i18n.Translate("No 'kind' defined. Resource type cannot be identified."))
+		return errorsx.G11NError("No 'kind' defined. Resource type cannot be identified.")
 	}
 
 	auth, err := o.config.SetAuthToContext(cmd.Context())
@@ -135,7 +134,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	switch resourceObject.Kind {
 	case resource.ResourceTypePrefix + "Attribute":
 		options := &attributeOptions{}
-		err = options.updateAttributeFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.updateAttributeFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "User":
 		options := &userOptions{}

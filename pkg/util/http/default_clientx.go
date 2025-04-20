@@ -3,12 +3,13 @@ package http
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"time"
+
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 var (
@@ -55,7 +56,7 @@ func (c *defaultClientx) Get(ctx context.Context, url *url.URL, headers http.Hea
 	if response.Body != nil {
 		resBody, err := io.ReadAll(response.Body)
 		if err != nil {
-			return nil, fmt.Errorf("unable to extract the body")
+			return nil, errorsx.G11NError("unable to extract the body")
 		}
 
 		respObj.Body = resBody
@@ -91,7 +92,7 @@ func (c *defaultClientx) Post(ctx context.Context, url *url.URL, headers http.He
 	if response.Body != nil {
 		resBody, err := io.ReadAll(response.Body)
 		if err != nil {
-			return nil, fmt.Errorf("unable to extract the body")
+			return nil, errorsx.G11NError("unable to extract the body")
 		}
 
 		respObj.Body = resBody
@@ -149,7 +150,7 @@ func (c *defaultClientx) PostMultipart(ctx context.Context, url *url.URL, header
 	if response.Body != nil {
 		resBody, err := io.ReadAll(response.Body)
 		if err != nil {
-			return nil, fmt.Errorf("unable to extract the body")
+			return nil, errorsx.G11NError("unable to extract the body")
 		}
 
 		respObj.Body = resBody
@@ -185,7 +186,7 @@ func (c *defaultClientx) Put(ctx context.Context, url *url.URL, headers http.Hea
 	if response.Body != nil {
 		resBody, err := io.ReadAll(response.Body)
 		if err != nil {
-			return nil, fmt.Errorf("unable to extract the body")
+			return nil, errorsx.G11NError("unable to extract the body")
 		}
 
 		respObj.Body = resBody
@@ -243,7 +244,7 @@ func (c *defaultClientx) PutMultipart(ctx context.Context, url *url.URL, headers
 	if response.Body != nil {
 		resBody, err := io.ReadAll(response.Body)
 		if err != nil {
-			return nil, fmt.Errorf("unable to extract the body")
+			return nil, errorsx.G11NError("unable to extract the body")
 		}
 
 		respObj.Body = resBody
@@ -279,7 +280,7 @@ func (c *defaultClientx) Patch(ctx context.Context, url *url.URL, headers http.H
 	if response.Body != nil {
 		resBody, err := io.ReadAll(response.Body)
 		if err != nil {
-			return nil, fmt.Errorf("unable to extract the body")
+			return nil, errorsx.G11NError("unable to extract the body")
 		}
 
 		respObj.Body = resBody
@@ -314,7 +315,7 @@ func (c *defaultClientx) Delete(ctx context.Context, url *url.URL, headers http.
 	if response.Body != nil {
 		resBody, err := io.ReadAll(response.Body)
 		if err != nil {
-			return nil, fmt.Errorf("unable to extract the body")
+			return nil, errorsx.G11NError("unable to extract the body")
 		}
 
 		respObj.Body = resBody
@@ -324,5 +325,5 @@ func (c *defaultClientx) Delete(ctx context.Context, url *url.URL, headers http.
 }
 
 func noRedirects(req *http.Request, via []*http.Request) error {
-	return fmt.Errorf("redirects not allowed")
+	return errorsx.G11NError("redirects not allowed")
 }

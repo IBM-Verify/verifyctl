@@ -5,16 +5,16 @@ import (
 	"io"
 	"os"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 const (
@@ -97,7 +97,7 @@ func (o *attributeOptions) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(o.file) == 0 {
-		return module.MakeSimpleError(i18n.Translate("'file' option is required if no other options are used."))
+		return errorsx.G11NError("'file' option is required if no other options are used.")
 	}
 	return nil
 }
@@ -121,15 +121,15 @@ func (o *attributeOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.GetCurrentAuth()
 	if err != nil {
 		return err
 	}
 
-	return o.createAttribute(cmd, auth)
+	return o.createAttribute(cmd)
 }
 
-func (o *attributeOptions) createAttribute(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *attributeOptions) createAttribute(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -141,10 +141,10 @@ func (o *attributeOptions) createAttribute(cmd *cobra.Command, auth *config.Auth
 	}
 
 	// create attribute with data
-	return o.createAttributeWithData(cmd, auth, b)
+	return o.createAttributeWithData(cmd, b)
 }
 
-func (o *attributeOptions) createAttributeWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *attributeOptions) createAttributeWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -156,7 +156,7 @@ func (o *attributeOptions) createAttributeWithData(cmd *cobra.Command, auth *con
 	}
 
 	client := directory.NewAttributeClient()
-	resourceURI, err := client.CreateAttribute(ctx, auth, attribute)
+	resourceURI, err := client.CreateAttribute(ctx, attribute)
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func (o *attributeOptions) createAttributeWithData(cmd *cobra.Command, auth *con
 	return nil
 }
 
-func (o *attributeOptions) createAttributeFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *attributeOptions) createAttributeFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -183,7 +183,7 @@ func (o *attributeOptions) createAttributeFromDataMap(cmd *cobra.Command, auth *
 	}
 
 	client := directory.NewAttributeClient()
-	resourceURI, err := client.CreateAttribute(ctx, auth, attribute)
+	resourceURI, err := client.CreateAttribute(ctx, attribute)
 	if err != nil {
 		vc.Logger.Errorf("unable to create the attribute; err=%v, attribute=%+v", err, attribute)
 		return err

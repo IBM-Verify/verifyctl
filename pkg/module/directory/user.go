@@ -36,7 +36,7 @@ func NewUserClient() *UserClient {
 func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, user *User) (string, error) {
 	vc := contextx.GetVerifyContext(ctx)
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
-	defaultErr := fmt.Errorf("unable to create user")
+	defaultErr := errorsx.G11NError("unable to create user")
 	body, err := json.Marshal(user)
 	if err != nil {
 		vc.Logger.Errorf("Unable to marshal user data; err=%v", err)
@@ -60,16 +60,16 @@ func (c *UserClient) CreateUser(ctx context.Context, auth *config.AuthConfig, us
 	if resp.StatusCode() != http.StatusCreated {
 		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to create user"); err != nil {
 			vc.Logger.Errorf("unable to create the user; err=%s", err.Error())
-			return "", fmt.Errorf("unable to create the user; err=%s", err.Error())
+			return "", errorsx.G11NError("unable to create the user; err=%s", err.Error())
 		}
 
 		vc.Logger.Errorf("unable to create the user; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return "", fmt.Errorf("unable to create the user; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return "", errorsx.G11NError("unable to create the user; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	m := map[string]interface{}{}
 	if err := json.Unmarshal(resp.Body, &m); err != nil {
-		return "", fmt.Errorf("failed to parse response")
+		return "", errorsx.G11NError("failed to parse response")
 	}
 
 	id := m["id"].(string)
@@ -102,12 +102,12 @@ func (c *UserClient) GetUser(ctx context.Context, auth *config.AuthConfig, userN
 		}
 
 		vc.Logger.Errorf("unable to get the User; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return nil, "", fmt.Errorf("unable to get the User")
+		return nil, "", errorsx.G11NError("unable to get the User")
 	}
 
 	User := &User{}
 	if err = json.Unmarshal(resp.Body, User); err != nil {
-		return nil, "", fmt.Errorf("unable to get the User")
+		return nil, "", errorsx.G11NError("unable to get the User")
 	}
 
 	return User, resp.HTTPResponse.Request.URL.String(), nil
@@ -144,13 +144,13 @@ func (c *UserClient) GetUsers(ctx context.Context, auth *config.AuthConfig, sort
 		}
 
 		vc.Logger.Errorf("unable to get the Users; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return nil, "", fmt.Errorf("unable to get the Users")
+		return nil, "", errorsx.G11NError("unable to get the Users")
 	}
 
 	UsersResponse := &UserListResponse{}
 	if err = json.Unmarshal(resp.Body, &UsersResponse); err != nil {
 		vc.Logger.Errorf("unable to get the Users; err=%s, body=%s", err, string(resp.Body))
-		return nil, "", fmt.Errorf("unable to get the Users")
+		return nil, "", errorsx.G11NError("unable to get the Users")
 	}
 
 	return UsersResponse, resp.HTTPResponse.Request.URL.String(), nil
@@ -162,7 +162,7 @@ func (c *UserClient) DeleteUser(ctx context.Context, auth *config.AuthConfig, na
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	if err != nil {
 		vc.Logger.Errorf("unable to get the user ID; err=%s", err.Error())
-		return fmt.Errorf("unable to get the user ID; err=%s", err.Error())
+		return errorsx.G11NError("unable to get the user ID; err=%s", err.Error())
 	}
 
 	resp, err := client.DeleteUser0WithResponse(ctx, id, &openapi.DeleteUser0Params{}, func(ctx context.Context, req *http.Request) error {
@@ -172,17 +172,17 @@ func (c *UserClient) DeleteUser(ctx context.Context, auth *config.AuthConfig, na
 	})
 	if err != nil {
 		vc.Logger.Errorf("unable to delete the User; err=%s", err.Error())
-		return fmt.Errorf("unable to delete the User; err=%s", err.Error())
+		return errorsx.G11NError("unable to delete the User; err=%s", err.Error())
 	}
 
 	if resp.StatusCode() != http.StatusNoContent {
 		if err := errorsx.HandleCommonErrors(ctx, resp.HTTPResponse, "unable to delete User"); err != nil {
 			vc.Logger.Errorf("unable to delete the User; err=%s", err.Error())
-			return fmt.Errorf("unable to delete the User; err=%s", err.Error())
+			return errorsx.G11NError("unable to delete the User; err=%s", err.Error())
 		}
 
 		vc.Logger.Errorf("unable to delete the User; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return fmt.Errorf("unable to delete the User; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return errorsx.G11NError("unable to delete the User; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	return nil
@@ -194,7 +194,7 @@ func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, us
 	id, err := c.getUserId(ctx, auth, userName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the user ID; err=%s", err.Error())
-		return fmt.Errorf("unable to get the user ID; err=%s", err.Error())
+		return errorsx.G11NError("unable to get the user ID; err=%s", err.Error())
 	}
 
 	patchRequest := openapi.PatchBody{
@@ -206,7 +206,7 @@ func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, us
 
 	if err != nil {
 		vc.Logger.Errorf("unable to marshal the patch request; err=%v", err)
-		return fmt.Errorf("unable to marshal the patch request; err=%v", err)
+		return errorsx.G11NError("unable to marshal the patch request; err=%v", err)
 	}
 	var usershouldnotneedtoresetpassword openapi.PatchUserParamsUsershouldnotneedtoresetpassword = "false"
 	params := &openapi.PatchUserParams{
@@ -220,11 +220,11 @@ func (c *UserClient) UpdateUser(ctx context.Context, auth *config.AuthConfig, us
 
 	if err != nil {
 		vc.Logger.Errorf("unable to update user; err=%v", err)
-		return fmt.Errorf("unable to update user; err=%v", err)
+		return errorsx.G11NError("unable to update user; err=%v", err)
 	}
 	if resp.StatusCode() != http.StatusNoContent {
 		vc.Logger.Errorf("failed to update user; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
-		return fmt.Errorf("failed to update user ; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
+		return errorsx.G11NError("failed to update user ; code=%d, body=%s", resp.StatusCode(), string(resp.Body))
 	}
 
 	return nil
@@ -246,29 +246,29 @@ func (c *UserClient) getUserId(ctx context.Context, auth *config.AuthConfig, nam
 	if response.StatusCode() != http.StatusOK {
 		if err := errorsx.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get User"); err != nil {
 			vc.Logger.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
-			return "", fmt.Errorf("unable to get the User with userName %s; err=%s", name, err.Error())
+			return "", errorsx.G11NError("unable to get the User with userName %s; err=%s", name, err.Error())
 		}
 	}
 
 	var data map[string]interface{}
 	if err := json.Unmarshal(response.Body, &data); err != nil {
-		return "", fmt.Errorf("failed to parse response: %w", err)
+		return "", errorsx.G11NError("failed to parse response: %w", err)
 	}
 
 	resources, ok := data["Resources"].([]interface{})
 	if !ok || len(resources) == 0 {
-		return "", fmt.Errorf("no user found with userName %s", name)
+		return "", errorsx.G11NError("no user found with userName %s", name)
 	}
 
 	firstResource, ok := resources[0].(map[string]interface{})
 	if !ok {
-		return "", fmt.Errorf("invalid resource format")
+		return "", errorsx.G11NError("invalid resource format")
 	}
 
 	// Extract "id" field
 	id, ok := firstResource["id"].(string)
 	if !ok {
-		return "", fmt.Errorf("ID not found or invalid type")
+		return "", errorsx.G11NError("ID not found or invalid type")
 	}
 
 	return id, nil

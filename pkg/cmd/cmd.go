@@ -3,6 +3,7 @@ package cmd
 import (
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/auth"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/create"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/delete"
@@ -10,7 +11,6 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/cmd/logs"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/replace"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
