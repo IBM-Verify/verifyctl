@@ -7,12 +7,12 @@ import (
 
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	"github.com/ibm-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -95,7 +95,7 @@ func (o *apiClientOptions) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(o.file) == 0 {
-		return module.MakeSimpleError("The 'file' option is required if no other options are used.")
+		return errorsx.G11NError("The 'file' option is required if no other options are used.")
 	}
 	return nil
 }
@@ -149,10 +149,10 @@ func (o *apiClientOptions) createAPIClientWithData(cmd *cobra.Command, auth *con
 	}
 
 	if apiclient.ClientName == "" {
-		return module.MakeSimpleError("clientName is required")
+		return errorsx.G11NError("clientName is required")
 	}
 	if len(apiclient.Entitlements) == 0 {
-		return module.MakeSimpleError("entitlements list is required")
+		return errorsx.G11NError("entitlements list is required")
 	}
 
 	client := security.NewAPIClient()
@@ -185,10 +185,10 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, auth *
 
 	// Validate required fields
 	if apiclient.ClientName == "" {
-		return module.MakeSimpleError("clientName is required")
+		return errorsx.G11NError("clientName is required")
 	}
 	if len(apiclient.Entitlements) == 0 {
-		return module.MakeSimpleError("entitlements list is required")
+		return errorsx.G11NError("entitlements list is required")
 	}
 
 	// Create API client

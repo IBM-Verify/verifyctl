@@ -5,10 +5,10 @@ import (
 	"io"
 
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/branding"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -104,11 +104,11 @@ func (o *themesOptions) Validate(cmd *cobra.Command, args []string) error {
 	calledAs := cmd.CalledAs()
 	if calledAs == "theme" {
 		if o.id == "" {
-			return module.MakeSimpleError(i18n.Translate("'id' flag is required."))
+			return errorsx.G11NError("'id' flag is required.")
 		}
 
 		if len(o.outputDirectory) == 0 && o.unpack {
-			return module.MakeSimpleError(i18n.Translate("'dir' flag is required when 'unpack' flag is used."))
+			return errorsx.G11NError("'dir' flag is required when 'unpack' flag is used.")
 		}
 	}
 	return nil

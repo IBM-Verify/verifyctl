@@ -2,19 +2,19 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/url"
 	"os"
 	"strings"
 
 	"github.com/go-jose/go-jose/v4"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/spf13/cobra"
 
 	oidc "github.com/ibm-verify/verify-sdk-go/pkg/auth"
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 type AuthResource struct {
@@ -103,7 +103,7 @@ func (o *options) readFile(cmd *cobra.Command) (*AuthResource, error) {
 
 	if resourceObject.Kind != resource.ResourceTypePrefix+"Auth" {
 		vc.Logger.Error("invalid resource kind", "kind", resourceObject.Kind)
-		return nil, fmt.Errorf("invalid resource kind")
+		return nil, errorsx.G11NError("invalid resource kind")
 	}
 
 	// populate authResource

@@ -3,8 +3,8 @@ package logs
 import (
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/module/logs"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"

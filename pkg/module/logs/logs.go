@@ -15,8 +15,9 @@ import (
 	"time"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/module"
 	xhttp "github.com/ibm-verify/verifyctl/pkg/util/http"
 )
@@ -164,12 +165,12 @@ func (c *LogsClient) getLogs(ctx context.Context, auth *config.AuthConfig, logRe
 			return nil, err
 		}
 
-		return nil, fmt.Errorf("unable to get the logs")
+		return nil, errorsx.G11NError("unable to get the logs")
 	}
 
 	logResp := &logResponse{}
 	if err = json.Unmarshal(response.Body, logResp); err != nil {
-		return nil, fmt.Errorf("unable to get the logs")
+		return nil, errorsx.G11NError("unable to get the logs")
 	}
 
 	return logResp.Logs, nil

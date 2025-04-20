@@ -3,11 +3,11 @@ package config
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"gopkg.in/yaml.v3"
 )
@@ -108,7 +108,7 @@ func (o *CLIConfig) GetCurrentAuth() (*AuthConfig, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("No login session available. Use:\n  verifyctl login -h")
+	return nil, errorsx.G11NError("No login session available. Use:\n  verifyctl login -h")
 }
 
 func (o *CLIConfig) SetAuthToContext(ctx context.Context) (*AuthConfig, error) {

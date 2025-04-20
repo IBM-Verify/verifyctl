@@ -63,11 +63,11 @@ func NewAPIClient() *ApiClient {
 func (c *ApiClient) CreateAPIClient(ctx context.Context, auth *config.AuthConfig, apiClientConfig *APIClientConfig) (string, error) {
 	if apiClientConfig == nil {
 		fmt.Println("ERROR: Client object is nil!")
-		return "", fmt.Errorf("client object is nil")
+		return "", errorsx.G11NError("client object is nil")
 	}
 
 	vc := contextx.GetVerifyContext(ctx)
-	defaultErr := fmt.Errorf("unable to create API client")
+	defaultErr := errorsx.G11NError("unable to create API client")
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 
 	body, err := json.Marshal(apiClientConfig)
@@ -136,12 +136,12 @@ func (c *ApiClient) GetAPIClient(ctx context.Context, auth *config.AuthConfig, c
 		}
 
 		vc.Logger.Errorf("unable to get the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
-		return nil, "", fmt.Errorf("unable to get the API client with clientName %s; status=%d", clientName, response.StatusCode())
+		return nil, "", errorsx.G11NError("unable to get the API client with clientName %s; status=%d", clientName, response.StatusCode())
 	}
 
 	Client := &APIClientConfig{}
 	if err = json.Unmarshal(response.Body, Client); err != nil {
-		return nil, "", fmt.Errorf("unable to get the API client")
+		return nil, "", errorsx.G11NError("unable to get the API client")
 	}
 
 	return Client, response.HTTPResponse.Request.URL.String(), nil
@@ -190,13 +190,13 @@ func (c *ApiClient) GetAPIClients(ctx context.Context, auth *config.AuthConfig, 
 		}
 
 		vc.Logger.Errorf("unable to get the API clients; code=%d, body=%s", response.StatusCode(), string(response.Body))
-		return nil, "", fmt.Errorf("unable to get the API clients")
+		return nil, "", errorsx.G11NError("unable to get the API clients")
 	}
 
 	apiclientsResponse := &APIClientListResponse{}
 	if err = json.Unmarshal(response.Body, &apiclientsResponse); err != nil {
 		vc.Logger.Errorf("unable to get the API clients; err=%s, body=%s", err, string(response.Body))
-		return nil, "", fmt.Errorf("unable to get the API clients")
+		return nil, "", errorsx.G11NError("unable to get the API clients")
 	}
 
 	return apiclientsResponse, response.HTTPResponse.Request.URL.String(), nil
@@ -207,19 +207,19 @@ func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig
 	client, _ := openapi.NewClientWithResponses(fmt.Sprintf("https://%s", auth.Tenant))
 	if apiClientConfig == nil {
 		vc.Logger.Errorf("client object is nil")
-		return fmt.Errorf("client object is nil")
+		return errorsx.G11NError("client object is nil")
 	}
 	fmt.Println(apiClientConfig.ClientName)
 	id, err := c.GetAPIClientId(ctx, auth, apiClientConfig.ClientName)
 	if err != nil {
 		vc.Logger.Errorf("unable to get the client ID for API client '%s'; err=%s", apiClientConfig.ClientName, err.Error())
-		return fmt.Errorf("unable to get the client ID for API client '%s'; err=%s", apiClientConfig.ClientName, err.Error())
+		return errorsx.G11NError("unable to get the client ID for API client '%s'; err=%s", apiClientConfig.ClientName, err.Error())
 	}
 
 	body, err := json.Marshal(apiClientConfig)
 	if err != nil {
 		vc.Logger.Errorf("unable to marshal the API client; err=%v", err)
-		return fmt.Errorf("unable to marshal the API client; err=%v", err)
+		return errorsx.G11NError("unable to marshal the API client; err=%v", err)
 	}
 
 	response, err := client.UpdateAPIClientWithBodyWithResponse(ctx, id, "application/json", bytes.NewBuffer(body), func(ctx context.Context, req *http.Request) error {
@@ -229,11 +229,11 @@ func (c *ApiClient) UpdateAPIClient(ctx context.Context, auth *config.AuthConfig
 	})
 	if err != nil {
 		vc.Logger.Errorf("unable to update API client; err=%v", err)
-		return fmt.Errorf("unable to update API client; err=%v", err)
+		return errorsx.G11NError("unable to update API client; err=%v", err)
 	}
 	if response.StatusCode() != http.StatusNoContent {
 		vc.Logger.Errorf("failed to update API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
-		return fmt.Errorf("failed to update API client ; code=%d, body=%s", response.StatusCode(), string(response.Body))
+		return errorsx.G11NError("failed to update API client ; code=%d, body=%s", response.StatusCode(), string(response.Body))
 	}
 
 	return nil
@@ -263,44 +263,44 @@ func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig,
 	if response.StatusCode() != http.StatusOK {
 		if err := errorsx.HandleCommonErrors(ctx, response.HTTPResponse, "unable to get API client"); err != nil {
 			vc.Logger.Errorf("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
-			return "", fmt.Errorf("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
+			return "", errorsx.G11NError("unable to get the API client with clientName %s; err=%s", clientName, err.Error())
 		}
 
 		vc.Logger.Errorf("unable to get API client ID; code=%d, body=%s", response.StatusCode(), string(response.Body))
-		return "", fmt.Errorf("unable to get API client ID with clientName %s; status=%d", clientName, response.StatusCode())
+		return "", errorsx.G11NError("unable to get API client ID with clientName %s; status=%d", clientName, response.StatusCode())
 
 	}
 
 	var data map[string]interface{}
 	if err := json.Unmarshal(response.Body, &data); err != nil {
 		vc.Logger.Errorf("failed to parse API response; err=%s", err.Error())
-		return "", fmt.Errorf("failed to parse API response: %w", err)
+		return "", errorsx.G11NError("failed to parse API response: %w", err)
 	}
 
 	apiClients, ok := data["apiClients"].([]interface{})
 	if !ok || len(apiClients) == 0 {
 		vc.Logger.Infof("no API client found with clientName %s", clientName)
-		return "", fmt.Errorf("no API client found with clientName %s", clientName)
+		return "", errorsx.G11NError("no API client found with clientName %s", clientName)
 	}
 
 	for _, resource := range apiClients {
 		client, ok := resource.(map[string]interface{})
 		if !ok {
 			vc.Logger.Errorf("invalid client format in API response")
-			return "", fmt.Errorf("invalid client format in API response")
+			return "", errorsx.G11NError("invalid client format in API response")
 		}
 
 		name, ok := client["clientName"].(string)
 		if !ok {
 			vc.Logger.Errorf("clientName not found or invalid type in API response")
-			return "", fmt.Errorf("clientName not found or invalid type in API response")
+			return "", errorsx.G11NError("clientName not found or invalid type in API response")
 		}
 
 		if name == clientName {
 			id, ok := client["id"].(string)
 			if !ok {
 				vc.Logger.Errorf("ID not found or invalid type in API response")
-				return "", fmt.Errorf("ID not found or invalid type in API response")
+				return "", errorsx.G11NError("ID not found or invalid type in API response")
 			}
 			vc.Logger.Debugf("Resolved clientName %s to ID %s", clientName, id)
 			return id, nil
@@ -308,7 +308,7 @@ func (c *ApiClient) GetAPIClientId(ctx context.Context, auth *config.AuthConfig,
 	}
 
 	vc.Logger.Infof("no exact match found for clientName %s", clientName)
-	return "", fmt.Errorf("no API client found with exact clientName %s", clientName)
+	return "", errorsx.G11NError("no API client found with exact clientName %s", clientName)
 }
 
 func (c *ApiClient) DeleteAPIClientById(ctx context.Context, auth *config.AuthConfig, id string) error {
@@ -321,15 +321,15 @@ func (c *ApiClient) DeleteAPIClientById(ctx context.Context, auth *config.AuthCo
 	})
 	if err != nil {
 		vc.Logger.Errorf("unable to delete API client; err=%s", err.Error())
-		return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
+		return errorsx.G11NError("unable to delete the API client; err=%s", err.Error())
 	}
 	if response.StatusCode() != http.StatusNoContent {
 		if err := errorsx.HandleCommonErrors(ctx, response.HTTPResponse, "unable to delete API client"); err != nil {
 			vc.Logger.Errorf("unable to delete the API client; err=%s", err.Error())
-			return fmt.Errorf("unable to delete the API client; err=%s", err.Error())
+			return errorsx.G11NError("unable to delete the API client; err=%s", err.Error())
 		}
 		vc.Logger.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
-		return fmt.Errorf("unable to delete the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
+		return errorsx.G11NError("unable to delete the API client; code=%d, body=%s", response.StatusCode(), string(response.Body))
 	}
 	return nil
 }
