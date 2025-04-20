@@ -3,7 +3,7 @@ module github.com/ibm-verify/verifyctl
 go 1.23.0
 
 require (
-	github.com/ibm-verify/verify-sdk-go v0.0.3
+	github.com/ibm-verify/verify-sdk-go v0.0.4
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/spf13/cobra v1.8.1
