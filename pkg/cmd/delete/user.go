@@ -96,7 +96,7 @@ func (o *usersOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -104,12 +104,12 @@ func (o *usersOptions) Run(cmd *cobra.Command, args []string) error {
 	// invoke the operation
 	if cmd.CalledAs() == "user" || len(o.name) > 0 {
 		// deal with single user
-		return o.handleSingleUser(cmd, auth, args)
+		return o.handleSingleUser(cmd, args)
 	}
 	return nil
 }
 
-func (o *usersOptions) handleSingleUser(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *usersOptions) handleSingleUser(cmd *cobra.Command, _ []string) error {
 
 	c := directory.NewUserClient()
 	err := c.DeleteUser(cmd.Context(), o.name)

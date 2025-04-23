@@ -102,7 +102,7 @@ func (o *usersOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -110,13 +110,13 @@ func (o *usersOptions) Run(cmd *cobra.Command, args []string) error {
 	// invoke the operation
 	if cmd.CalledAs() == "user" || len(o.name) > 0 {
 		// deal with single user
-		return o.handleSingleUser(cmd, auth, args)
+		return o.handleSingleUser(cmd, args)
 	}
 
-	return o.handleUserList(cmd, auth, args)
+	return o.handleUserList(cmd, args)
 }
 
-func (o *usersOptions) handleSingleUser(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *usersOptions) handleSingleUser(cmd *cobra.Command, _ []string) error {
 
 	c := directory.NewUserClient()
 	usr, uri, err := c.GetUser(cmd.Context(), o.name)
@@ -149,7 +149,7 @@ func (o *usersOptions) handleSingleUser(cmd *cobra.Command, auth *config.AuthCon
 	return nil
 }
 
-func (o *usersOptions) handleUserList(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *usersOptions) handleUserList(cmd *cobra.Command, _ []string) error {
 
 	c := directory.NewUserClient()
 	usrs, uri, err := c.GetUsers(cmd.Context(), o.sort, o.count)

@@ -122,15 +122,15 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.updateUser(cmd, auth)
+	return o.updateUser(cmd)
 }
 
-func (o *userOptions) updateUser(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *userOptions) updateUser(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -141,10 +141,10 @@ func (o *userOptions) updateUser(cmd *cobra.Command, auth *config.AuthConfig) er
 		return err
 	}
 
-	return o.updateUserWithData(cmd, auth, b)
+	return o.updateUserWithData(cmd, b)
 }
 
-func (o *userOptions) updateUserWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *userOptions) updateUserWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -165,7 +165,7 @@ func (o *userOptions) updateUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	return nil
 }
 
-func (o *userOptions) updateUserFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *userOptions) updateUserFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 

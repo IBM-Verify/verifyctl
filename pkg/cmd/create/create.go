@@ -141,7 +141,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 
 	case resource.ResourceTypePrefix + "User":
 		options := &userOptions{}
-		err = options.createUserFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.createUserFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "Group":
 		options := &groupOptions{}

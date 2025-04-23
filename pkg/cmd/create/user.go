@@ -119,15 +119,15 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.createUser(cmd, auth)
+	return o.createUser(cmd)
 }
 
-func (o *userOptions) createUser(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *userOptions) createUser(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -139,10 +139,10 @@ func (o *userOptions) createUser(cmd *cobra.Command, auth *config.AuthConfig) er
 	}
 
 	// create user with data
-	return o.createUserWithData(cmd, auth, b)
+	return o.createUserWithData(cmd, b)
 }
 
-func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *userOptions) createUserWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -163,7 +163,7 @@ func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	return nil
 }
 
-func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
