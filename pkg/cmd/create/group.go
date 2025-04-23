@@ -8,7 +8,7 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -119,15 +119,15 @@ func (o *groupOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.createGroup(cmd, auth)
+	return o.createGroup(cmd)
 }
 
-func (o *groupOptions) createGroup(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *groupOptions) createGroup(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -139,10 +139,10 @@ func (o *groupOptions) createGroup(cmd *cobra.Command, auth *config.AuthConfig) 
 	}
 
 	// create group with data
-	return o.createGroupWithData(cmd, auth, b)
+	return o.createGroupWithData(cmd, b)
 }
 
-func (o *groupOptions) createGroupWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *groupOptions) createGroupWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -154,7 +154,7 @@ func (o *groupOptions) createGroupWithData(cmd *cobra.Command, auth *config.Auth
 	}
 
 	client := directory.NewGroupClient()
-	resourceURI, err := client.CreateGroup(ctx, auth, group)
+	resourceURI, err := client.CreateGroup(ctx, group)
 	if err != nil {
 		return err
 	}
@@ -163,7 +163,7 @@ func (o *groupOptions) createGroupWithData(cmd *cobra.Command, auth *config.Auth
 	return nil
 }
 
-func (o *groupOptions) createGroupFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *groupOptions) createGroupFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -181,7 +181,7 @@ func (o *groupOptions) createGroupFromDataMap(cmd *cobra.Command, auth *config.A
 	}
 
 	client := directory.NewGroupClient()
-	resourceURI, err := client.CreateGroup(ctx, auth, group)
+	resourceURI, err := client.CreateGroup(ctx, group)
 	if err != nil {
 		vc.Logger.Errorf("unable to create the group; err=%v, group=%+v", err, group)
 		return err
