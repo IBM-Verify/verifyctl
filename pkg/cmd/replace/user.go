@@ -5,10 +5,10 @@ import (
 	"io"
 	"os"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -156,7 +156,7 @@ func (o *userOptions) updateUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	}
 
 	client := directory.NewUserClient()
-	if err := client.UpdateUser(ctx, auth, user.UserName, user.SCIMPatchRequest.Operations); err != nil {
+	if err := client.UpdateUser(ctx, user.UserName, user.SCIMPatchRequest.Operations); err != nil {
 		vc.Logger.Errorf("unable to update the user; err=%v, user=%+v", err, user)
 		return err
 	}
@@ -184,7 +184,7 @@ func (o *userOptions) updateUserFromDataMap(cmd *cobra.Command, auth *config.Aut
 	}
 
 	client := directory.NewUserClient()
-	if err := client.UpdateUser(ctx, auth, user.UserName, user.SCIMPatchRequest.Operations); err != nil {
+	if err := client.UpdateUser(ctx, user.UserName, user.SCIMPatchRequest.Operations); err != nil {
 		vc.Logger.Errorf("unable to update the user; err=%v, user=%+v", err, user)
 		return err
 	}

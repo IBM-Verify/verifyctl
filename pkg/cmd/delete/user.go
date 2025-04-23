@@ -3,10 +3,10 @@ package delete
 import (
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -112,7 +112,7 @@ func (o *usersOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *usersOptions) handleSingleUser(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
 
 	c := directory.NewUserClient()
-	err := c.DeleteUser(cmd.Context(), auth, o.name)
+	err := c.DeleteUser(cmd.Context(), o.name)
 	if err != nil {
 		return err
 	}

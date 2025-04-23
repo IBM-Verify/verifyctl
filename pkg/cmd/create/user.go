@@ -8,7 +8,7 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -154,7 +154,7 @@ func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	}
 
 	client := directory.NewUserClient()
-	resourceURI, err := client.CreateUser(ctx, auth, user)
+	resourceURI, err := client.CreateUser(ctx, user)
 	if err != nil {
 		return err
 	}
@@ -181,7 +181,7 @@ func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, auth *config.Aut
 	}
 
 	client := directory.NewUserClient()
-	resourceURI, err := client.CreateUser(ctx, auth, user)
+	resourceURI, err := client.CreateUser(ctx, user)
 	if err != nil {
 		vc.Logger.Errorf("unable to create the user; err=%v, user=%+v", err, user)
 		return err
