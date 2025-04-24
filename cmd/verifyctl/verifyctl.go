@@ -24,9 +24,9 @@ func main() {
 	defer func() {
 		if file, ok := w.(*os.File); ok {
 			_ = file.Sync()
-			file.Close()
+			_ = file.Close()
 		} else if handler, ok := w.(io.Closer); ok {
-			handler.Close()
+			_ = handler.Close()
 		}
 	}()
 

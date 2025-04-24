@@ -131,7 +131,7 @@ func CreateZipFromDirectory(cmd *cobra.Command, sourceDirectory string) ([]byte,
 	w := zip.NewWriter(buf)
 	// Add some files to the archive.
 	if err := addFilesToZip(cmd, w, sourceDirectory+"/", ""); err != nil {
-		w.Close()
+		_ = w.Close()
 		return nil, err
 	}
 
