@@ -1,7 +1,6 @@
 package get
 
 import (
-	"fmt"
 	"io"
 	"strings"
 
@@ -93,20 +92,18 @@ func (o *applicationsOptions) Run(cmd *cobra.Command, args []string) error {
 		cmdutil.WriteString(cmd, entitlementsMessage+" "+applicationsEntitlements)
 		return nil
 	}
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 	if cmd.CalledAs() == "application" || len(o.name) > 0 {
-		return o.handleSingleApplicationClient(cmd, auth, args)
+		return o.handleSingleApplicationClient(cmd, args)
 	}
-	return o.handleApplicationClientList(cmd, auth, args)
+	return o.handleApplicationClientList(cmd, args)
 }
 
-func (o *applicationsOptions) handleSingleApplicationClient(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
-	cmdutil.WriteString(cmd, fmt.Sprintf("Tenant: %s, Token: %s\n", auth.Tenant, auth.Token))
-
-	c := applications.NewApplicationClient(auth.Tenant, auth.Token)
+func (o *applicationsOptions) handleSingleApplicationClient(cmd *cobra.Command, _ []string) error {
+	c := applications.NewApplicationClient()
 
 	appl, uri, err := c.GetApplication(cmd.Context(), o.name)
 	if err != nil {
@@ -143,10 +140,8 @@ func (o *applicationsOptions) handleSingleApplicationClient(cmd *cobra.Command, 
 	return nil
 }
 
-func (o *applicationsOptions) handleApplicationClientList(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
-	cmdutil.WriteString(cmd, fmt.Sprintf("Tenant: %s, Token: %s\n", auth.Tenant, auth.Token))
-
-	c := applications.NewApplicationClient(auth.Tenant, auth.Token)
+func (o *applicationsOptions) handleApplicationClientList(cmd *cobra.Command, _ []string) error {
+	c := applications.NewApplicationClient()
 	appls, uri, err := c.GetApplications(cmd.Context(), o.search, o.sort, o.page, o.limit)
 	if err != nil {
 		return err
