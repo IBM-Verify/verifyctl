@@ -119,7 +119,7 @@ func (o *groupsOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *groupsOptions) handleSingleGroup(cmd *cobra.Command, _ []string) error {
 
 	c := directory.NewGroupClient()
-	grp, uri, err := c.GetGroup(cmd.Context(), o.name)
+	grp, uri, err := c.GetGroupByName(cmd.Context(), o.name)
 	if err != nil {
 		return err
 	}

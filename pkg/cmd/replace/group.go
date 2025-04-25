@@ -156,7 +156,7 @@ func (o *groupOptions) updateGroupWithData(cmd *cobra.Command, data []byte) erro
 	}
 
 	client := directory.NewGroupClient()
-	if err := client.UpdateGroup(ctx, group.GroupName, group.SCIMPatchRequest.Operations); err != nil {
+	if err := client.UpdateGroup(ctx, group.GroupName, &group.SCIMPatchRequest.Operations); err != nil {
 		vc.Logger.Errorf("unable to update the group; err=%v, group=%+v", err, group)
 		return err
 	}
@@ -184,7 +184,7 @@ func (o *groupOptions) updateGroupFromDataMap(cmd *cobra.Command, data map[strin
 	}
 
 	client := directory.NewGroupClient()
-	if err := client.UpdateGroup(ctx, group.GroupName, group.SCIMPatchRequest.Operations); err != nil {
+	if err := client.UpdateGroup(ctx, group.GroupName, &group.SCIMPatchRequest.Operations); err != nil {
 		vc.Logger.Errorf("unable to update the group; err=%v, group=%+v", err, group)
 		return err
 	}

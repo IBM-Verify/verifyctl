@@ -156,7 +156,7 @@ func (o *userOptions) updateUserWithData(cmd *cobra.Command, data []byte) error 
 	}
 
 	client := directory.NewUserClient()
-	if err := client.UpdateUser(ctx, user.UserName, user.SCIMPatchRequest.Operations); err != nil {
+	if err := client.UpdateUser(ctx, user.UserName, &user.SCIMPatchRequest.Operations); err != nil {
 		vc.Logger.Errorf("unable to update the user; err=%v, user=%+v", err, user)
 		return err
 	}
@@ -184,7 +184,7 @@ func (o *userOptions) updateUserFromDataMap(cmd *cobra.Command, data map[string]
 	}
 
 	client := directory.NewUserClient()
-	if err := client.UpdateUser(ctx, user.UserName, user.SCIMPatchRequest.Operations); err != nil {
+	if err := client.UpdateUser(ctx, user.UserName, &user.SCIMPatchRequest.Operations); err != nil {
 		vc.Logger.Errorf("unable to update the user; err=%v, user=%+v", err, user)
 		return err
 	}
