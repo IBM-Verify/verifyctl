@@ -5,10 +5,10 @@ import (
 	"io"
 	"os"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
 	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -116,15 +116,15 @@ func (o *apiclientOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.updateAPIClient(cmd, auth)
+	return o.updateAPIClient(cmd)
 }
 
-func (o *apiclientOptions) updateAPIClient(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *apiclientOptions) updateAPIClient(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -135,10 +135,10 @@ func (o *apiclientOptions) updateAPIClient(cmd *cobra.Command, auth *config.Auth
 		return err
 	}
 
-	return o.updateAPIClientWithData(cmd, auth, b)
+	return o.updateAPIClientWithData(cmd, b)
 }
 
-func (o *apiclientOptions) updateAPIClientWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *apiclientOptions) updateAPIClientWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -150,7 +150,7 @@ func (o *apiclientOptions) updateAPIClientWithData(cmd *cobra.Command, auth *con
 	}
 
 	client := security.NewAPIClient()
-	if err := client.UpdateAPIClient(ctx, auth, apiclient); err != nil {
+	if err := client.UpdateAPIClient(ctx, apiclient); err != nil {
 		vc.Logger.Errorf("unable to update the API client; err=%v, apiclient=%+v", err, apiclient)
 		return err
 	}
@@ -159,7 +159,7 @@ func (o *apiclientOptions) updateAPIClientWithData(cmd *cobra.Command, auth *con
 	return nil
 }
 
-func (o *apiclientOptions) updateAPIClientFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *apiclientOptions) updateAPIClientFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -176,7 +176,7 @@ func (o *apiclientOptions) updateAPIClientFromDataMap(cmd *cobra.Command, auth *
 		return err
 	}
 	client := security.NewAPIClient()
-	if err := client.UpdateAPIClient(ctx, auth, apiclient); err != nil {
+	if err := client.UpdateAPIClient(ctx, apiclient); err != nil {
 		vc.Logger.Errorf("unable to update the API client; err=%v, apiclient=%+v", err, apiclient)
 		return err
 	}

@@ -139,11 +139,11 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 
 	case resource.ResourceTypePrefix + "User":
 		options := &userOptions{}
-		err = options.updateUserFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.updateUserFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "Group":
 		options := &groupOptions{}
-		err = options.updateGroupFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.updateGroupFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "IdentitySource":
 		options := &identitysourceOptions{}
@@ -151,12 +151,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 
 	case resource.ResourceTypePrefix + "APIClient":
 		options := &apiclientOptions{}
-		err = options.updateAPIClientFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
-
-	case resource.ResourceTypePrefix + "Application":
-		options := &applicationOptions{}
-		err = options.updateApplicationFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
-
+		err = options.updateAPIClientFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err

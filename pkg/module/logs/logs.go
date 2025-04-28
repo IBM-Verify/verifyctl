@@ -129,14 +129,14 @@ func (c *LogsClient) PrintLogs(ctx context.Context, auth *config.AuthConfig, wri
 
 func (c *LogsClient) printLogs(_ context.Context, w *tabwriter.Writer, logs []log, isFirstLog bool) {
 	if isFirstLog {
-		fmt.Fprintln(w, "Timestamp\tTrace ID\tSpan ID\tMessage\tSeverity")
+		_, _ = fmt.Fprintln(w, "Timestamp\tTrace ID\tSpan ID\tMessage\tSeverity")
 	}
 
 	for _, v := range logs {
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", strconv.Itoa(v.Timestamp), v.TraceID, v.SpanID, v.Message, v.Severity)
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", strconv.Itoa(v.Timestamp), v.TraceID, v.SpanID, v.Message, v.Severity)
 	}
 
-	w.Flush()
+	_ = w.Flush()
 }
 
 func (c *LogsClient) getLogs(ctx context.Context, auth *config.AuthConfig, logReq *logRequest) ([]log, error) {
