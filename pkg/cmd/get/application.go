@@ -153,7 +153,7 @@ func (o *applicationsOptions) handleApplicationClientList(cmd *cobra.Command, _ 
 	}
 
 	items := []*resource.ResourceObject{}
-	for _, appl := range appls.Embedded.Applications {
+	for _, appl := range *appls.Embedded.Applications {
 		items = append(items, &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "Application",
 			APIVersion: "1.0",
@@ -170,7 +170,7 @@ func (o *applicationsOptions) handleApplicationClientList(cmd *cobra.Command, _ 
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: appls.TotalCount,
+			Total: int(*appls.TotalCount),
 		},
 		Items: items,
 	}
