@@ -3,9 +3,9 @@ package delete
 import (
 	"io"
 
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
@@ -85,7 +85,7 @@ func (o *identitysourcesOptions) Validate(cmd *cobra.Command, args []string) err
 
 	calledAs := cmd.CalledAs()
 	if calledAs == "identitysource" && o.name == "" {
-		return module.MakeSimpleError(i18n.Translate("'instanceName' flag is required."))
+		return errorsx.G11NError("'instanceName' flag is required.")
 	}
 	return nil
 }
@@ -96,7 +96,7 @@ func (o *identitysourcesOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	auth, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}

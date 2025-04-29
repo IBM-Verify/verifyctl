@@ -1,6 +1,6 @@
 package cmd
 
-import "github.com/ibm-verify/verifyctl/pkg/i18n"
+import "github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 
 // TranslateLongDesc uses the prefix to construct a message code '<prefix>LongDesc'
 // and looks for the value in the locale files. If not found, it falls back

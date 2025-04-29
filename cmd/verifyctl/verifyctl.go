@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	"github.com/ibm-verify/verifyctl/pkg/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
@@ -23,13 +24,13 @@ func main() {
 	defer func() {
 		if file, ok := w.(*os.File); ok {
 			_ = file.Sync()
-			file.Close()
+			_ = file.Close()
 		} else if handler, ok := w.(io.Closer); ok {
-			handler.Close()
+			_ = handler.Close()
 		}
 	}()
 
-	ctx, err := config.NewContextWithVerifyContext(context.Background(), logger)
+	ctx, err := contextx.NewContextWithVerifyContext(context.Background(), logger)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

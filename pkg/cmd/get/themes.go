@@ -4,11 +4,11 @@ import (
 	"encoding/base64"
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/branding"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/branding"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -104,11 +104,11 @@ func (o *themesOptions) Validate(cmd *cobra.Command, args []string) error {
 	calledAs := cmd.CalledAs()
 	if calledAs == "theme" {
 		if o.id == "" {
-			return module.MakeSimpleError(i18n.Translate("'id' flag is required."))
+			return errorsx.G11NError("'id' flag is required.")
 		}
 
 		if len(o.outputDirectory) == 0 && o.unpack {
-			return module.MakeSimpleError(i18n.Translate("'dir' flag is required when 'unpack' flag is used."))
+			return errorsx.G11NError("'dir' flag is required when 'unpack' flag is used.")
 		}
 	}
 	return nil
@@ -120,19 +120,19 @@ func (o *themesOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
 	// invoke the operation
 	if cmd.CalledAs() == "theme" || len(o.id) > 0 {
-		return o.handleSingleThemeCommand(cmd, auth, args)
+		return o.handleSingleThemeCommand(cmd, args)
 	}
 
 	// deal with themes
 	c := branding.NewThemeClient()
-	themes, uri, err := c.ListThemes(cmd.Context(), auth, 0, o.page, o.limit)
+	themes, uri, err := c.ListThemes(cmd.Context(), 0, o.page, o.limit)
 	if err != nil {
 		return err
 	}
@@ -143,6 +143,7 @@ func (o *themesOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	items := []*resource.ResourceObject{}
+
 	for _, theme := range themes.Themes {
 		items = append(items, &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "Theme",
@@ -177,7 +178,7 @@ func (o *themesOptions) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *themesOptions) handleSingleThemeCommand(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *themesOptions) handleSingleThemeCommand(cmd *cobra.Command, _ []string) error {
 	c := branding.NewThemeClient()
 	var b []byte
 	var err error
@@ -186,12 +187,12 @@ func (o *themesOptions) handleSingleThemeCommand(cmd *cobra.Command, auth *confi
 	resourceName := "Theme"
 	if len(o.path) > 0 {
 		// get a single file
-		if b, uri, err = c.GetFile(cmd.Context(), auth, o.id, o.path); err != nil {
+		if b, uri, err = c.GetFile(cmd.Context(), o.id, o.path); err != nil {
 			return err
 		}
 		resourceName = "ThemeFile"
 	} else {
-		if b, uri, err = c.GetTheme(cmd.Context(), auth, o.id, o.customizedOnly); err != nil {
+		if b, uri, err = c.GetTheme(cmd.Context(), o.id, o.customizedOnly); err != nil {
 			return err
 		}
 	}

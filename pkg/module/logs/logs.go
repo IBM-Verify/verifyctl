@@ -14,8 +14,10 @@ import (
 	"text/tabwriter"
 	"time"
 
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/module"
 	xhttp "github.com/ibm-verify/verifyctl/pkg/util/http"
 )
@@ -78,7 +80,7 @@ func NewLogsClient() *LogsClient {
 }
 
 func (c *LogsClient) PrintLogs(ctx context.Context, auth *config.AuthConfig, writer io.Writer, params *LogParameters) error {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	currTime := time.Now()
 	endTime := currTime.UnixMilli()
@@ -127,18 +129,18 @@ func (c *LogsClient) PrintLogs(ctx context.Context, auth *config.AuthConfig, wri
 
 func (c *LogsClient) printLogs(_ context.Context, w *tabwriter.Writer, logs []log, isFirstLog bool) {
 	if isFirstLog {
-		fmt.Fprintln(w, "Timestamp\tTrace ID\tSpan ID\tMessage\tSeverity")
+		_, _ = fmt.Fprintln(w, "Timestamp\tTrace ID\tSpan ID\tMessage\tSeverity")
 	}
 
 	for _, v := range logs {
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", strconv.Itoa(v.Timestamp), v.TraceID, v.SpanID, v.Message, v.Severity)
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", strconv.Itoa(v.Timestamp), v.TraceID, v.SpanID, v.Message, v.Severity)
 	}
 
-	w.Flush()
+	_ = w.Flush()
 }
 
 func (c *LogsClient) getLogs(ctx context.Context, auth *config.AuthConfig, logReq *logRequest) ([]log, error) {
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 	u, _ := url.Parse(fmt.Sprintf("https://%s/%s", auth.Tenant, apiLogsQuery))
 
 	body, err := json.Marshal(logReq)
@@ -163,12 +165,12 @@ func (c *LogsClient) getLogs(ctx context.Context, auth *config.AuthConfig, logRe
 			return nil, err
 		}
 
-		return nil, fmt.Errorf("unable to get the logs")
+		return nil, errorsx.G11NError("unable to get the logs")
 	}
 
 	logResp := &logResponse{}
 	if err = json.Unmarshal(response.Body, logResp); err != nil {
-		return nil, fmt.Errorf("unable to get the logs")
+		return nil, errorsx.G11NError("unable to get the logs")
 	}
 
 	return logResp.Logs, nil

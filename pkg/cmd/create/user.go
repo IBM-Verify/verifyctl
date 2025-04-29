@@ -8,11 +8,13 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 const (
@@ -95,7 +97,7 @@ func (o *userOptions) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(o.file) == 0 {
-		return module.MakeSimpleError("The 'file' option is required if no other options are used.")
+		return errorsx.G11NError("The 'file' option is required if no other options are used.")
 	}
 	return nil
 }
@@ -117,17 +119,17 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.createUser(cmd, auth)
+	return o.createUser(cmd)
 }
 
-func (o *userOptions) createUser(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *userOptions) createUser(cmd *cobra.Command) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// get the contents of the file
 	b, err := os.ReadFile(o.file)
@@ -137,12 +139,12 @@ func (o *userOptions) createUser(cmd *cobra.Command, auth *config.AuthConfig) er
 	}
 
 	// create user with data
-	return o.createUserWithData(cmd, auth, b)
+	return o.createUserWithData(cmd, b)
 }
 
-func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *userOptions) createUserWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to user
 	user := &directory.User{}
@@ -152,7 +154,7 @@ func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	}
 
 	client := directory.NewUserClient()
-	resourceURI, err := client.CreateUser(ctx, auth, user)
+	resourceURI, err := client.CreateUser(ctx, user)
 	if err != nil {
 		return err
 	}
@@ -161,9 +163,9 @@ func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	return nil
 }
 
-func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to user
 	user := &directory.User{}
@@ -179,7 +181,7 @@ func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, auth *config.Aut
 	}
 
 	client := directory.NewUserClient()
-	resourceURI, err := client.CreateUser(ctx, auth, user)
+	resourceURI, err := client.CreateUser(ctx, user)
 	if err != nil {
 		vc.Logger.Errorf("unable to create the user; err=%v, user=%+v", err, user)
 		return err

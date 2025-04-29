@@ -1,16 +1,17 @@
 package delete
 
 import (
-	"fmt"
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 const (
@@ -91,7 +92,7 @@ func (o *apiclientsOptions) Validate(cmd *cobra.Command, args []string) error {
 
 	calledAs := cmd.CalledAs()
 	if calledAs == "apiclient" && o.name == "" && o.id == "" {
-		return module.MakeSimpleError(i18n.Translate("either 'clientName' or 'clientId' flag is required"))
+		return errorsx.G11NError("either 'clientName' or 'clientId' flag is required")
 	}
 	return nil
 }
@@ -102,7 +103,7 @@ func (o *apiclientsOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -110,31 +111,31 @@ func (o *apiclientsOptions) Run(cmd *cobra.Command, args []string) error {
 	// invoke the operation
 	if cmd.CalledAs() == "apiclient" || len(o.name) > 0 {
 		// deal with single API client
-		return o.handleSingleAPIClient(cmd, auth, args)
+		return o.handleSingleAPIClient(cmd, args)
 	}
 	return nil
 }
 
-func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, _ []string) error {
 	c := security.NewAPIClient()
 	var id string
 	var err error
 
 	if o.id != "" {
 		if o.name != "" {
-			config.GetVerifyContext(cmd.Context()).Logger.Warnf("Both clientName and clientId are provided; using clientId")
+			contextx.GetVerifyContext(cmd.Context()).Logger.Warnf("Both clientName and clientId are provided; using clientId")
 		}
 		id = o.id
 	} else if o.name != "" {
-		id, err = c.GetAPIClientId(cmd.Context(), auth, o.name)
+		id, err = c.GetAPIClientId(cmd.Context(), o.name)
 		if err != nil {
 			return err
 		}
 	} else {
-		return fmt.Errorf("either clientName or clientId must be provided")
+		return errorsx.G11NError("either clientName or clientId must be provided")
 	}
 
-	err = c.DeleteAPIClientById(cmd.Context(), auth, id)
+	err = c.DeleteAPIClientById(cmd.Context(), id)
 	if err != nil {
 		return err
 	}

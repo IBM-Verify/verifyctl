@@ -5,14 +5,16 @@ import (
 	"io"
 	"os"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 const (
@@ -95,7 +97,7 @@ func (o *identitysourceOptions) Validate(cmd *cobra.Command, args []string) erro
 	}
 
 	if len(o.file) == 0 {
-		return module.MakeSimpleError(i18n.Translate("'file' option is required if no other options are used."))
+		return errorsx.G11NError("'file' option is required if no other options are used.")
 	}
 	return nil
 }
@@ -119,7 +121,7 @@ func (o *identitysourceOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	auth, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -129,7 +131,7 @@ func (o *identitysourceOptions) Run(cmd *cobra.Command, args []string) error {
 
 func (o *identitysourceOptions) updateIdentitysource(cmd *cobra.Command, auth *config.AuthConfig) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// read the file
 	b, err := os.ReadFile(o.file)
@@ -143,7 +145,7 @@ func (o *identitysourceOptions) updateIdentitysource(cmd *cobra.Command, auth *c
 
 func (o *identitysourceOptions) updateIdentitysourceWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to identitysource object
 	identitysource := &directory.IdentitySource{}
@@ -164,7 +166,7 @@ func (o *identitysourceOptions) updateIdentitysourceWithData(cmd *cobra.Command,
 
 func (o *identitysourceOptions) updateIdentitysourceFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to identitysource object
 	identitysource := &directory.IdentitySource{}

@@ -3,14 +3,14 @@ package get
 import (
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 const (
@@ -92,7 +92,7 @@ func (o *attributesOptions) Validate(cmd *cobra.Command, args []string) error {
 
 	calledAs := cmd.CalledAs()
 	if calledAs == "attribute" && o.id == "" {
-		return module.MakeSimpleError(i18n.Translate("'id' flag is required."))
+		return errorsx.G11NError("'id' flag is required.")
 	}
 	return nil
 }
@@ -103,7 +103,7 @@ func (o *attributesOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -111,16 +111,16 @@ func (o *attributesOptions) Run(cmd *cobra.Command, args []string) error {
 	// invoke the operation
 	if cmd.CalledAs() == "attribute" || len(o.id) > 0 {
 		// deal with single attribute
-		return o.handleSingleAttribute(cmd, auth, args)
+		return o.handleSingleAttribute(cmd, args)
 	}
 
-	return o.handleAttributeList(cmd, auth, args)
+	return o.handleAttributeList(cmd, args)
 }
 
-func (o *attributesOptions) handleSingleAttribute(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *attributesOptions) handleSingleAttribute(cmd *cobra.Command, _ []string) error {
 
 	c := directory.NewAttributeClient()
-	attr, uri, err := c.GetAttribute(cmd.Context(), auth, o.id)
+	attr, uri, err := c.GetAttribute(cmd.Context(), o.id)
 	if err != nil {
 		return err
 	}
@@ -150,10 +150,10 @@ func (o *attributesOptions) handleSingleAttribute(cmd *cobra.Command, auth *conf
 	return nil
 }
 
-func (o *attributesOptions) handleAttributeList(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *attributesOptions) handleAttributeList(cmd *cobra.Command, _ []string) error {
 
 	c := directory.NewAttributeClient()
-	attrs, uri, err := c.GetAttributes(cmd.Context(), auth, o.search, o.sort, o.page, o.limit)
+	attrs, uri, err := c.GetAttributes(cmd.Context(), o.search, o.sort, o.page, o.limit)
 	if err != nil {
 		return err
 	}

@@ -3,10 +3,10 @@ package delete
 import (
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -85,7 +85,7 @@ func (o *groupsOptions) Valnameate(cmd *cobra.Command, args []string) error {
 
 	calledAs := cmd.CalledAs()
 	if calledAs == "group" && o.name == "" {
-		return module.MakeSimpleError(i18n.Translate("'displayName' flag is required."))
+		return errorsx.G11NError("'displayName' flag is required.")
 	}
 	return nil
 }
@@ -96,7 +96,7 @@ func (o *groupsOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -104,15 +104,15 @@ func (o *groupsOptions) Run(cmd *cobra.Command, args []string) error {
 	// invoke the operation
 	if cmd.CalledAs() == "group" || len(o.name) > 0 {
 		// deal with single group
-		return o.handleSingleGroup(cmd, auth, args)
+		return o.handleSingleGroup(cmd, args)
 	}
 	return nil
 }
 
-func (o *groupsOptions) handleSingleGroup(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *groupsOptions) handleSingleGroup(cmd *cobra.Command, _ []string) error {
 
 	c := directory.NewGroupClient()
-	err := c.DeleteGroup(cmd.Context(), auth, o.name)
+	err := c.DeleteGroup(cmd.Context(), o.name)
 	if err != nil {
 		return err
 	}

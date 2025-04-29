@@ -3,11 +3,11 @@ package get
 import (
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -91,7 +91,7 @@ func (o *apiclientsOptions) Validate(cmd *cobra.Command, args []string) error {
 
 	calledAs := cmd.CalledAs()
 	if calledAs == "apiclient" && o.name == "" {
-		return module.MakeSimpleError(i18n.Translate("'clientName' flag is required."))
+		return errorsx.G11NError("'clientName' flag is required.")
 	}
 	return nil
 }
@@ -102,22 +102,22 @@ func (o *apiclientsOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
 	if cmd.CalledAs() == "apiclient" || len(o.name) > 0 {
-		return o.handleSingleAPIClient(cmd, auth, args)
+		return o.handleSingleAPIClient(cmd, args)
 	}
 
-	return o.handleAPIClientList(cmd, auth, args)
+	return o.handleAPIClientList(cmd, args)
 }
 
-func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAPIClient()
-	apic, uri, err := c.GetAPIClient(cmd.Context(), auth, o.name)
+	apic, uri, err := c.GetAPIClient(cmd.Context(), o.name)
 	if err != nil {
 		return err
 	}
@@ -147,10 +147,10 @@ func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, auth *conf
 	return nil
 }
 
-func (o *apiclientsOptions) handleAPIClientList(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *apiclientsOptions) handleAPIClientList(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAPIClient()
-	apiclis, uri, err := c.GetAPIClients(cmd.Context(), auth, o.search, o.sort, o.page, o.limit)
+	apiclis, uri, err := c.GetAPIClients(cmd.Context(), o.search, o.sort, o.page, o.limit)
 	if err != nil {
 		return err
 	}

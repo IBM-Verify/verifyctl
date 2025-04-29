@@ -7,12 +7,14 @@ import (
 
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 const (
@@ -95,7 +97,7 @@ func (o *identitysourceOptions) Validate(cmd *cobra.Command, args []string) erro
 	}
 
 	if len(o.file) == 0 {
-		return module.MakeSimpleError("The 'file' option is required if no other options are used.")
+		return errorsx.G11NError("The 'file' option is required if no other options are used.")
 	}
 	return nil
 }
@@ -117,7 +119,7 @@ func (o *identitysourceOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	auth, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -127,7 +129,7 @@ func (o *identitysourceOptions) Run(cmd *cobra.Command, args []string) error {
 
 func (o *identitysourceOptions) createIdentitySource(cmd *cobra.Command, auth *config.AuthConfig) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// get the contents of the file
 	b, err := os.ReadFile(o.file)
@@ -142,7 +144,7 @@ func (o *identitysourceOptions) createIdentitySource(cmd *cobra.Command, auth *c
 
 func (o *identitysourceOptions) createIdentitySourceWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to identitysource
 	identitysource := &directory.IdentitySource{}
@@ -163,7 +165,7 @@ func (o *identitysourceOptions) createIdentitySourceWithData(cmd *cobra.Command,
 
 func (o *identitysourceOptions) createIdentitySourceFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to identitysource
 	identitysource := &directory.IdentitySource{}

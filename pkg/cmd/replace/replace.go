@@ -1,16 +1,17 @@
 package replace
 
 import (
-	"fmt"
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
 const (
@@ -113,7 +114,7 @@ func (o *options) Validate(cmd *cobra.Command, args []string) error {
 
 func (o *options) Run(cmd *cobra.Command, args []string) error {
 	if len(o.file) == 0 {
-		return fmt.Errorf("'file' option is required.")
+		return errorsx.G11NError("'file' option is required.")
 	}
 
 	// read the file
@@ -123,10 +124,10 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(resourceObject.Kind) == 0 {
-		return module.MakeSimpleError(i18n.Translate("No 'kind' defined. Resource type cannot be identified."))
+		return errorsx.G11NError("No 'kind' defined. Resource type cannot be identified.")
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	auth, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -134,15 +135,15 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	switch resourceObject.Kind {
 	case resource.ResourceTypePrefix + "Attribute":
 		options := &attributeOptions{}
-		err = options.updateAttributeFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.updateAttributeFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "User":
 		options := &userOptions{}
-		err = options.updateUserFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.updateUserFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "Group":
 		options := &groupOptions{}
-		err = options.updateGroupFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.updateGroupFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "AccessPolicy":
 		options := &accesspolicyOptions{}
@@ -154,8 +155,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 
 	case resource.ResourceTypePrefix + "APIClient":
 		options := &apiclientOptions{}
-		err = options.updateAPIClientFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
-
+		err = options.updateAPIClientFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err
@@ -163,7 +163,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 
 func (o *options) readFile(cmd *cobra.Command) (*resource.ResourceObject, error) {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	resourceObject := &resource.ResourceObject{}
 	if err := resourceObject.LoadFromFile(cmd, o.file, ""); err != nil {

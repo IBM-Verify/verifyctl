@@ -3,9 +3,9 @@ package get
 import (
 	"io"
 
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -123,7 +123,7 @@ func (o *options) addCountFlags(cmd *cobra.Command, _ string) {
 
 func (o *options) Complete(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
-		return module.MakeSimpleError(i18n.Translate("Resource type is required."))
+		return errorsx.G11NError("Resource type is required.")
 	}
 
 	o.resource = args[0]
