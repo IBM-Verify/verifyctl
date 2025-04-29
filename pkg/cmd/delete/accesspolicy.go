@@ -3,10 +3,10 @@ package delete
 import (
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -85,7 +85,7 @@ func (o *accesspoliciesOptions) Validate(cmd *cobra.Command, args []string) erro
 
 	calledAs := cmd.CalledAs()
 	if calledAs == "accesspolicy" && o.name == "" {
-		return module.MakeSimpleError(i18n.Translate("'accesspolicyName' flag is required."))
+		return errorsx.G11NError("'accesspolicyName' flag is required.")
 	}
 	return nil
 }
@@ -96,7 +96,7 @@ func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -104,15 +104,15 @@ func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 	// invoke the operation
 	if cmd.CalledAs() == "accesspolicy" || len(o.name) > 0 {
 		// deal with single accesspolicy
-		return o.handleSingleAccessPolicy(cmd, auth, args)
+		return o.handleSingleAccessPolicy(cmd, args)
 	}
 	return nil
 }
 
-func (o *accesspoliciesOptions) handleSingleAccessPolicy(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *accesspoliciesOptions) handleSingleAccessPolicy(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAccesspolicyClient()
-	err := c.DeleteAccesspolicy(cmd.Context(), auth, o.name)
+	err := c.DeleteAccesspolicy(cmd.Context(), o.name)
 	if err != nil {
 		return err
 	}

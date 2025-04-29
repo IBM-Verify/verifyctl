@@ -8,8 +8,9 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/security"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -95,7 +96,7 @@ func (o *accesspolicyOptions) Validate(cmd *cobra.Command, args []string) error 
 	}
 
 	if len(o.file) == 0 {
-		return module.MakeSimpleError("The 'file' option is required if no other options are used.")
+		return errorsx.G11NError("The 'file' option is required if no other options are used.")
 	}
 	return nil
 }
@@ -117,17 +118,17 @@ func (o *accesspolicyOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.createAccesspolicy(cmd, auth)
+	return o.createAccesspolicy(cmd)
 }
 
-func (o *accesspolicyOptions) createAccesspolicy(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *accesspolicyOptions) createAccesspolicy(cmd *cobra.Command) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// get the contents of the file
 	b, err := os.ReadFile(o.file)
@@ -137,12 +138,12 @@ func (o *accesspolicyOptions) createAccesspolicy(cmd *cobra.Command, auth *confi
 	}
 
 	// create accesspolicy with data
-	return o.createAccesspolicyWithData(cmd, auth, b)
+	return o.createAccesspolicyWithData(cmd, b)
 }
 
-func (o *accesspolicyOptions) createAccesspolicyWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *accesspolicyOptions) createAccesspolicyWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to accesspolicy
 	accesspolicy := &security.Policy{}
@@ -152,7 +153,7 @@ func (o *accesspolicyOptions) createAccesspolicyWithData(cmd *cobra.Command, aut
 	}
 
 	client := security.NewAccesspolicyClient()
-	resourceURI, err := client.CreateAccesspolicy(ctx, auth, accesspolicy)
+	resourceURI, err := client.CreateAccesspolicy(ctx, accesspolicy)
 	if err != nil {
 		return err
 	}
@@ -163,7 +164,7 @@ func (o *accesspolicyOptions) createAccesspolicyWithData(cmd *cobra.Command, aut
 
 func (o *accesspolicyOptions) createAccesspolicyFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to accesspolicy
 	accesspolicy := &security.Policy{}
@@ -179,7 +180,7 @@ func (o *accesspolicyOptions) createAccesspolicyFromDataMap(cmd *cobra.Command, 
 	}
 
 	client := security.NewAccesspolicyClient()
-	resourceURI, err := client.CreateAccesspolicy(ctx, auth, accesspolicy)
+	resourceURI, err := client.CreateAccesspolicy(ctx, accesspolicy)
 	if err != nil {
 		vc.Logger.Errorf("unable to create the accesspolicy; err=%v, accesspolicy=%+v", err, accesspolicy)
 		return err

@@ -5,11 +5,12 @@ import (
 	"io"
 	"os"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
+	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -95,7 +96,7 @@ func (o *accesspolicyOptions) Validate(cmd *cobra.Command, args []string) error 
 	}
 
 	if len(o.file) == 0 {
-		return module.MakeSimpleError(i18n.Translate("'file' option is required if no other options are used."))
+		return errorsx.G11NError("'file' option is required if no other options are used.")
 	}
 	return nil
 }
@@ -129,7 +130,7 @@ func (o *accesspolicyOptions) Run(cmd *cobra.Command, args []string) error {
 
 func (o *accesspolicyOptions) updateAccesspolicy(cmd *cobra.Command, auth *config.AuthConfig) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// read the file
 	b, err := os.ReadFile(o.file)
@@ -138,12 +139,12 @@ func (o *accesspolicyOptions) updateAccesspolicy(cmd *cobra.Command, auth *confi
 		return err
 	}
 
-	return o.updateAccesspolicyWithData(cmd, auth, b)
+	return o.updateAccesspolicyWithData(cmd, b)
 }
 
-func (o *accesspolicyOptions) updateAccesspolicyWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *accesspolicyOptions) updateAccesspolicyWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to accesspolicy object
 	accesspolicy := &security.Policy{}
@@ -153,7 +154,7 @@ func (o *accesspolicyOptions) updateAccesspolicyWithData(cmd *cobra.Command, aut
 	}
 
 	client := security.NewAccesspolicyClient()
-	if err := client.UpdateAccesspolicy(ctx, auth, accesspolicy); err != nil {
+	if err := client.UpdateAccesspolicy(ctx, accesspolicy); err != nil {
 		vc.Logger.Errorf("unable to update the accesspolicy; err=%v, accesspolicy=%+v", err, accesspolicy)
 		return err
 	}
@@ -162,9 +163,9 @@ func (o *accesspolicyOptions) updateAccesspolicyWithData(cmd *cobra.Command, aut
 	return nil
 }
 
-func (o *accesspolicyOptions) updateAccesspolicyFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *accesspolicyOptions) updateAccesspolicyFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
-	vc := config.GetVerifyContext(ctx)
+	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to accesspolicy object
 	accesspolicy := &security.Policy{}
@@ -181,7 +182,7 @@ func (o *accesspolicyOptions) updateAccesspolicyFromDataMap(cmd *cobra.Command, 
 	}
 
 	client := security.NewAccesspolicyClient()
-	if err := client.UpdateAccesspolicy(ctx, auth, accesspolicy); err != nil {
+	if err := client.UpdateAccesspolicy(ctx, accesspolicy); err != nil {
 		vc.Logger.Errorf("unable to update the accesspolicy; err=%v, accesspolicy=%+v", err, accesspolicy)
 		return err
 	}

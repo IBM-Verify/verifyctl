@@ -3,11 +3,11 @@ package get
 import (
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
+	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
+	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/i18n"
-	"github.com/ibm-verify/verifyctl/pkg/module"
-	"github.com/ibm-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -90,7 +90,7 @@ func (o *accesspoliciesOptions) Validate(cmd *cobra.Command, args []string) erro
 
 	calledAs := cmd.CalledAs()
 	if calledAs == "accesspolicy" && o.name == "" {
-		return module.MakeSimpleError(i18n.Translate("'accesspolicyName' flag is required."))
+		return errorsx.G11NError("'accesspolicyName' flag is required.")
 	}
 	return nil
 }
@@ -101,7 +101,7 @@ func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -109,16 +109,16 @@ func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 	// invoke the operation
 	if cmd.CalledAs() == "accesspolicy" || len(o.name) > 0 {
 		// deal with single accesspolicy
-		return o.handleSingleAccesspolicy(cmd, auth, args)
+		return o.handleSingleAccesspolicy(cmd, args)
 	}
 
-	return o.handleAccesspolicyList(cmd, auth, args)
+	return o.handleAccesspolicyList(cmd, args)
 }
 
-func (o *accesspoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *accesspoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAccesspolicyClient()
-	ap, uri, err := c.GetAccesspolicy(cmd.Context(), auth, o.name)
+	ap, uri, err := c.GetAccesspolicy(cmd.Context(), o.name)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func (o *accesspoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, aut
 		Kind:       resource.ResourceTypePrefix + "AccessPolicy",
 		APIVersion: "5.0",
 		Metadata: &resource.ResourceObjectMetadata{
-			ID:   ap.ID,
+			ID:   int(*ap.ID),
 			Name: ap.Name,
 			URI:  uri,
 		},
@@ -148,10 +148,10 @@ func (o *accesspoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, aut
 	return nil
 }
 
-func (o *accesspoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *accesspoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAccesspolicyClient()
-	accesspolicies, uri, err := c.GetAccesspolicies(cmd.Context(), auth)
+	accesspolicies, uri, err := c.GetAccesspolicies(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -162,12 +162,12 @@ func (o *accesspoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, auth 
 	}
 
 	items := []*resource.ResourceObject{}
-	for _, ap := range accesspolicies.Policies {
+	for _, ap := range *accesspolicies.Policies {
 		items = append(items, &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "AccessPolicy",
 			APIVersion: "5.0",
 			Metadata: &resource.ResourceObjectMetadata{
-				ID:   ap.ID,
+				ID:   int(*ap.ID),
 				Name: ap.Name,
 			},
 			Data: ap,
@@ -179,7 +179,7 @@ func (o *accesspoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, auth 
 		APIVersion: "5.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: accesspolicies.Total,
+			Total: int(accesspolicies.Total),
 		},
 		Items: items,
 	}
