@@ -8,7 +8,7 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -119,15 +119,15 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.createUser(cmd, auth)
+	return o.createUser(cmd)
 }
 
-func (o *userOptions) createUser(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *userOptions) createUser(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -139,10 +139,10 @@ func (o *userOptions) createUser(cmd *cobra.Command, auth *config.AuthConfig) er
 	}
 
 	// create user with data
-	return o.createUserWithData(cmd, auth, b)
+	return o.createUserWithData(cmd, b)
 }
 
-func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *userOptions) createUserWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -154,7 +154,7 @@ func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	}
 
 	client := directory.NewUserClient()
-	resourceURI, err := client.CreateUser(ctx, auth, user)
+	resourceURI, err := client.CreateUser(ctx, user)
 	if err != nil {
 		return err
 	}
@@ -163,7 +163,7 @@ func (o *userOptions) createUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	return nil
 }
 
-func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -181,7 +181,7 @@ func (o *userOptions) createUserFromDataMap(cmd *cobra.Command, auth *config.Aut
 	}
 
 	client := directory.NewUserClient()
-	resourceURI, err := client.CreateUser(ctx, auth, user)
+	resourceURI, err := client.CreateUser(ctx, user)
 	if err != nil {
 		vc.Logger.Errorf("unable to create the user; err=%v, user=%+v", err, user)
 		return err

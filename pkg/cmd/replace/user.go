@@ -5,10 +5,10 @@ import (
 	"io"
 	"os"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -122,15 +122,15 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.updateUser(cmd, auth)
+	return o.updateUser(cmd)
 }
 
-func (o *userOptions) updateUser(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *userOptions) updateUser(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -141,10 +141,10 @@ func (o *userOptions) updateUser(cmd *cobra.Command, auth *config.AuthConfig) er
 		return err
 	}
 
-	return o.updateUserWithData(cmd, auth, b)
+	return o.updateUserWithData(cmd, b)
 }
 
-func (o *userOptions) updateUserWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *userOptions) updateUserWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -156,7 +156,7 @@ func (o *userOptions) updateUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	}
 
 	client := directory.NewUserClient()
-	if err := client.UpdateUser(ctx, auth, user.UserName, user.SCIMPatchRequest.Operations); err != nil {
+	if err := client.UpdateUser(ctx, user.UserName, &user.SCIMPatchRequest.Operations); err != nil {
 		vc.Logger.Errorf("unable to update the user; err=%v, user=%+v", err, user)
 		return err
 	}
@@ -165,7 +165,7 @@ func (o *userOptions) updateUserWithData(cmd *cobra.Command, auth *config.AuthCo
 	return nil
 }
 
-func (o *userOptions) updateUserFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *userOptions) updateUserFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -184,7 +184,7 @@ func (o *userOptions) updateUserFromDataMap(cmd *cobra.Command, auth *config.Aut
 	}
 
 	client := directory.NewUserClient()
-	if err := client.UpdateUser(ctx, auth, user.UserName, user.SCIMPatchRequest.Operations); err != nil {
+	if err := client.UpdateUser(ctx, user.UserName, &user.SCIMPatchRequest.Operations); err != nil {
 		vc.Logger.Errorf("unable to update the user; err=%v, user=%+v", err, user)
 		return err
 	}
