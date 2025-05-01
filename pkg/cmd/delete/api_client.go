@@ -10,7 +10,6 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
 
-	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 )
 
@@ -43,8 +42,7 @@ You can identify the entitlement required by running:
 
 type apiclientsOptions struct {
 	options
-	id string
-
+	id     string
 	config *config.CLIConfig
 }
 
@@ -77,7 +75,6 @@ func NewAPIClientCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra
 
 func (o *apiclientsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd)
-	cmd.Flags().StringVar(&o.name, "clientName", o.name, i18n.Translate("clientName to be deleted"))
 	cmd.Flags().StringVar(&o.id, "clientId", o.id, i18n.Translate("clientId to be deleted"))
 }
 
@@ -91,8 +88,8 @@ func (o *apiclientsOptions) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "apiclient" && o.name == "" && o.id == "" {
-		return errorsx.G11NError("either 'clientName' or 'clientId' flag is required")
+	if calledAs == "apiclient" && o.id == "" {
+		return errorsx.G11NError("'clientId' flag is required")
 	}
 	return nil
 }
@@ -109,7 +106,7 @@ func (o *apiclientsOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// invoke the operation
-	if cmd.CalledAs() == "apiclient" || len(o.name) > 0 {
+	if cmd.CalledAs() == "apiclient" {
 		// deal with single API client
 		return o.handleSingleAPIClient(cmd, args)
 	}
@@ -122,12 +119,8 @@ func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, _ []string
 	var err error
 
 	if o.id != "" {
-		if o.name != "" {
-			contextx.GetVerifyContext(cmd.Context()).Logger.Warnf("Both clientName and clientId are provided; using clientId")
-		}
 		id = o.id
-	} else if o.name != "" {
-		id, err = c.GetAPIClientId(cmd.Context(), o.name)
+		err = c.DeleteAPIClientById(cmd.Context(), id)
 		if err != nil {
 			return err
 		}
@@ -135,15 +128,7 @@ func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, _ []string
 		return errorsx.G11NError("either clientName or clientId must be provided")
 	}
 
-	err = c.DeleteAPIClientById(cmd.Context(), id)
-	if err != nil {
-		return err
-	}
-
-	resourceIdentifier := o.name
-	if o.id != "" {
-		resourceIdentifier = o.id
-	}
-	cmdutil.WriteString(cmd, "Resource deleted: "+resourceIdentifier)
+	resourceIdentifier := o.id
+	cmdutil.WriteString(cmd, "Resource deleted with ID: "+resourceIdentifier)
 	return nil
 }

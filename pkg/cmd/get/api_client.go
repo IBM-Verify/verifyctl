@@ -117,7 +117,7 @@ func (o *apiclientsOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAPIClient()
-	apic, uri, err := c.GetAPIClient(cmd.Context(), o.name)
+	apic, uri, err := c.GetAPIClientByName(cmd.Context(), o.name)
 	if err != nil {
 		return err
 	}
