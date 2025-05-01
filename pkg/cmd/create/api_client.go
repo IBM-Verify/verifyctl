@@ -110,7 +110,7 @@ func (o *apiClientOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "ApiClient",
 			APIVersion: "1.0",
-			Data:       &security.Client{},
+			Data:       &security.APIClientConfig{},
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())

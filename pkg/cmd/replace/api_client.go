@@ -102,12 +102,13 @@ func (o *apiclientOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
+	IDStr := "<id>"
 	if o.boilerplate {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "APIClient",
 			APIVersion: "1.0",
-			Data: &security.Client{
-				ID:         "<id>",
+			Data: &security.APIClientConfig{
+				ID:         &IDStr,
 				ClientName: "<clientName>",
 			},
 		}
