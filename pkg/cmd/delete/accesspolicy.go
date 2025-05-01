@@ -38,8 +38,8 @@ You can identify the entitlement required by running:
 
 type accesspoliciesOptions struct {
 	options
-	ID     string
-	config *config.CLIConfig
+	accesspolicyID string
+	config         *config.CLIConfig
 }
 
 func NewAccessPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -71,7 +71,7 @@ func NewAccessPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *co
 
 func (o *accesspoliciesOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd)
-	cmd.Flags().StringVar(&o.ID, "accesspolicyName", o.ID, i18n.Translate("accesspolicyName to be deleted"))
+	cmd.Flags().StringVar(&o.accesspolicyID, "accesspolicyID", o.accesspolicyID, i18n.Translate("accesspolicyID to be deleted"))
 }
 
 func (o *accesspoliciesOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -84,7 +84,7 @@ func (o *accesspoliciesOptions) Validate(cmd *cobra.Command, args []string) erro
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "accesspolicy" && o.ID == "" {
+	if calledAs == "accesspolicy" && o.accesspolicyID == "" {
 		return errorsx.G11NError("'accesspolicyID' flag is required.")
 	}
 	return nil
@@ -102,7 +102,7 @@ func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// invoke the operation
-	if cmd.CalledAs() == "accesspolicy" || len(o.ID) > 0 {
+	if cmd.CalledAs() == "accesspolicy" || len(o.accesspolicyID) > 0 {
 		// deal with single accesspolicy
 		return o.handleSingleAccessPolicy(cmd, args)
 	}
@@ -112,10 +112,10 @@ func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *accesspoliciesOptions) handleSingleAccessPolicy(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAccesspolicyClient()
-	err := c.DeleteAccesspolicyByID(cmd.Context(), o.ID)
+	err := c.DeleteAccesspolicyByID(cmd.Context(), o.accesspolicyID)
 	if err != nil {
 		return err
 	}
-	cmdutil.WriteString(cmd, "Resource deleted: "+o.ID)
+	cmdutil.WriteString(cmd, "Resource deleted: "+o.accesspolicyID)
 	return nil
 }
