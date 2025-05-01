@@ -32,14 +32,14 @@ You can identify the entitlement required by running:
 
 	applicationExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an Application
-		verifyctl delete application --name="Name"`,
+		verifyctl delete application --appliactionID="appliactionID"`,
 	))
 )
 
 type applicationsOptions struct {
 	options
-
-	config *config.CLIConfig
+	appliactionID string
+	config        *config.CLIConfig
 }
 
 func NewApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -71,7 +71,7 @@ func NewApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cob
 
 func (o *applicationsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd)
-	cmd.Flags().StringVar(&o.name, "name", o.name, i18n.Translate("name to be deleted"))
+	cmd.Flags().StringVar(&o.appliactionID, "appliactionID", o.appliactionID, i18n.Translate("appliactionID to be deleted"))
 }
 
 func (o *applicationsOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -84,8 +84,8 @@ func (o *applicationsOptions) Validate(cmd *cobra.Command, args []string) error 
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "application" && o.name == "" {
-		return errorsx.G11NError(i18n.Translate("'name' flag is required"))
+	if calledAs == "application" && o.appliactionID == "" {
+		return errorsx.G11NError(i18n.Translate("'appliactionID' flag is required"))
 	}
 	return nil
 }
@@ -100,7 +100,7 @@ func (o *applicationsOptions) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if cmd.CalledAs() == "application" || len(o.name) > 0 {
+	if cmd.CalledAs() == "application" || len(o.appliactionID) > 0 {
 
 		return o.handleSingleApplication(cmd, args)
 	}
@@ -110,10 +110,10 @@ func (o *applicationsOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *applicationsOptions) handleSingleApplication(cmd *cobra.Command, _ []string) error {
 
 	c := applications.NewApplicationClient()
-	err := c.DeleteApplication(cmd.Context(), o.name)
+	err := c.DeleteApplicationByID(cmd.Context(), o.appliactionID)
 	if err != nil {
 		return err
 	}
-	cmdutil.WriteString(cmd, "Resource deleted: "+o.name)
+	cmdutil.WriteString(cmd, "Resource deleted: "+o.appliactionID)
 	return nil
 }
