@@ -2,7 +2,6 @@ package get
 
 import (
 	"io"
-	"strings"
 
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/applications"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
@@ -113,11 +112,6 @@ func (o *applicationsOptions) handleSingleApplicationClient(cmd *cobra.Command, 
 	if o.output == "raw" {
 		cmdutil.WriteAsJSON(cmd, appl, cmd.OutOrStdout())
 		return nil
-	}
-
-	id := appl.Links.Self.Href
-	if idx := strings.LastIndex(id, "/"); idx != -1 {
-		id = id[idx+1:]
 	}
 
 	resourceObj := &resource.ResourceObject{
