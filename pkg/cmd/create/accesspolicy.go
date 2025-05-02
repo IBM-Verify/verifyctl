@@ -162,7 +162,7 @@ func (o *accesspolicyOptions) createAccesspolicyWithData(cmd *cobra.Command, dat
 	return nil
 }
 
-func (o *accesspolicyOptions) createAccesspolicyFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *accesspolicyOptions) createAccesspolicyFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
