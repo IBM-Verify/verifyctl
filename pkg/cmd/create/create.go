@@ -153,7 +153,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 
 	case resource.ResourceTypePrefix + "APIClient":
 		options := &apiClientOptions{}
-		err = options.createAPIClientFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.createAPIClientFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err
