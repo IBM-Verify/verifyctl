@@ -32,14 +32,13 @@ You can identify the entitlement required by running:
 
 	applicationExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an Application
-		verifyctl delete application --appliactionID="appliactionID"`,
+		verifyctl delete application --name="name"`,
 	))
 )
 
 type applicationsOptions struct {
 	options
-	appliactionID string
-	config        *config.CLIConfig
+	config *config.CLIConfig
 }
 
 func NewApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -49,7 +48,7 @@ func NewApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cob
 
 	cmd := &cobra.Command{
 		Use:                   applicationUsage,
-		Short:                 cmdutil.TranslateShortDesc(applicationMessagePrefix, "Delete Verify Application based on an id."),
+		Short:                 cmdutil.TranslateShortDesc(applicationMessagePrefix, "Delete Verify Application based on an application name."),
 		Long:                  applicationLongDesc,
 		Example:               applicationExamples,
 		DisableFlagsInUseLine: true,
@@ -71,7 +70,7 @@ func NewApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cob
 
 func (o *applicationsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd)
-	cmd.Flags().StringVar(&o.appliactionID, "appliactionID", o.appliactionID, i18n.Translate("appliactionID to be deleted"))
+	cmd.Flags().StringVar(&o.name, "name", o.name, i18n.Translate("name to be deleted"))
 }
 
 func (o *applicationsOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -84,8 +83,8 @@ func (o *applicationsOptions) Validate(cmd *cobra.Command, args []string) error 
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "application" && o.appliactionID == "" {
-		return errorsx.G11NError(i18n.Translate("'appliactionID' flag is required"))
+	if calledAs == "application" && o.name == "" {
+		return errorsx.G11NError(i18n.Translate("'name' flag is required"))
 	}
 	return nil
 }
@@ -100,7 +99,7 @@ func (o *applicationsOptions) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if cmd.CalledAs() == "application" || len(o.appliactionID) > 0 {
+	if cmd.CalledAs() == "application" || len(o.name) > 0 {
 
 		return o.handleSingleApplication(cmd, args)
 	}
@@ -110,10 +109,10 @@ func (o *applicationsOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *applicationsOptions) handleSingleApplication(cmd *cobra.Command, _ []string) error {
 
 	c := applications.NewApplicationClient()
-	err := c.DeleteApplicationByID(cmd.Context(), o.appliactionID)
+	err := c.DeleteApplicationByName(cmd.Context(), o.name)
 	if err != nil {
 		return err
 	}
-	cmdutil.WriteString(cmd, "Resource deleted: "+o.appliactionID)
+	cmdutil.WriteString(cmd, "Resource deleted: "+o.name)
 	return nil
 }
