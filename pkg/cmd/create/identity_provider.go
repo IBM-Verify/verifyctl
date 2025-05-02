@@ -5,9 +5,9 @@ import (
 	"io"
 	"os"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
@@ -119,15 +119,15 @@ func (o *identitysourceOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.createIdentitySource(cmd, auth)
+	return o.createIdentitySource(cmd)
 }
 
-func (o *identitysourceOptions) createIdentitySource(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *identitysourceOptions) createIdentitySource(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -139,10 +139,10 @@ func (o *identitysourceOptions) createIdentitySource(cmd *cobra.Command, auth *c
 	}
 
 	// create identitysource with data
-	return o.createIdentitySourceWithData(cmd, auth, b)
+	return o.createIdentitySourceWithData(cmd, b)
 }
 
-func (o *identitysourceOptions) createIdentitySourceWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *identitysourceOptions) createIdentitySourceWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -154,7 +154,7 @@ func (o *identitysourceOptions) createIdentitySourceWithData(cmd *cobra.Command,
 	}
 
 	client := directory.NewIdentitySourceClient()
-	resourceURI, err := client.CreateIdentitysource(ctx, auth, identitysource)
+	resourceURI, err := client.CreateIdentitysource(ctx, identitysource)
 	if err != nil {
 		return err
 	}
@@ -181,7 +181,7 @@ func (o *identitysourceOptions) createIdentitySourceFromDataMap(cmd *cobra.Comma
 	}
 
 	client := directory.NewIdentitySourceClient()
-	resourceURI, err := client.CreateIdentitysource(ctx, auth, identitysource)
+	resourceURI, err := client.CreateIdentitysource(ctx, identitysource)
 	if err != nil {
 		vc.Logger.Errorf("unable to create the identitysource; err=%v, identitysource=%+v", err, identitysource)
 		return err

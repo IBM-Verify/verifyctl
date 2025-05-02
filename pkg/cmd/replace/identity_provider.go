@@ -5,10 +5,10 @@ import (
 	"io"
 	"os"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -121,15 +121,15 @@ func (o *identitysourceOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.updateIdentitysource(cmd, auth)
+	return o.updateIdentitysource(cmd)
 }
 
-func (o *identitysourceOptions) updateIdentitysource(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *identitysourceOptions) updateIdentitysource(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -140,10 +140,10 @@ func (o *identitysourceOptions) updateIdentitysource(cmd *cobra.Command, auth *c
 		return err
 	}
 
-	return o.updateIdentitysourceWithData(cmd, auth, b)
+	return o.updateIdentitysourceWithData(cmd, b)
 }
 
-func (o *identitysourceOptions) updateIdentitysourceWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *identitysourceOptions) updateIdentitysourceWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -155,7 +155,7 @@ func (o *identitysourceOptions) updateIdentitysourceWithData(cmd *cobra.Command,
 	}
 
 	client := directory.NewIdentitySourceClient()
-	if err := client.UpdateIdentitysource(ctx, auth, identitysource); err != nil {
+	if err := client.UpdateIdentitysource(ctx, identitysource); err != nil {
 		vc.Logger.Errorf("unable to update the identitysource; err=%v, identitysource=%+v", err, identitysource)
 		return err
 	}
@@ -183,7 +183,7 @@ func (o *identitysourceOptions) updateIdentitysourceFromDataMap(cmd *cobra.Comma
 	}
 
 	client := directory.NewIdentitySourceClient()
-	if err := client.UpdateIdentitysource(ctx, auth, identitysource); err != nil {
+	if err := client.UpdateIdentitysource(ctx, identitysource); err != nil {
 		vc.Logger.Errorf("unable to update the identitysource; err=%v, identitysource=%+v", err, identitysource)
 		return err
 	}
