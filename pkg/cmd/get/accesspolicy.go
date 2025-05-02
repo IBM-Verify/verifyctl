@@ -132,7 +132,7 @@ func (o *accesspoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, _ [
 		Kind:       resource.ResourceTypePrefix + "AccessPolicy",
 		APIVersion: "5.0",
 		Metadata: &resource.ResourceObjectMetadata{
-			ID:   int(*ap.ID),
+			ID:   ap.ID,
 			Name: ap.Name,
 			URI:  uri,
 		},
@@ -167,7 +167,7 @@ func (o *accesspoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, _ []s
 			Kind:       resource.ResourceTypePrefix + "AccessPolicy",
 			APIVersion: "5.0",
 			Metadata: &resource.ResourceObjectMetadata{
-				ID:   int(*ap.ID),
+				ID:   ap.ID,
 				Name: ap.Name,
 			},
 			Data: ap,
