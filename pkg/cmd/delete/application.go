@@ -32,13 +32,12 @@ You can identify the entitlement required by running:
 
 	applicationExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an Application
-		verifyctl delete application --name="Name"`,
+		verifyctl delete application --name="name"`,
 	))
 )
 
 type applicationsOptions struct {
 	options
-
 	config *config.CLIConfig
 }
 
@@ -49,7 +48,7 @@ func NewApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cob
 
 	cmd := &cobra.Command{
 		Use:                   applicationUsage,
-		Short:                 cmdutil.TranslateShortDesc(applicationMessagePrefix, "Delete Verify Application based on an id."),
+		Short:                 cmdutil.TranslateShortDesc(applicationMessagePrefix, "Delete Verify Application based on an application name."),
 		Long:                  applicationLongDesc,
 		Example:               applicationExamples,
 		DisableFlagsInUseLine: true,
@@ -110,7 +109,7 @@ func (o *applicationsOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *applicationsOptions) handleSingleApplication(cmd *cobra.Command, _ []string) error {
 
 	c := applications.NewApplicationClient()
-	err := c.DeleteApplication(cmd.Context(), o.name)
+	err := c.DeleteApplicationByName(cmd.Context(), o.name)
 	if err != nil {
 		return err
 	}

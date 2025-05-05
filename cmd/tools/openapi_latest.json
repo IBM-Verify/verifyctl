@@ -3879,6 +3879,373 @@
                 },
                 "x-publicAPI": "true"
             }
+        },
+        "/v5.0/policyvault/accesspolicy": {
+            "get": {
+                "tags": [
+                    "Access Policy Management V5.0"
+                ],
+                "summary": "retrieve access policies",
+                "description": "Retrieves all the predefined and tenant specific policies based on tenant subscriptions. Supports search, sort and pagination. <br><br><b>Entitlements:</b><br>- readAccessPolicies (Read Access Policies)<br>- manageAccessPolicies (Manage Access Policies)",
+                "operationId": "listAccessPolicies",
+                "parameters": [
+                    {
+                        "name": "pagination",
+                        "in": "query",
+                        "description": "Controls the results that are returned in a page.<br><br>You can use the following query parameters:<br><br><b>count</b> - Optional. Use to define the total number of results that are returned from the data store. The maximum allowed value is 1000. If excluded will be set to limit.<br><br><b>page</b> - Use to identify the requested page, or the offset.<br><br><b>limit</b> - Use to define the total number of results that are returned per page. The maximum allowed value is 1000.<br><br>A maximum of 200 results are returned if no pagination query parameters are passed.<br><br><b>Note</b>: The pagination parameter value must be HTML encoded. Use the prefix \"pagination=\" in the query parameter.<br><br><b>Example</b>: Paginate on count=10&page=1&limit=5<br>pagination=count%3D10%26page%3D1%26limit%3D5",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Returns results based on the search criteria.<br><br>Valid operators for Strings are = , != and contains. Use double quotation marks for the search values.<br>Valid operators for Booleans are = and !=<br>Valid operators for Numbers are >=, >, &lt;=, &lt;, = and !=<br><br><b>Note</b>: The search parameter value must be HTML encoded. Use the prefix \"search=\" in the query parameter.<br><br><b>Example</b>: Search on id contains \"fd45\"&enabled=true<br>search=id%20contains%20%22fd45%22%26enabled%3Dtrue",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Displays results based on the filter criteria.<br><br>Filter values to be inclusive or exclusive only. It cannot be combined.<br><br>Use a comma (,) to separate multiple filter parameters.<br><br><b>Note</b>: The filter parameter value must be HTML encoded. Use the prefix \"filter=\" in the query parameter.<br><br><b>Examples</b><br>Filter to return only id : filter=id<br>Filter to exclude id and enabled : filter=%21id,enabled",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Policies were retrieved.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PolicyVaultList_0"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The access token in the request is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized_1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The authenticated user does not have permissions to perform the requested operation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_3"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The resource cannot be found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFound_2"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "post": {
+                "tags": [
+                    "Access Policy Management V5.0"
+                ],
+                "summary": "create an access policy",
+                "description": "Create an access policy.<br>For more information on Access Policy rules click <a href=\"https://www.ibm.com/support/knowledgecenter/en/SSCT62/com.ibm.iamservice.doc/tasks/t_manage_access_policies.html\"> here </a>.<br><br><b>Entitlements:</b><br>- manageAccessPolicies (Manage Access Policies)",
+                "operationId": "createAccessPolicy",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AccessPolicyRequest"
+                            }
+                        }
+                    },
+                    "required": false
+                },
+                "responses": {
+                    "201": {
+                        "description": "The created access policy",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Policy_0"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The access token in the request is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized_1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The authenticated user does not have permissions to perform the requested operation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_3"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            }
+        },
+        "/v5.0/policyvault/accesspolicy/{policyId}": {
+            "get": {
+                "tags": [
+                    "Access Policy Management V5.0"
+                ],
+                "summary": "retrieve a access policy",
+                "description": "Retrieves the primary revision of a specific access policy. <br><br><b>Entitlements:</b><br> - readAccessPolicies (Read Access Policies)<br> - managedAccessPolicies (Manage Access Policies)",
+                "operationId": "getAccessPolicy",
+                "parameters": [
+                    {
+                        "name": "policyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The primary access policy revision",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Policy_0"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The access token in the request is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized_1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The authenticated user does not have permissions to perform the requested operation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_3"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The resource cannot be found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFound_2"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            },
+            "put": {
+                "tags": [
+                    "Access Policy Management V5.0"
+                ],
+                "summary": "update a access policy",
+                "description": "Update the primary revision for the access policy.<br><br><b>NB:</b> if the change is significant a new revision will be created.",
+                "operationId": "updateAccessPolicy",
+                "parameters": [
+                    {
+                        "name": "policyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AccessPolicyRequest"
+                            }
+                        }
+                    },
+                    "required": false
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated policy",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Policy_0"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The access token in the request is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized_1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The authenticated user does not have permissions to perform the requested operation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_3"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            },
+            "post": {
+                "tags": [
+                    "Access Policy Management V5.0"
+                ],
+                "summary": "create an access policy revision",
+                "description": "Creates a new access policy revision.<br><br><b>NB:</b> this revision will become the primary revision if the state is 'active'.",
+                "operationId": "createAccessPolicyRevision",
+                "parameters": [
+                    {
+                        "name": "policyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AccessPolicyRequest"
+                            }
+                        }
+                    },
+                    "required": false
+                },
+                "responses": {
+                    "201": {
+                        "description": "The created access policy revision",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Policy_0"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The access token in the request is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized_1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The authenticated user does not have permissions to perform the requested operation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_3"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true",
+                "x-codegen-request-body-name": "body"
+            },
+            "delete": {
+                "tags": [
+                    "Access Policy Management V5.0"
+                ],
+                "summary": "delete an access policy",
+                "description": "Deletes an access policy along with all of the revisions.<br><br><b>Entitlements:</b><br>- manageAccessPolicies (Manage Access Policies)",
+                "operationId": "deleteAccessPolicy",
+                "parameters": [
+                    {
+                        "name": "policyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "The access policy was deleted",
+                        "content": {}
+                    },
+                    "401": {
+                        "description": "The access token in the request is not valid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized_1"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The authenticated user does not have permissions to perform the requested operation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Forbidden_3"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-publicAPI": "true"
+            }
         }
     },
     "components": {
