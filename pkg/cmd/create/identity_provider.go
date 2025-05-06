@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/authentication"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 
@@ -112,7 +112,7 @@ func (o *identitysourceOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "IdentitySource",
 			APIVersion: "2.0",
-			Data:       &directory.IdentitySource{},
+			Data:       &authentication.IdentitySource{},
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
@@ -147,13 +147,13 @@ func (o *identitysourceOptions) createIdentitySourceWithData(cmd *cobra.Command,
 	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to identitysource
-	identitysource := &directory.IdentitySource{}
+	identitysource := &authentication.IdentitySource{}
 	if err := json.Unmarshal(data, &identitysource); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the identitysource; err=%v", err)
 		return err
 	}
 
-	client := directory.NewIdentitySourceClient()
+	client := authentication.NewIdentitySourceClient()
 	resourceURI, err := client.CreateIdentitysource(ctx, identitysource)
 	if err != nil {
 		return err
@@ -168,7 +168,7 @@ func (o *identitysourceOptions) createIdentitySourceFromDataMap(cmd *cobra.Comma
 	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to identitysource
-	identitysource := &directory.IdentitySource{}
+	identitysource := &authentication.IdentitySource{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal the data map; err=%v", err)
@@ -180,7 +180,7 @@ func (o *identitysourceOptions) createIdentitySourceFromDataMap(cmd *cobra.Comma
 		return err
 	}
 
-	client := directory.NewIdentitySourceClient()
+	client := authentication.NewIdentitySourceClient()
 	resourceURI, err := client.CreateIdentitysource(ctx, identitysource)
 	if err != nil {
 		vc.Logger.Errorf("unable to create the identitysource; err=%v, identitysource=%+v", err, identitysource)

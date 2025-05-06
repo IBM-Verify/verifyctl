@@ -3,7 +3,7 @@ package delete
 import (
 	"io"
 
-	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/authentication"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/config"
@@ -111,7 +111,7 @@ func (o *identitysourcesOptions) Run(cmd *cobra.Command, args []string) error {
 
 func (o *identitysourcesOptions) handleSingleIdentitysource(cmd *cobra.Command, _ []string) error {
 
-	c := directory.NewIdentitySourceClient()
+	c := authentication.NewIdentitySourceClient()
 	err := c.DeleteIdentitysourceByName(cmd.Context(), o.name)
 	if err != nil {
 		return err

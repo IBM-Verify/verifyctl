@@ -3,7 +3,7 @@ package get
 import (
 	"io"
 
-	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/authentication"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
@@ -118,7 +118,7 @@ func (o *identitysourcesOptions) Run(cmd *cobra.Command, args []string) error {
 
 func (o *identitysourcesOptions) handleSingleIdentitysource(cmd *cobra.Command, _ []string) error {
 
-	c := directory.NewIdentitySourceClient()
+	c := authentication.NewIdentitySourceClient()
 	is, uri, err := c.GetIdentitysource(cmd.Context(), o.name)
 	if err != nil {
 		return err
@@ -150,7 +150,7 @@ func (o *identitysourcesOptions) handleSingleIdentitysource(cmd *cobra.Command, 
 
 func (o *identitysourcesOptions) handleIdentitysourceList(cmd *cobra.Command, _ []string) error {
 
-	c := directory.NewIdentitySourceClient()
+	c := authentication.NewIdentitySourceClient()
 	iss, uri, err := c.GetIdentitysources(cmd.Context(), o.sort, o.count)
 	if err != nil {
 		return err
