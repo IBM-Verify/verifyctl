@@ -91,6 +91,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newAPIClientCommand(config, streams))
 	cmd.AddCommand(newApplicationCommand(config, streams))
 	cmd.AddCommand(newPasswordPolicyCommand(config, streams))
+	cmd.AddCommand(NewPersonalCertCommand(config, streams))
 
 	return cmd
 }
@@ -161,6 +162,10 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	case resource.ResourceTypePrefix + "PasswordPolicy":
 		options := &passwordPolicyOptions{}
 		err = options.updatePasswordPolicyFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
+
+	case resource.ResourceTypePrefix + "PersonalCert":
+		options := &personalCertOptions{}
+		err = options.updatePersonalCertFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err
