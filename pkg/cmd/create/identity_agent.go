@@ -110,7 +110,7 @@ func (o *identityAgentOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "IdentityAgent",
 			APIVersion: "1.0",
-			Data:       &integrations.IdentityAgentsConfig{},
+			Data:       &integrations.IdentityAgentConfig{},
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
@@ -142,7 +142,7 @@ func (o *identityAgentOptions) createIdentityAgentWithData(cmd *cobra.Command, d
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	identityAgentConfig := &integrations.IdentityAgentsConfig{}
+	identityAgentConfig := &integrations.IdentityAgentConfig{}
 	if err := json.Unmarshal(data, &identityAgentConfig); err != nil {
 		vc.Logger.Errorf("unable to unmarshal API client; err=%v", err)
 		return err
@@ -164,7 +164,7 @@ func (o *identityAgentOptions) createIdentityAgentFromDataMap(cmd *cobra.Command
 	vc := contextx.GetVerifyContext(ctx)
 
 	// Convert map data to JSON
-	identityAgentConfig := &integrations.IdentityAgentsConfig{}
+	identityAgentConfig := &integrations.IdentityAgentConfig{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal data; err=%v", err)
