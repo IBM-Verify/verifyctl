@@ -2,6 +2,7 @@ package create
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 
@@ -29,12 +30,12 @@ var (
 	identityAgentLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(identityAgentMessagePrefix, `
         Options to create an Identity Agent.
  
-        API clients on Verify require specific entitlements, so ensure that the Identity Agent used
+        Identity Agents on Verify require specific entitlements, so ensure that the Identity Agent used
         with the 'auth' command has the required entitlements.
  
         An empty resource file can be generated using:
  
-            verifyctl create identityagent --boilerplate
+            verifyctl create identityagent --purpose=PROV --boilerplate
  
         You can check required entitlements by running:
  
@@ -44,13 +45,14 @@ var (
         # Create an empty Identity agent resource.
         verifyctl create identityagent --boilerplate
  
-        # Create an API client using a JSON file.
+        # Create an Identity Agent using a JSON file.
         verifyctl create identityagent -f=./identityagent.json`))
 )
 
 type identityAgentOptions struct {
 	options
-	config *config.CLIConfig
+	purpose string
+	config  *config.CLIConfig
 }
 
 func newIdentityAgentCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -82,7 +84,8 @@ func newIdentityAgentCommand(config *config.CLIConfig, streams io.ReadWriter) *c
 
 func (o *identityAgentOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, identityAgentResourceName)
-	cmd.Flags().StringVarP(&o.file, "file", "f", "", "Path to the yaml file containing API client data.")
+	cmd.Flags().StringVarP(&o.file, "file", "f", "", "Path to the yaml file containing Identity Agent data.")
+	cmd.Flags().StringVarP(&o.purpose, "purpose", "p", "", "Purpose of the Identity Agent, [PROV, LDAPAUTH]")
 }
 
 func (o *identityAgentOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -107,10 +110,16 @@ func (o *identityAgentOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if o.boilerplate {
+		identityAgent := &integrations.IdentityAgentConfig{}
+		if o.purpose == "PROV" || o.purpose == "LDAPAUTH" {
+			integrations.AddModule(identityAgent, o.purpose)
+		} else {
+			return fmt.Errorf("unknown purpose")
+		}
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "IdentityAgent",
 			APIVersion: "1.0",
-			Data:       &integrations.IdentityAgentConfig{},
+			Data:       identityAgent,
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
@@ -144,14 +153,14 @@ func (o *identityAgentOptions) createIdentityAgentWithData(cmd *cobra.Command, d
 
 	identityAgentConfig := &integrations.IdentityAgentConfig{}
 	if err := json.Unmarshal(data, &identityAgentConfig); err != nil {
-		vc.Logger.Errorf("unable to unmarshal API client; err=%v", err)
+		vc.Logger.Errorf("unable to unmarshal Identity Agent; err=%v", err)
 		return err
 	}
 
 	client := integrations.NewIdentityAgents()
 	resourceURI, err := client.CreateIdentityAgent(ctx, identityAgentConfig)
 	if err != nil {
-		vc.Logger.Errorf("failed to create API client; err=%v", err)
+		vc.Logger.Errorf("failed to create Identity Agent; err=%v", err)
 		return err
 	}
 
@@ -176,11 +185,11 @@ func (o *identityAgentOptions) createIdentityAgentFromDataMap(cmd *cobra.Command
 		return err
 	}
 
-	// Create API client
+	// Create Identity Agent
 	client := integrations.NewIdentityAgents()
 	resourceURI, err := client.CreateIdentityAgent(ctx, identityAgentConfig)
 	if err != nil {
-		vc.Logger.Errorf("failed to create API client; err=%v", err)
+		vc.Logger.Errorf("failed to create Identity Agent; err=%v", err)
 		return err
 	}
 
