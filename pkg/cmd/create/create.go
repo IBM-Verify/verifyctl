@@ -94,6 +94,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newIdentitysourceCommand(config, streams))
 	cmd.AddCommand(newAPIClientCommand(config, streams))
 	cmd.AddCommand(newApplicationCommand(config, streams))
+	cmd.AddCommand(newIdentityAgentCommand(config, streams))
 
 	return cmd
 }
@@ -164,6 +165,10 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	case resource.ResourceTypePrefix + "Applications":
 		options := &applicationOptions{}
 		err = options.createApplicationFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
+
+	case resource.ResourceTypePrefix + "IdentityAgent":
+		options := &identityAgentOptions{}
+		err = options.createIdentityAgentFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err
