@@ -14,15 +14,15 @@ import (
 )
 
 const (
-	identitysourcesUsage         = `identitysources [flags]`
-	identitysourcesMessagePrefix = "GetIdentitysources"
-	identitysourcesEntitlements  = "Manage identitysources"
-	identitysourceResourceName   = "identitysource"
+	identitySourcesUsage         = `identitysources [flags]`
+	identitySourcesMessagePrefix = "GetIdentitySources"
+	identitySourcesEntitlements  = "Manage identitySources"
+	identitySourceResourceName   = "identitysource"
 )
 
 var (
-	identitysourcesLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(identitysourcesMessagePrefix, `
-		Get Verify identitysources based on an optional filter or a specific identitysource.
+	identitySourcesLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(identitySourcesMessagePrefix, `
+		Get Verify identitySources based on an optional filter or a specific identitySource.
 		
 Resources managed on Verify have specific entitlements, so ensure that the application or API client used
 with the 'auth' command is configured with the appropriate entitlements.
@@ -31,30 +31,30 @@ You can identify the entitlement required by running:
   
   verifyctl get identitysources --entitlements`))
 
-	identitysourcesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
-		# Get an identitysource and print the output in yaml
+	identitySourcesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
+		# Get an identitySource and print the output in yaml
 		verifyctl get identitysource -o=yaml --instanceName="Cloud Directory"
 
-		# Get 10 identitysources based on a given search criteria and sort it in the ascending order by name.
+		# Get 10 identitySources based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get identitysources --count=2 --sort=identitysourceName -o=yaml`))
 )
 
-type identitysourcesOptions struct {
+type identitySourcesOptions struct {
 	options
 
 	config *config.CLIConfig
 }
 
-func NewIdentitysourceCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
-	o := &identitysourcesOptions{
+func NewIdentitySourceCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
+	o := &identitySourcesOptions{
 		config: config,
 	}
 
 	cmd := &cobra.Command{
-		Use:                   identitysourcesUsage,
-		Short:                 cmdutil.TranslateShortDesc(identitysourcesMessagePrefix, "Get Verify identitysources based on an optional filter or a specific identitysource."),
-		Long:                  identitysourcesLongDesc,
-		Example:               identitysourcesExamples,
+		Use:                   identitySourcesUsage,
+		Short:                 cmdutil.TranslateShortDesc(identitySourcesMessagePrefix, "Get Verify identitySources based on an optional filter or a specific identitySource."),
+		Long:                  identitySourcesLongDesc,
+		Example:               identitySourcesExamples,
 		Aliases:               []string{"identitysource"},
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -73,18 +73,18 @@ func NewIdentitysourceCommand(config *config.CLIConfig, streams io.ReadWriter) *
 	return cmd
 }
 
-func (o *identitysourcesOptions) AddFlags(cmd *cobra.Command) {
-	o.addCommonFlags(cmd, identitysourceResourceName)
-	cmd.Flags().StringVar(&o.name, "instanceName", o.name, i18n.Translate("Identitysource instanceName to get details"))
-	o.addSortFlags(cmd, identitysourceResourceName)
-	o.addCountFlags(cmd, identitysourceResourceName)
+func (o *identitySourcesOptions) AddFlags(cmd *cobra.Command) {
+	o.addCommonFlags(cmd, identitySourceResourceName)
+	cmd.Flags().StringVar(&o.name, "instanceName", o.name, i18n.Translate("IdentitySource instanceName to get details"))
+	o.addSortFlags(cmd, identitySourceResourceName)
+	o.addCountFlags(cmd, identitySourceResourceName)
 }
 
-func (o *identitysourcesOptions) Complete(cmd *cobra.Command, args []string) error {
+func (o *identitySourcesOptions) Complete(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *identitysourcesOptions) Validate(cmd *cobra.Command, args []string) error {
+func (o *identitySourcesOptions) Validate(cmd *cobra.Command, args []string) error {
 	if o.entitlements {
 		return nil
 	}
@@ -96,9 +96,9 @@ func (o *identitysourcesOptions) Validate(cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func (o *identitysourcesOptions) Run(cmd *cobra.Command, args []string) error {
+func (o *identitySourcesOptions) Run(cmd *cobra.Command, args []string) error {
 	if o.entitlements {
-		cmdutil.WriteString(cmd, entitlementsMessage+"  "+identitysourcesEntitlements)
+		cmdutil.WriteString(cmd, entitlementsMessage+"  "+identitySourcesEntitlements)
 		return nil
 	}
 
@@ -109,17 +109,17 @@ func (o *identitysourcesOptions) Run(cmd *cobra.Command, args []string) error {
 
 	// invoke the operation
 	if cmd.CalledAs() == "identitysource" || len(o.name) > 0 {
-		// deal with single identitysource
-		return o.handleSingleIdentitysource(cmd, args)
+		// deal with single identitySource
+		return o.handleSingleIdentitySource(cmd, args)
 	}
 
-	return o.handleIdentitysourceList(cmd, args)
+	return o.handleIdentitySourceList(cmd, args)
 }
 
-func (o *identitysourcesOptions) handleSingleIdentitysource(cmd *cobra.Command, _ []string) error {
+func (o *identitySourcesOptions) handleSingleIdentitySource(cmd *cobra.Command, _ []string) error {
 
 	c := authentication.NewIdentitySourceClient()
-	is, uri, err := c.GetIdentitysource(cmd.Context(), o.name)
+	is, uri, err := c.GetIdentitySource(cmd.Context(), o.name)
 	if err != nil {
 		return err
 	}
@@ -148,10 +148,10 @@ func (o *identitysourcesOptions) handleSingleIdentitysource(cmd *cobra.Command, 
 	return nil
 }
 
-func (o *identitysourcesOptions) handleIdentitysourceList(cmd *cobra.Command, _ []string) error {
+func (o *identitySourcesOptions) handleIdentitySourceList(cmd *cobra.Command, _ []string) error {
 
 	c := authentication.NewIdentitySourceClient()
-	iss, uri, err := c.GetIdentitysources(cmd.Context(), o.sort, o.count)
+	iss, uri, err := c.GetIdentitySources(cmd.Context(), o.sort, o.count)
 	if err != nil {
 		return err
 	}
