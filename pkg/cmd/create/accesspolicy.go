@@ -153,7 +153,7 @@ func (o *accesspolicyOptions) createAccesspolicyWithData(cmd *cobra.Command, dat
 	}
 
 	client := security.NewAccesspolicyClient()
-	resourceURI, err := client.CreateAccesspolicy(ctx, accesspolicy)
+	resourceURI, err := client.CreateAccessPolicy(ctx, accesspolicy)
 	if err != nil {
 		return err
 	}
@@ -162,7 +162,7 @@ func (o *accesspolicyOptions) createAccesspolicyWithData(cmd *cobra.Command, dat
 	return nil
 }
 
-func (o *accesspolicyOptions) createAccesspolicyFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *accesspolicyOptions) createAccesspolicyFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -180,7 +180,7 @@ func (o *accesspolicyOptions) createAccesspolicyFromDataMap(cmd *cobra.Command, 
 	}
 
 	client := security.NewAccesspolicyClient()
-	resourceURI, err := client.CreateAccesspolicy(ctx, accesspolicy)
+	resourceURI, err := client.CreateAccessPolicy(ctx, accesspolicy)
 	if err != nil {
 		vc.Logger.Errorf("unable to create the accesspolicy; err=%v, accesspolicy=%+v", err, accesspolicy)
 		return err
