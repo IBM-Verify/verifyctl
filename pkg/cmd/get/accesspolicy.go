@@ -162,7 +162,7 @@ func (o *accesspoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, _ []s
 	}
 
 	items := []*resource.ResourceObject{}
-	for _, ap := range *accesspolicies.Policies {
+	for _, ap := range accesspolicies.Policies {
 		items = append(items, &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "AccessPolicy",
 			APIVersion: "5.0",
