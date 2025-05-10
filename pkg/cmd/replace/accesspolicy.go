@@ -120,15 +120,15 @@ func (o *accesspolicyOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	return o.updateAccesspolicy(cmd, auth)
+	return o.updateAccesspolicy(cmd)
 }
 
-func (o *accesspolicyOptions) updateAccesspolicy(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *accesspolicyOptions) updateAccesspolicy(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 

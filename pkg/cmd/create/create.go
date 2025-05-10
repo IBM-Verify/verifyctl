@@ -152,7 +152,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 
 	case resource.ResourceTypePrefix + "AccessPolicy":
 		options := &accesspolicyOptions{}
-		err = options.createAccesspolicyFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		err = options.createAccesspolicyFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "IdentitySource":
 		options := &identitysourceOptions{}
