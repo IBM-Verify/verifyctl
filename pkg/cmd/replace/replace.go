@@ -87,6 +87,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newAttributeCommand(config, streams))
 	cmd.AddCommand(newUserCommand(config, streams))
 	cmd.AddCommand(newGroupCommand(config, streams))
+	cmd.AddCommand(newAccesspolicyCommand(config, streams))
 	cmd.AddCommand(newIdentitysourceCommand(config, streams))
 	cmd.AddCommand(newAPIClientCommand(config, streams))
 
@@ -144,14 +145,17 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		options := &groupOptions{}
 		err = options.updateGroupFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
+	case resource.ResourceTypePrefix + "AccessPolicy":
+		options := &accesspolicyOptions{}
+		err = options.updateAccesspolicyFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
+
 	case resource.ResourceTypePrefix + "IdentitySource":
 		options := &identitysourceOptions{}
 		err = options.updateIdentitysourceFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "APIClient":
 		options := &apiclientOptions{}
-		err = options.updateAPIClientFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
-
+		err = options.updateAPIClientFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 	}
 
 	return err
