@@ -12,6 +12,7 @@ import (
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
@@ -46,13 +47,13 @@ You can identify the entitlement required by running:
 		verifyctl replace identitysource --boilerplate
 
 		# Update a identitySource from a JSON file
-		verifyctl replace identitysource -f=./identitysource-12345.json`))
+		verifyctl replace identitysource -f=./identitysource-12345.json --identitySourceID=identitySourceID`))
 )
 
 type identitySourceOptions struct {
 	options
-
-	config *config.CLIConfig
+	identitySourceID string
+	config           *config.CLIConfig
 }
 
 func newIdentitySourceCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -84,6 +85,7 @@ func newIdentitySourceCommand(config *config.CLIConfig, streams io.ReadWriter) *
 
 func (o *identitySourceOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, identitySourceResourceName)
+	cmd.Flags().StringVar(&o.identitySourceID, "identitySourceID", o.identitySourceID, i18n.Translate("identitySourceID to delete"))
 	cmd.Flags().StringVarP(&o.file, "file", "f", "", i18n.Translate("Path to the file that contains the input data. The contents of the file are expected to be formatted to match the API contract."))
 }
 
@@ -98,6 +100,10 @@ func (o *identitySourceOptions) Validate(cmd *cobra.Command, args []string) erro
 
 	if len(o.file) == 0 {
 		return errorsx.G11NError("'file' option is required if no other options are used.")
+	}
+	calledAs := cmd.CalledAs()
+	if calledAs == "identitysource" && o.identitySourceID == "" {
+		return errorsx.G11NError(i18n.Translate("'identitySourceID' flag is required."))
 	}
 	return nil
 }
@@ -148,18 +154,30 @@ func (o *identitySourceOptions) updateIdentitySourceWithData(cmd *cobra.Command,
 	vc := contextx.GetVerifyContext(ctx)
 
 	// unmarshal to identitySource object
-	identitySource := &authentication.IdentitySource{}
-	if err := json.Unmarshal(data, &identitySource); err != nil {
-		vc.Logger.Errorf("unable to unmarshal the Identity Source err=%v", err)
+	resourceObj := &resource.ResourceObject{}
+	if err := yaml.Unmarshal(data, resourceObj); err != nil {
+		vc.Logger.Errorf("unable to unmarshal YAML to resource object; err=%v", err)
 		return err
+	}
+	identitySource, ok := resourceObj.Data.(*authentication.IdentitySource)
+	if !ok {
+		appData, err := yaml.Marshal(resourceObj.Data)
+		if err != nil {
+			vc.Logger.Errorf("unable to marshal resource data; err=%v", err)
+			return err
+		}
+		identitySource = &authentication.IdentitySource{}
+		if err := yaml.Unmarshal(appData, identitySource); err != nil {
+			vc.Logger.Errorf("unable to unmarshal data to Application; err=%v", err)
+			return err
+		}
 	}
 
 	client := authentication.NewIdentitySourceClient()
-	if err := client.UpdateIdentitySource(ctx, identitySource); err != nil {
+	if err := client.UpdateIdentitySource(ctx, o.identitySourceID, identitySource); err != nil {
 		vc.Logger.Errorf("unable to update the Identity Source err=%v, identitySource=%+v", err, identitySource)
 		return err
 	}
-
 	cmdutil.WriteString(cmd, "IdentitySource updated successfully")
 	return nil
 }
@@ -183,7 +201,7 @@ func (o *identitySourceOptions) updateIdentitySourceFromDataMap(cmd *cobra.Comma
 	}
 
 	client := authentication.NewIdentitySourceClient()
-	if err := client.UpdateIdentitySource(ctx, identitySource); err != nil {
+	if err := client.UpdateIdentitySource(ctx, "", identitySource); err != nil {
 		vc.Logger.Errorf("unable to update the Identity Source err=%v, identitySource=%+v", err, identitySource)
 		return err
 	}

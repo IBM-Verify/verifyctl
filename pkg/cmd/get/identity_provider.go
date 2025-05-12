@@ -33,7 +33,7 @@ You can identify the entitlement required by running:
 
 	identitySourcesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Get an identitySource and print the output in yaml
-		verifyctl get identitysource -o=yaml --instanceName="Cloud Directory"
+		verifyctl get identitysource -o=yaml --identitySourceID="identitySourceID"
 
 		# Get 10 identitySources based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get identitysources --count=2 --sort=identitysourceName -o=yaml`))
@@ -41,8 +41,8 @@ You can identify the entitlement required by running:
 
 type identitySourcesOptions struct {
 	options
-
-	config *config.CLIConfig
+	identitySourceID string
+	config           *config.CLIConfig
 }
 
 func NewIdentitySourceCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -75,7 +75,7 @@ func NewIdentitySourceCommand(config *config.CLIConfig, streams io.ReadWriter) *
 
 func (o *identitySourcesOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, identitySourceResourceName)
-	cmd.Flags().StringVar(&o.name, "instanceName", o.name, i18n.Translate("IdentitySource instanceName to get details"))
+	cmd.Flags().StringVar(&o.identitySourceID, "identitySourceID", o.identitySourceID, i18n.Translate("IdentitySourceID to get details"))
 	o.addSortFlags(cmd, identitySourceResourceName)
 	o.addCountFlags(cmd, identitySourceResourceName)
 }
@@ -90,8 +90,8 @@ func (o *identitySourcesOptions) Validate(cmd *cobra.Command, args []string) err
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "identitysource" && o.name == "" {
-		return errorsx.G11NError("'displayName' flag is required.")
+	if calledAs == "identitysource" && o.identitySourceID == "" {
+		return errorsx.G11NError("'identitySourceID' flag is required.")
 	}
 	return nil
 }
@@ -108,7 +108,7 @@ func (o *identitySourcesOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// invoke the operation
-	if cmd.CalledAs() == "identitysource" || len(o.name) > 0 {
+	if cmd.CalledAs() == "identitysource" || len(o.identitySourceID) > 0 {
 		// deal with single identitySource
 		return o.handleSingleIdentitySource(cmd, args)
 	}
@@ -119,7 +119,7 @@ func (o *identitySourcesOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *identitySourcesOptions) handleSingleIdentitySource(cmd *cobra.Command, _ []string) error {
 
 	c := authentication.NewIdentitySourceClient()
-	is, uri, err := c.GetIdentitySource(cmd.Context(), o.name)
+	is, uri, err := c.GetIdentitySourceByID(cmd.Context(), o.identitySourceID)
 	if err != nil {
 		return err
 	}

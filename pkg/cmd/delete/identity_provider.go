@@ -21,7 +21,7 @@ const (
 
 var (
 	identitySourcesLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(identitySourcesMessagePrefix, `
-		Delete Verify identitySource based on instancename.
+		Delete Verify identitySource based on identitySourceID.
 		
 Resources managed on Verify have specific entitlements, so ensure that the application or API client used
 with the 'auth' command is configured with the appropriate entitlements.
@@ -32,14 +32,14 @@ You can identify the entitlement required by running:
 
 	identitySourcesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an identitySource
-		verifyctl delete identitysource --instanceName=instanceName`,
+		verifyctl delete identitysource --identitySourceID=identitySourceID`,
 	))
 )
 
 type identitySourcesOptions struct {
 	options
-
-	config *config.CLIConfig
+	identitySourceID string
+	config           *config.CLIConfig
 }
 
 func NewIdentitySourceCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -71,7 +71,7 @@ func NewIdentitySourceCommand(config *config.CLIConfig, streams io.ReadWriter) *
 
 func (o *identitySourcesOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd)
-	cmd.Flags().StringVar(&o.name, "instanceName", o.name, i18n.Translate("instanceName to be deleted"))
+	cmd.Flags().StringVar(&o.identitySourceID, "identitySourceID", o.identitySourceID, i18n.Translate("identitySourceID to be deleted"))
 }
 
 func (o *identitySourcesOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -84,8 +84,8 @@ func (o *identitySourcesOptions) Validate(cmd *cobra.Command, args []string) err
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "identitysource" && o.name == "" {
-		return errorsx.G11NError("'instanceName' flag is required.")
+	if calledAs == "identitysource" && o.identitySourceID == "" {
+		return errorsx.G11NError("'identitySourceID' flag is required.")
 	}
 	return nil
 }
@@ -102,7 +102,7 @@ func (o *identitySourcesOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// invoke the operation
-	if cmd.CalledAs() == "identitysource" || len(o.name) > 0 {
+	if cmd.CalledAs() == "identitysource" || len(o.identitySourceID) > 0 {
 		// deal with single identitySource
 		return o.handleSingleIdentitySource(cmd, args)
 	}
@@ -112,10 +112,10 @@ func (o *identitySourcesOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *identitySourcesOptions) handleSingleIdentitySource(cmd *cobra.Command, _ []string) error {
 
 	c := authentication.NewIdentitySourceClient()
-	err := c.DeleteIdentitySourceByName(cmd.Context(), o.name)
+	err := c.DeleteIdentitySourceByID(cmd.Context(), o.identitySourceID)
 	if err != nil {
 		return err
 	}
-	cmdutil.WriteString(cmd, "Resource deleted: "+o.name)
+	cmdutil.WriteString(cmd, "Resource deleted: "+o.identitySourceID)
 	return nil
 }
