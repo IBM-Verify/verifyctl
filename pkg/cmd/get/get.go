@@ -89,6 +89,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(NewApplicationsCommand(config, streams))
 	cmd.AddCommand(newPasswordPolicyCommand(config, streams))
 	cmd.AddCommand(newPersonalCertCommand(config, streams))
+	cmd.AddCommand(newSignerCertCommand(config, streams))
 
 	return cmd
 }
