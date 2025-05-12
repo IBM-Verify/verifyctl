@@ -33,7 +33,7 @@ You can identify the entitlement required by running:
 
 	accesspoliciesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Get an accesspolicy and print the output in yaml
-		verifyctl get accesspolicy -o=yaml --name=testAccesspolicy
+		verifyctl get accesspolicy -o=yaml --ID=testAccesspolicyID
 
 		# Get 10 accesspolicies based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get accesspolicies --count=2 --sort=accesspolicyName -o=yaml`))
@@ -41,8 +41,8 @@ You can identify the entitlement required by running:
 
 type accesspoliciesOptions struct {
 	options
-
-	config *config.CLIConfig
+	accessPolicyID string
+	config         *config.CLIConfig
 }
 
 func NewAccesspoliciesCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -75,7 +75,7 @@ func NewAccesspoliciesCommand(config *config.CLIConfig, streams io.ReadWriter) *
 
 func (o *accesspoliciesOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, accesspolicyResourceName)
-	cmd.Flags().StringVar(&o.name, "accesspolicyName", o.name, i18n.Translate("accesspolicyName to get details"))
+	cmd.Flags().StringVar(&o.accessPolicyID, "accesspolicyID", o.accessPolicyID, i18n.Translate("accesspolicyID to get details"))
 
 }
 
@@ -89,8 +89,8 @@ func (o *accesspoliciesOptions) Validate(cmd *cobra.Command, args []string) erro
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "accesspolicy" && o.name == "" {
-		return errorsx.G11NError("'accesspolicyName' flag is required.")
+	if calledAs == "accesspolicy" && o.accessPolicyID == "" {
+		return errorsx.G11NError("'accesspolicyID' flag is required.")
 	}
 	return nil
 }
@@ -107,7 +107,7 @@ func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// invoke the operation
-	if cmd.CalledAs() == "accesspolicy" || len(o.name) > 0 {
+	if cmd.CalledAs() == "accesspolicy" || len(o.accessPolicyID) > 0 {
 		// deal with single accesspolicy
 		return o.handleSingleAccesspolicy(cmd, args)
 	}
@@ -118,7 +118,7 @@ func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *accesspoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAccesspolicyClient()
-	ap, uri, err := c.GetAccesspolicy(cmd.Context(), o.name)
+	ap, uri, err := c.GetAccesspolicy(cmd.Context(), o.accessPolicyID)
 	if err != nil {
 		return err
 	}
