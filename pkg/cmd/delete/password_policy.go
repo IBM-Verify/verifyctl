@@ -21,7 +21,7 @@ const (
 
 var (
 	passwordPolicyLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(passwordPolicyMessagePrefix, `
-Delete a password policy in IBM Security Verify based on policy name.
+Delete a password policy in IBM Security Verify based on policy passwordPolicyID.
 Resources managed on Verify have specific entitlements, so ensure that the application or API client used
 with the 'auth' command is configured with the appropriate entitlements.
 You can identify the entitlement required by running:
@@ -29,15 +29,15 @@ You can identify the entitlement required by running:
 verifyctl delete passwordpolicy --entitlements`))
 
 	passwordPolicyExamples = templates.Examples(cmdutil.TranslateExamples(passwordPolicyMessagePrefix, `
-# Delete a password policy by name
-verifyctl delete passwordpolicy --name=policyName
+# Delete a password policy by passwordPolicyID
+verifyctl delete passwordpolicy --passwordPolicyID=passwordPolicyID
 `))
 )
 
 type passwordPolicyOptions struct {
 	options
-
-	config *config.CLIConfig
+	passwordPolicyID string
+	config           *config.CLIConfig
 }
 
 func NewPasswordPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -47,7 +47,7 @@ func NewPasswordPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *
 
 	cmd := &cobra.Command{
 		Use:                   passwordPolicyUsage,
-		Short:                 cmdutil.TranslateShortDesc(passwordPolicyMessagePrefix, "Delete Verify password policy based on an name."),
+		Short:                 cmdutil.TranslateShortDesc(passwordPolicyMessagePrefix, "Delete Verify password policy based on passwordPolicyID."),
 		Long:                  passwordPolicyLongDesc,
 		Example:               passwordPolicyExamples,
 		DisableFlagsInUseLine: true,
@@ -69,7 +69,7 @@ func NewPasswordPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *
 
 func (o *passwordPolicyOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd)
-	cmd.Flags().StringVar(&o.name, "name", o.name, i18n.Translate("Identifier of the password policy to delete. (Required)"))
+	cmd.Flags().StringVar(&o.passwordPolicyID, "passwordPolicyID", o.passwordPolicyID, i18n.Translate("Identifier of the password policy to delete. (Required)"))
 }
 
 func (o *passwordPolicyOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -81,8 +81,8 @@ func (o *passwordPolicyOptions) Validate(cmd *cobra.Command, args []string) erro
 		return nil
 	}
 	calledAs := cmd.CalledAs()
-	if calledAs == "passwordpolicy" && o.name == "" {
-		return errorsx.G11NError(i18n.Translate("The 'name' flag is required to delete a password policy"))
+	if calledAs == "passwordpolicy" && o.passwordPolicyID == "" {
+		return errorsx.G11NError(i18n.Translate("The 'passwordPolicyID' flag is required to delete a password policy"))
 	}
 	return nil
 }
@@ -97,7 +97,7 @@ func (o *passwordPolicyOptions) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if cmd.CalledAs() == "passwordpolicy" || len(o.name) > 0 {
+	if cmd.CalledAs() == "passwordpolicy" || len(o.passwordPolicyID) > 0 {
 
 		return o.handleSinglePasswordPolicy(cmd, args)
 	}
@@ -106,10 +106,10 @@ func (o *passwordPolicyOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *passwordPolicyOptions) handleSinglePasswordPolicy(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewPasswordPolicyClient()
-	err := c.DeletePasswordPolicy(cmd.Context(), o.name)
+	err := c.DeletePasswordPolicyByID(cmd.Context(), o.passwordPolicyID)
 	if err != nil {
 		return err
 	}
-	cmdutil.WriteString(cmd, "Resource deleted: "+o.name)
+	cmdutil.WriteString(cmd, "Resource deleted: "+o.passwordPolicyID)
 	return nil
 }
