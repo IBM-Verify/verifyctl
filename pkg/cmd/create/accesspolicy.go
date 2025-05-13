@@ -17,17 +17,17 @@ import (
 )
 
 const (
-	accesspolicyUsage         = "accesspolicy [options]"
-	accesspolicyMessagePrefix = "CreateAccesspolicy"
-	accesspolicyEntitlements  = "Manage Access Policies"
-	accesspolicyResourceName  = "accesspolicy"
+	accessPolicyUsage         = "accesspolicy [options]"
+	accessPolicyMessagePrefix = "CreateAccessPolicy"
+	accessPolicyEntitlements  = "Manage Access Policies"
+	accessPolicyResourceName  = "accesspolicy"
 )
 
 var (
-	accesspolicyShortDesc = cmdutil.TranslateShortDesc(accesspolicyMessagePrefix, "Additional options to create a accesspolicy.")
+	accessPolicyShortDesc = cmdutil.TranslateShortDesc(accessPolicyMessagePrefix, "Additional options to create a accessPolicy.")
 
-	accesspolicyLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(accesspolicyMessagePrefix, `
-		Additional options to create a accesspolicy.
+	accessPolicyLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(accessPolicyMessagePrefix, `
+		Additional options to create a accessPolicy.
 
 Resources managed on Verify have specific entitlements, so ensure that the application or API client used
 with the 'auth' command is configured with the appropriate entitlements.
@@ -40,30 +40,30 @@ You can identify the entitlement required by running:
 
 	verifyctl create accesspolicy --entitlements`))
 
-	accesspolicyExamples = templates.Examples(cmdutil.TranslateExamples(accesspolicyMessagePrefix, `
-		# Create an empty accesspolicy resource. This can be piped into a file.
+	accessPolicyExamples = templates.Examples(cmdutil.TranslateExamples(accessPolicyMessagePrefix, `
+		# Create an empty accessPolicy resource. This can be piped into a file.
 		verifyctl create accesspolicy --boilerplate
 
-		# Create a accesspolicy using a JSON file.
+		# Create a accessPolicy using a JSON file.
 		verifyctl create accesspolicy -f=./accesspolicy.json`))
 )
 
-type accesspolicyOptions struct {
+type accessPolicyOptions struct {
 	options
 
 	config *config.CLIConfig
 }
 
-func newAccesspolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
-	o := &accesspolicyOptions{
+func newAccessPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
+	o := &accessPolicyOptions{
 		config: config,
 	}
 
 	cmd := &cobra.Command{
-		Use:                   accesspolicyUsage,
-		Short:                 accesspolicyShortDesc,
-		Long:                  accesspolicyLongDesc,
-		Example:               accesspolicyExamples,
+		Use:                   accessPolicyUsage,
+		Short:                 accessPolicyShortDesc,
+		Long:                  accessPolicyLongDesc,
+		Example:               accessPolicyExamples,
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
 			cmdutil.ExitOnError(cmd, o.Complete(cmd, args))
@@ -81,16 +81,16 @@ func newAccesspolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *co
 	return cmd
 }
 
-func (o *accesspolicyOptions) AddFlags(cmd *cobra.Command) {
-	o.addCommonFlags(cmd, accesspolicyResourceName)
-	cmd.Flags().StringVarP(&o.file, "file", "f", "", "Path to the JSON file containing accesspolicy data.")
+func (o *accessPolicyOptions) AddFlags(cmd *cobra.Command) {
+	o.addCommonFlags(cmd, accessPolicyResourceName)
+	cmd.Flags().StringVarP(&o.file, "file", "f", "", "Path to the JSON file containing accessPolicy data.")
 }
 
-func (o *accesspolicyOptions) Complete(cmd *cobra.Command, args []string) error {
+func (o *accessPolicyOptions) Complete(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *accesspolicyOptions) Validate(cmd *cobra.Command, args []string) error {
+func (o *accessPolicyOptions) Validate(cmd *cobra.Command, args []string) error {
 	if o.entitlements || o.boilerplate {
 		return nil
 	}
@@ -101,9 +101,9 @@ func (o *accesspolicyOptions) Validate(cmd *cobra.Command, args []string) error 
 	return nil
 }
 
-func (o *accesspolicyOptions) Run(cmd *cobra.Command, args []string) error {
+func (o *accessPolicyOptions) Run(cmd *cobra.Command, args []string) error {
 	if o.entitlements {
-		cmdutil.WriteString(cmd, entitlementsMessage+"  "+accesspolicyEntitlements)
+		cmdutil.WriteString(cmd, entitlementsMessage+"  "+accessPolicyEntitlements)
 		return nil
 	}
 
@@ -123,10 +123,10 @@ func (o *accesspolicyOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return o.createAccesspolicy(cmd)
+	return o.createAccessPolicy(cmd)
 }
 
-func (o *accesspolicyOptions) createAccesspolicy(cmd *cobra.Command) error {
+func (o *accessPolicyOptions) createAccessPolicy(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -137,23 +137,23 @@ func (o *accesspolicyOptions) createAccesspolicy(cmd *cobra.Command) error {
 		return err
 	}
 
-	// create accesspolicy with data
-	return o.createAccesspolicyWithData(cmd, b)
+	// create accessPolicy with data
+	return o.createAccessPolicyWithData(cmd, b)
 }
 
-func (o *accesspolicyOptions) createAccesspolicyWithData(cmd *cobra.Command, data []byte) error {
+func (o *accessPolicyOptions) createAccessPolicyWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// unmarshal to accesspolicy
-	accesspolicy := &security.Policy{}
-	if err := json.Unmarshal(data, &accesspolicy); err != nil {
-		vc.Logger.Errorf("unable to unmarshal the accesspolicy; err=%v", err)
+	// unmarshal to accessPolicy
+	accessPolicy := &security.Policy{}
+	if err := json.Unmarshal(data, &accessPolicy); err != nil {
+		vc.Logger.Errorf("unable to unmarshal the accessPolicy; err=%v", err)
 		return err
 	}
 
-	client := security.NewAccesspolicyClient()
-	resourceURI, err := client.CreateAccesspolicy(ctx, accesspolicy)
+	client := security.NewAccessPolicyClient()
+	resourceURI, err := client.CreateAccessPolicy(ctx, accessPolicy)
 	if err != nil {
 		return err
 	}
@@ -162,27 +162,27 @@ func (o *accesspolicyOptions) createAccesspolicyWithData(cmd *cobra.Command, dat
 	return nil
 }
 
-func (o *accesspolicyOptions) createAccesspolicyFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *accessPolicyOptions) createAccessPolicyFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// unmarshal to accesspolicy
-	accesspolicy := &security.Policy{}
+	// unmarshal to accessPolicy
+	accessPolicy := &security.Policy{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal the data map; err=%v", err)
 		return err
 	}
 
-	if err := json.Unmarshal(b, accesspolicy); err != nil {
-		vc.Logger.Errorf("unable to unmarshal to an accesspolicy; err=%v", err)
+	if err := json.Unmarshal(b, accessPolicy); err != nil {
+		vc.Logger.Errorf("unable to unmarshal to an accessPolicy; err=%v", err)
 		return err
 	}
 
-	client := security.NewAccesspolicyClient()
-	resourceURI, err := client.CreateAccesspolicy(ctx, accesspolicy)
+	client := security.NewAccessPolicyClient()
+	resourceURI, err := client.CreateAccessPolicy(ctx, accessPolicy)
 	if err != nil {
-		vc.Logger.Errorf("unable to create the accesspolicy; err=%v, accesspolicy=%+v", err, accesspolicy)
+		vc.Logger.Errorf("unable to create the accessPolicy; err=%v, accessPolicy=%+v", err, accessPolicy)
 		return err
 	}
 

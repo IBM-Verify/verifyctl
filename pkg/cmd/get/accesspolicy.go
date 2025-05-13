@@ -14,15 +14,15 @@ import (
 )
 
 const (
-	accesspoliciesUsage         = `accesspolicies [flags]`
-	accesspoliciesMessagePrefix = "GetAccesspolicies"
-	accesspoliciesEntitlements  = "Manage accesspolicies"
-	accesspolicyResourceName    = "accesspolicy"
+	accessPoliciesUsage         = `accesspolicies [flags]`
+	accessPoliciesMessagePrefix = "GetAccesspolicies"
+	accessPoliciesEntitlements  = "Manage accessPolicies"
+	accessPolicyResourceName    = "accesspolicy"
 )
 
 var (
-	accesspoliciesLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(accesspoliciesMessagePrefix, `
-		Get Verify accesspolicies based on an optional filter or a specific accesspolicy.
+	accessPoliciesLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(accessPoliciesMessagePrefix, `
+		Get Verify accessPolicies based on an optional filter or a specific accessPolicy.
 		
 Resources managed on Verify have specific entitlements, so ensure that the application or API client used
 with the 'auth' command is configured with the appropriate entitlements.
@@ -31,30 +31,30 @@ You can identify the entitlement required by running:
   
   verifyctl get accesspolicies --entitlements`))
 
-	accesspoliciesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
-		# Get an accesspolicy and print the output in yaml
-		verifyctl get accesspolicy -o=yaml --name=testAccesspolicy
+	accessPoliciesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
+		# Get an accessPolicy and print the output in yaml
+		verifyctl get accesspolicy -o=yaml --ID=testAccesspolicyID
 
-		# Get 10 accesspolicies based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get accesspolicies --count=2 --sort=accesspolicyName -o=yaml`))
+		# Get 10 accessPolicies based on a given search criteria and sort it in the ascending order by name.
+		verifyctl get accesspolicies --count=2 --sort=accessPolicyName -o=yaml`))
 )
 
-type accesspoliciesOptions struct {
+type accessPoliciesOptions struct {
 	options
-
-	config *config.CLIConfig
+	accessPolicyID string
+	config         *config.CLIConfig
 }
 
 func NewAccesspoliciesCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
-	o := &accesspoliciesOptions{
+	o := &accessPoliciesOptions{
 		config: config,
 	}
 
 	cmd := &cobra.Command{
-		Use:                   accesspoliciesUsage,
-		Short:                 cmdutil.TranslateShortDesc(accesspoliciesMessagePrefix, "Get Verify accesspolicies based on an optional filter or a specific accesspolicy."),
-		Long:                  accesspoliciesLongDesc,
-		Example:               accesspoliciesExamples,
+		Use:                   accessPoliciesUsage,
+		Short:                 cmdutil.TranslateShortDesc(accessPoliciesMessagePrefix, "Get Verify accessPolicies based on an optional filter or a specific accessPolicy."),
+		Long:                  accessPoliciesLongDesc,
+		Example:               accessPoliciesExamples,
 		Aliases:               []string{"accesspolicy"},
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -73,31 +73,31 @@ func NewAccesspoliciesCommand(config *config.CLIConfig, streams io.ReadWriter) *
 	return cmd
 }
 
-func (o *accesspoliciesOptions) AddFlags(cmd *cobra.Command) {
-	o.addCommonFlags(cmd, accesspolicyResourceName)
-	cmd.Flags().StringVar(&o.name, "accesspolicyName", o.name, i18n.Translate("accesspolicyName to get details"))
+func (o *accessPoliciesOptions) AddFlags(cmd *cobra.Command) {
+	o.addCommonFlags(cmd, accessPolicyResourceName)
+	cmd.Flags().StringVar(&o.accessPolicyID, "accessPolicyID", o.accessPolicyID, i18n.Translate("accessPolicyID to get details"))
 
 }
 
-func (o *accesspoliciesOptions) Complete(cmd *cobra.Command, args []string) error {
+func (o *accessPoliciesOptions) Complete(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *accesspoliciesOptions) Validate(cmd *cobra.Command, args []string) error {
+func (o *accessPoliciesOptions) Validate(cmd *cobra.Command, args []string) error {
 	if o.entitlements {
 		return nil
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "accesspolicy" && o.name == "" {
-		return errorsx.G11NError("'accesspolicyName' flag is required.")
+	if calledAs == "accesspolicy" && o.accessPolicyID == "" {
+		return errorsx.G11NError("'accessPolicyID' flag is required.")
 	}
 	return nil
 }
 
-func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
+func (o *accessPoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 	if o.entitlements {
-		cmdutil.WriteString(cmd, entitlementsMessage+"  "+accesspoliciesEntitlements)
+		cmdutil.WriteString(cmd, entitlementsMessage+"  "+accessPoliciesEntitlements)
 		return nil
 	}
 
@@ -107,18 +107,18 @@ func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// invoke the operation
-	if cmd.CalledAs() == "accesspolicy" || len(o.name) > 0 {
-		// deal with single accesspolicy
+	if cmd.CalledAs() == "accesspolicy" || len(o.accessPolicyID) > 0 {
+		// deal with single accessPolicy
 		return o.handleSingleAccesspolicy(cmd, args)
 	}
 
 	return o.handleAccesspolicyList(cmd, args)
 }
 
-func (o *accesspoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, _ []string) error {
+func (o *accessPoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, _ []string) error {
 
-	c := security.NewAccesspolicyClient()
-	ap, uri, err := c.GetAccesspolicy(cmd.Context(), o.name)
+	c := security.NewAccessPolicyClient()
+	ap, uri, err := c.GetAccessPolicy(cmd.Context(), o.accessPolicyID)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func (o *accesspoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, _ [
 		Kind:       resource.ResourceTypePrefix + "AccessPolicy",
 		APIVersion: "5.0",
 		Metadata: &resource.ResourceObjectMetadata{
-			ID:   int(*ap.ID),
+			ID:   ap.ID,
 			Name: ap.Name,
 			URI:  uri,
 		},
@@ -148,26 +148,26 @@ func (o *accesspoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, _ [
 	return nil
 }
 
-func (o *accesspoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, _ []string) error {
+func (o *accessPoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, _ []string) error {
 
-	c := security.NewAccesspolicyClient()
-	accesspolicies, uri, err := c.GetAccesspolicies(cmd.Context())
+	c := security.NewAccessPolicyClient()
+	accessPolicies, uri, err := c.GetAccessPolicies(cmd.Context())
 	if err != nil {
 		return err
 	}
 
 	if o.output == "raw" {
-		cmdutil.WriteAsJSON(cmd, accesspolicies, cmd.OutOrStdout())
+		cmdutil.WriteAsJSON(cmd, accessPolicies, cmd.OutOrStdout())
 		return nil
 	}
 
 	items := []*resource.ResourceObject{}
-	for _, ap := range *accesspolicies.Policies {
+	for _, ap := range accessPolicies.Policies {
 		items = append(items, &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "AccessPolicy",
 			APIVersion: "5.0",
 			Metadata: &resource.ResourceObjectMetadata{
-				ID:   int(*ap.ID),
+				ID:   ap.ID,
 				Name: ap.Name,
 			},
 			Data: ap,
@@ -179,7 +179,7 @@ func (o *accesspoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, _ []s
 		APIVersion: "5.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: int(accesspolicies.Total),
+			Total: int(accessPolicies.Total),
 		},
 		Items: items,
 	}

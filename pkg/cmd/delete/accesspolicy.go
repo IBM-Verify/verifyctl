@@ -13,15 +13,15 @@ import (
 )
 
 const (
-	accesspoliciesUsage         = `accesspolicy [flags]`
-	accesspoliciesMessagePrefix = "DeleteAccessPolicy"
-	accesspoliciesEntitlements  = "Manage accesspolicies"
-	accesspolicyResourceName    = "accesspolicy"
+	accessPoliciesUsage         = `accesspolicy [flags]`
+	accessPoliciesMessagePrefix = "DeleteAccessPolicy"
+	accessPoliciesEntitlements  = "Manage accessPolicies"
+	accessPolicyResourceName    = "accesspolicy"
 )
 
 var (
-	accesspoliciesLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(accesspoliciesMessagePrefix, `
-		Delete Verify accesspolicy based on accesspolicyID.
+	accessPoliciesLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(accessPoliciesMessagePrefix, `
+		Delete Verify accessPolicy based on accessPolicyID.
 		
 Resources managed on Verify have specific entitlements, so ensure that the application or API client used
 with the 'auth' command is configured with the appropriate entitlements.
@@ -30,28 +30,28 @@ You can identify the entitlement required by running:
   
   verifyctl delete accesspolicy --entitlements`))
 
-	accesspoliciesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
-		# Delete an accesspolicy
+	accessPoliciesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
+		# Delete an accessPolicy
 		verifyctl delete accesspolicy --ID=accesspolicyID`,
 	))
 )
 
-type accesspoliciesOptions struct {
+type accessPoliciesOptions struct {
 	options
-	accesspolicyID string
+	accessPolicyID string
 	config         *config.CLIConfig
 }
 
 func NewAccessPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
-	o := &accesspoliciesOptions{
+	o := &accessPoliciesOptions{
 		config: config,
 	}
 
 	cmd := &cobra.Command{
-		Use:                   accesspoliciesUsage,
-		Short:                 cmdutil.TranslateShortDesc(accesspoliciesMessagePrefix, "Delete Verify accesspolicy based on an id."),
-		Long:                  accesspoliciesLongDesc,
-		Example:               accesspoliciesExamples,
+		Use:                   accessPoliciesUsage,
+		Short:                 cmdutil.TranslateShortDesc(accessPoliciesMessagePrefix, "Delete Verify accessPolicy based on an id."),
+		Long:                  accessPoliciesLongDesc,
+		Example:               accessPoliciesExamples,
 		DisableFlagsInUseLine: true,
 		Run: func(cmd *cobra.Command, args []string) {
 			cmdutil.ExitOnError(cmd, o.Complete(cmd, args))
@@ -69,30 +69,30 @@ func NewAccessPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *co
 	return cmd
 }
 
-func (o *accesspoliciesOptions) AddFlags(cmd *cobra.Command) {
+func (o *accessPoliciesOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd)
-	cmd.Flags().StringVar(&o.accesspolicyID, "accesspolicyID", o.accesspolicyID, i18n.Translate("accesspolicyID to be deleted"))
+	cmd.Flags().StringVar(&o.accessPolicyID, "accessPolicyID", o.accessPolicyID, i18n.Translate("accessPolicyID to be deleted"))
 }
 
-func (o *accesspoliciesOptions) Complete(cmd *cobra.Command, args []string) error {
+func (o *accessPoliciesOptions) Complete(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *accesspoliciesOptions) Validate(cmd *cobra.Command, args []string) error {
+func (o *accessPoliciesOptions) Validate(cmd *cobra.Command, args []string) error {
 	if o.entitlements {
 		return nil
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "accesspolicy" && o.accesspolicyID == "" {
-		return errorsx.G11NError("'accesspolicyID' flag is required.")
+	if calledAs == "accesspolicy" && o.accessPolicyID == "" {
+		return errorsx.G11NError("'accessPolicyID' flag is required.")
 	}
 	return nil
 }
 
-func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
+func (o *accessPoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 	if o.entitlements {
-		cmdutil.WriteString(cmd, entitlementsMessage+"  "+accesspoliciesEntitlements)
+		cmdutil.WriteString(cmd, entitlementsMessage+"  "+accessPoliciesEntitlements)
 		return nil
 	}
 
@@ -102,20 +102,20 @@ func (o *accesspoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// invoke the operation
-	if cmd.CalledAs() == "accesspolicy" || len(o.accesspolicyID) > 0 {
-		// deal with single accesspolicy
+	if cmd.CalledAs() == "accesspolicy" || len(o.accessPolicyID) > 0 {
+		// deal with single accessPolicy
 		return o.handleSingleAccessPolicy(cmd, args)
 	}
 	return nil
 }
 
-func (o *accesspoliciesOptions) handleSingleAccessPolicy(cmd *cobra.Command, _ []string) error {
+func (o *accessPoliciesOptions) handleSingleAccessPolicy(cmd *cobra.Command, _ []string) error {
 
-	c := security.NewAccesspolicyClient()
-	err := c.DeleteAccesspolicyByID(cmd.Context(), o.accesspolicyID)
+	c := security.NewAccessPolicyClient()
+	err := c.DeleteAccessPolicyByID(cmd.Context(), o.accessPolicyID)
 	if err != nil {
 		return err
 	}
-	cmdutil.WriteString(cmd, "Resource deleted: "+o.accesspolicyID)
+	cmdutil.WriteString(cmd, "Resource deleted: "+o.accessPolicyID)
 	return nil
 }
