@@ -85,7 +85,7 @@ func newIdentityAgentCommand(config *config.CLIConfig, streams io.ReadWriter) *c
 func (o *identityAgentOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, identityAgentResourceName)
 	cmd.Flags().StringVarP(&o.file, "file", "f", "", "Path to the yaml file containing Identity Agent data.")
-	cmd.Flags().StringVarP(&o.purpose, "purpose", "p", "", "Purpose of the Identity Agent, [PROV, LDAPAUTH]")
+	cmd.Flags().StringVarP(&o.purpose, "purpose", "p", "", "Purpose of the Identity Agent, [PROV, LDAPAUTH, EXTAUTHN]")
 }
 
 func (o *identityAgentOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -111,7 +111,7 @@ func (o *identityAgentOptions) Run(cmd *cobra.Command, args []string) error {
 
 	if o.boilerplate {
 		identityAgent := &integrations.IdentityAgentConfig{}
-		if o.purpose == "PROV" || o.purpose == "LDAPAUTH" {
+		if o.purpose == "PROV" || o.purpose == "LDAPAUTH" || o.purpose == "EXTAUTHN" || o.purpose == "" {
 			integrations.AddModule(identityAgent, o.purpose)
 		} else {
 			return fmt.Errorf("unknown purpose")
