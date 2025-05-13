@@ -116,7 +116,7 @@ func (o *identityAgentsOptions) Run(cmd *cobra.Command, args []string) error {
 
 func (o *identityAgentsOptions) handleSingleIdentityAgent(cmd *cobra.Command, _ []string) error {
 
-	c := integrations.NewIdentityAgents()
+	c := integrations.NewIdentityAgentClient()
 	identityAgent, uri, err := c.GetIdentityAgentByID(cmd.Context(), o.identityAgentID)
 	if err != nil {
 		return err
@@ -149,7 +149,7 @@ func (o *identityAgentsOptions) handleSingleIdentityAgent(cmd *cobra.Command, _ 
 
 func (o *identityAgentsOptions) handleIdentityAgentList(cmd *cobra.Command, _ []string) error {
 
-	c := integrations.NewIdentityAgents()
+	c := integrations.NewIdentityAgentClient()
 	identityAgents, uri, err := c.GetIdentityAgents(cmd.Context(), o.search, o.page, o.limit)
 	if err != nil {
 		return err

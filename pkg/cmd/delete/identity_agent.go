@@ -111,13 +111,13 @@ func (o *identityAgentsOptions) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (o *identityAgentsOptions) handleSingleIdentityAgent(cmd *cobra.Command, _ []string) error {
-	c := integrations.NewIdentityAgents()
+	c := integrations.NewIdentityAgentClient()
 	var id string
 	var err error
 
 	if o.identityAgentID != "" {
 		id = o.identityAgentID
-		err = c.DeleteIdentityAgentsById(cmd.Context(), id)
+		err = c.DeleteIdentityAgentByID(cmd.Context(), id)
 		if err != nil {
 			return err
 		}

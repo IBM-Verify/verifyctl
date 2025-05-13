@@ -157,7 +157,7 @@ func (o *identityAgentOptions) createIdentityAgentWithData(cmd *cobra.Command, d
 		return err
 	}
 
-	client := integrations.NewIdentityAgents()
+	client := integrations.NewIdentityAgentClient()
 	resourceURI, err := client.CreateIdentityAgent(ctx, identityAgentConfig)
 	if err != nil {
 		vc.Logger.Errorf("failed to create Identity Agent; err=%v", err)
@@ -186,7 +186,7 @@ func (o *identityAgentOptions) createIdentityAgentFromDataMap(cmd *cobra.Command
 	}
 
 	// Create Identity Agent
-	client := integrations.NewIdentityAgents()
+	client := integrations.NewIdentityAgentClient()
 	resourceURI, err := client.CreateIdentityAgent(ctx, identityAgentConfig)
 	if err != nil {
 		vc.Logger.Errorf("failed to create Identity Agent; err=%v", err)
