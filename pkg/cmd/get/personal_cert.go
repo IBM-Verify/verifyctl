@@ -109,14 +109,13 @@ func (o *personalCertOptions) Run(cmd *cobra.Command, args []string) error {
 func filterPersonalCertData(pcrt *security.PersonalCert, includeCert bool) map[string]interface{} {
 	data := map[string]interface{}{
 
-		"notbefore":           pcrt.NotBefore,
+		"notbefore":           pcrt.Notbefore,
 		"subject":             pcrt.Subject,
-		"notafter":            pcrt.NotAfter,
+		"notafter":            pcrt.Notafter,
 		"serial_number":       pcrt.SerialNumber,
 		"label":               pcrt.Label,
 		"version":             pcrt.Version,
 		"issuer":              pcrt.Issuer,
-		"isDefault":           pcrt.IsDefault,
 		"keysize":             pcrt.KeySize,
 		"signature_algorithm": pcrt.SignatureAlgorithm,
 	}

@@ -109,14 +109,13 @@ func (o *signerCertOptions) Run(cmd *cobra.Command, args []string) error {
 func filterSignerCertData(scrt *security.SignerCert, includeCert bool) map[string]interface{} {
 	data := map[string]interface{}{
 
-		"notbefore":           scrt.NotBefore,
+		"notbefore":           scrt.Notbefore,
 		"subject":             scrt.Subject,
-		"notafter":            scrt.NotAfter,
+		"notafter":            scrt.Notafter,
 		"serial_number":       scrt.SerialNumber,
 		"label":               scrt.Label,
 		"version":             scrt.Version,
 		"issuer":              scrt.Issuer,
-		"isDefault":           scrt.IsDefault,
 		"keysize":             scrt.KeySize,
 		"signature_algorithm": scrt.SignatureAlgorithm,
 	}
