@@ -93,6 +93,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newApplicationCommand(config, streams))
 	cmd.AddCommand(newPasswordPolicyCommand(config, streams))
 	cmd.AddCommand(newIdentityAgentCommand(config, streams))
+	cmd.AddCommand(newSignInOptionsCommand(config, streams))
 
 	return cmd
 }
@@ -167,6 +168,10 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	case resource.ResourceTypePrefix + "PasswordPolicy":
 		options := &passwordPolicyOptions{}
 		err = options.updatePasswordPolicyFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
+
+	case resource.ResourceTypePrefix + "SignInOptions":
+		options := &signInOptions{}
+		err = options.updateSignInOptionsFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "IdentityAgent":
 		options := &identityAgentOptions{}
