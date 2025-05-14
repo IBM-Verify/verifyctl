@@ -102,15 +102,7 @@ func (o *signInOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "SignInOptions",
 			APIVersion: "2.0",
-			Data: &authentication.SignInOptions{
-				InstanceName:         "<InstanceName>",
-				EnableForAdmin:       true,
-				EnableForAdminQR:     false,
-				EnableForAdminFIDO:   false,
-				EnableForEndUser:     true,
-				EnableForEndUserQR:   false,
-				EnableForEndUserFIDO: false,
-			},
+			Data:       authentication.GetSignInOptions(),
 		}
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
 		return nil
@@ -153,7 +145,7 @@ func (o *signInOptions) updateSignInOptionsWithData(cmd *cobra.Command, data []b
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	signInOptions := &authentication.SignInOptions{}
+	signInOptions := &authentication.IdentitySource{}
 	if err := json.Unmarshal(data, signInOptions); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the Sign-in Options; err=%v", err)
 		return err
@@ -173,7 +165,7 @@ func (o *signInOptions) updateSignInOptionsFromDataMap(cmd *cobra.Command, data 
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	signInOptions := &authentication.SignInOptions{}
+	signInOptions := &authentication.IdentitySource{}
 	b, err := json.Marshal(data)
 	if err != nil {
 		vc.Logger.Errorf("failed to marshal the data map; err=%v", err)
