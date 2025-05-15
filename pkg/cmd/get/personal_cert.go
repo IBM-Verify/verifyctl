@@ -114,6 +114,7 @@ func filterPersonalCertData(pcrt *security.PersonalCert, includeCert bool) map[s
 		"notafter":            pcrt.Notafter,
 		"serial_number":       pcrt.SerialNumber,
 		"label":               pcrt.Label,
+		"isDefault":           pcrt.IsDefault,
 		"version":             pcrt.Version,
 		"issuer":              pcrt.Issuer,
 		"keysize":             pcrt.KeySize,
