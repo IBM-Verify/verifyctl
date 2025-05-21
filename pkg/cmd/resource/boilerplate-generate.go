@@ -6,6 +6,11 @@ import (
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
 )
 
+type SignInOptions struct {
+	InstanceName string                   `json:"instanceName" yaml:"instanceName"`
+	Properties   []map[string]interface{} `json:"properties" yaml:"properties"`
+}
+
 func CreateApplicationBoilerplate(applicationBoilerplate *applications.Application, applicationType string) {
 	// setting common fields
 	applicationBoilerplate.VisibleOnLaunchpad = true
@@ -257,4 +262,44 @@ func CreatePasswordPolicyBoilerplate(passwordPolicyBoilerplate *security.Passwor
 
 func CreateIdentitySourceBoilerplate(identitySourceBoilerplate *authentication.IdentitySource) {
 	identitySourceBoilerplate.Properties = append(identitySourceBoilerplate.Properties, authentication.IdentitySourceInstancesPropertiesData{Key: "", Value: "", Sensitive: false})
+}
+
+// This function helps in boilerplate generation to update Sign in options
+func GetSignInOptionsBoilerplate() *SignInOptions {
+	var signInOptions = &SignInOptions{
+		InstanceName: "",
+		Properties: []map[string]interface{}{
+			{
+				"key":       "show_admin_user",
+				"value":     "false",
+				"sensitive": false,
+			},
+			{
+				"key":       "show_admin_user_qr",
+				"value":     "false",
+				"sensitive": false,
+			},
+			{
+				"key":       "show_admin_user_fido",
+				"value":     "false",
+				"sensitive": false,
+			},
+			{
+				"key":       "show_end_user",
+				"value":     "false",
+				"sensitive": false,
+			},
+			{
+				"key":       "show_end_user_qr",
+				"value":     "false",
+				"sensitive": false,
+			},
+			{
+				"key":       "show_end_user_fido",
+				"value":     "false",
+				"sensitive": false,
+			},
+		},
+	}
+	return signInOptions
 }
