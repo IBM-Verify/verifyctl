@@ -108,11 +108,13 @@ func (o *identitySourceOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
+	identitySource := &authentication.IdentitySource{}
+	resource.CreateIdentitySourceBoilerplate(identitySource)
 	if o.boilerplate {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "IdentitySource",
 			APIVersion: "2.0",
-			Data:       &authentication.IdentitySource{},
+			Data:       identitySource,
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())

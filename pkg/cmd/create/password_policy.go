@@ -115,11 +115,13 @@ func (o *passwordPolicyOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
+	passwordPolicy := &security.PasswordPolicy{}
+	resource.CreatePasswordPolicyBoilerplate(passwordPolicy)
 	if o.boilerplate {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "PasswordPolicy",
 			APIVersion: "3.0",
-			Data:       &security.PasswordPolicy{},
+			Data:       passwordPolicy,
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
