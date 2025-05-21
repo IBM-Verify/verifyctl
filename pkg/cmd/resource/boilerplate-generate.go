@@ -2,6 +2,7 @@ package resource
 
 import (
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/applications"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/authentication"
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
 )
 
@@ -252,4 +253,8 @@ func CreatePasswordPolicyBoilerplate(passwordPolicyBoilerplate *security.Passwor
 		PasswordMinUpperCaseChars:           1,
 		PwdMinLength:                        1,
 	}
+}
+
+func CreateIdentitySourceBoilerplate(identitySourceBoilerplate *authentication.IdentitySource) {
+	identitySourceBoilerplate.Properties = append(identitySourceBoilerplate.Properties, authentication.IdentitySourceInstancesPropertiesData{Key: "", Value: "", Sensitive: false})
 }
