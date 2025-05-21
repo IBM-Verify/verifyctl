@@ -41,8 +41,8 @@ var (
 
 type applicationOptions struct {
 	options
-
-	config *config.CLIConfig
+	applicationType string
+	config          *config.CLIConfig
 }
 
 func newApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -73,6 +73,7 @@ func newApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cob
 func (o *applicationOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, applicationResourceName)
 	cmd.Flags().StringVarP(&o.file, "file", "f", "", i18n.Translate("Path to the yaml file containing application data"))
+	cmd.Flags().StringVarP(&o.applicationType, "applicationType", "t", "", i18n.Translate("Application type [OIDC, ACLC, SAML, BOOKMARK]"))
 }
 
 func (o *applicationOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -98,10 +99,14 @@ func (o *applicationOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if o.boilerplate {
+		applicationBoilerplate := &applications.Application{}
+		if o.applicationType == "saml" || o.applicationType == "oidc" || o.applicationType == "aclc" || o.applicationType == "bookmark" || o.applicationType == "" {
+			resource.CreateApplicationBoilerplate(applicationBoilerplate, o.applicationType)
+		}
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "Applications",
 			APIVersion: "1.0",
-			Data:       &applications.Application{},
+			Data:       applicationBoilerplate,
 		}
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
 		return nil
