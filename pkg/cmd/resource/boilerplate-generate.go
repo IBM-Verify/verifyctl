@@ -34,7 +34,8 @@ func CreateApplicationBoilerplate(applicationBoilerplate *applications.Applicati
 				},
 			},
 			SSO: applications.SSO{
-				DomainName: " ",
+				DomainName:  " ",
+				UserOptions: "saml",
 			},
 		}
 		// set provisioning
@@ -61,10 +62,10 @@ func CreateApplicationBoilerplate(applicationBoilerplate *applications.Applicati
 				},
 			},
 			AttributeMappings: []*applications.AttributeMapping{
-				{TargetName: "userName", SourceID: "3", OutboundTracking: true},
+				{TargetName: " ", SourceID: " ", OutboundTracking: true},
 			},
 			ReverseAttributeMappings: []*applications.AttributeMapping{
-				{TargetName: "userName", SourceID: "3", OutboundTracking: true},
+				{TargetName: " ", SourceID: " ", OutboundTracking: true},
 			},
 			Policies: applications.ProvisioningPolicies{
 				ProvPolicy:   "automatic",
@@ -73,7 +74,7 @@ func CreateApplicationBoilerplate(applicationBoilerplate *applications.Applicati
 				GracePeriod:  0,
 				AdoptionPolicy: applications.AdoptionPolicy{
 					MatchingAttributes: []*applications.AttributeMapping{
-						{TargetName: "emails[0].value", SourceID: "3"},
+						{TargetName: " ", SourceID: " "},
 					},
 					RemediationPolicy: map[string]string{
 						"policy": "NONE",
@@ -199,24 +200,11 @@ func CreateApplicationBoilerplate(applicationBoilerplate *applications.Applicati
 		applicationBoilerplate.Providers = applications.Providers{
 			SAML: applications.SAML{
 				Properties: applications.SAMLProperties{
-					CompanyName:              " ",
-					GenerateUniqueID:         "false",
-					ValidateAuthnRequest:     "false",
-					EncryptAssertion:         "false",
-					ICIReservedSubjectNameID: " ",
-					IncludeAllAttributes:     "false",
-					UniqueID:                 " ",
-					SignAuthnResponse:        "true",
-					SignatureAlgorithm:       "RSA-SHA256",
-					DefaultNameIdFormat:      "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
-					SessionNotOnOrAfter:      " ",
-					ValidateLogoutRequest:    "ture",
-					ValidateLogoutResponse:   "ture",
-					UseMetaData:              "ture",
+					CompanyName: " ",
 				},
 			},
 			SSO: applications.SSO{
-				UserOptions:            " ",
+				UserOptions:            "applicationBookmark",
 				IDPInitiatedSSOSupport: "false",
 			},
 			Bookmark: applications.Bookmark{
