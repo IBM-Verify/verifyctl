@@ -1,6 +1,9 @@
 package resource
 
-import "github.com/ibm-verify/verify-sdk-go/pkg/config/applications"
+import (
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/applications"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
+)
 
 func CreateApplicationBoilerplate(applicationBoilerplate *applications.Application, applicationType string) {
 	// setting common fields
@@ -223,5 +226,30 @@ func CreateApplicationBoilerplate(applicationBoilerplate *applications.Applicati
 				BookmarkURL: " ",
 			},
 		}
+	}
+}
+
+func CreatePasswordPolicyBoilerplate(passwordPolicyBoilerplate *security.PasswordPolicy) {
+	passwordPolicyBoilerplate.PolicyDescription = " "
+	passwordPolicyBoilerplate.Schemas = []string{"urn:ietf:params:scim:schemas:ibm:core:3.0:policy:Password"}
+	passwordPolicyBoilerplate.PasswordSecurity = security.PasswordSecurity{
+		PwdInHistory:       1,
+		PwdLockout:         true,
+		PwdLockoutDuration: 1,
+		PwdMaxAge:          1,
+		PwdMaxFailure:      1,
+		PwdMinAge:          1,
+	}
+	passwordPolicyBoilerplate.PasswordStrength = security.PasswordStrength{
+		PasswordMaxConsecutiveRepeatedChars: 1,
+		PasswordMaxRepeatedChars:            1,
+		PasswordMinAlphaChars:               1,
+		PasswordMinDiffChars:                1,
+		PasswordMinLowerCaseChars:           1,
+		PasswordMinNumberChars:              1,
+		PasswordMinOtherChars:               1,
+		PasswordMinSpecialChars:             1,
+		PasswordMinUpperCaseChars:           1,
+		PwdMinLength:                        1,
 	}
 }
