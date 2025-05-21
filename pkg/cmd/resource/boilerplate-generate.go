@@ -3,6 +3,7 @@ package resource
 import (
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/applications"
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/authentication"
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/integrations"
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
 )
 
@@ -302,4 +303,58 @@ func GetSignInOptionsBoilerplate() *SignInOptions {
 		},
 	}
 	return signInOptions
+}
+
+func CreateIdentityAgentBoilerplate(identityAgent *integrations.IdentityAgentConfig, identityType string) {
+	identityAgent.Purpose = (*integrations.OnpremAgentConfigurationPurpose)(&identityType)
+	timeoutVal := int32(1)
+	identityAgent.AuthnCacheTimeout = &timeoutVal
+	certLavel := " "
+	identityAgent.CertLabel = &certLavel
+	identityAgent.References = &[]integrations.OnpremAgentConfigReference{{}}
+	if identityType == "PROV" {
+		identityAgent.Modules = append(identityAgent.Modules, map[string]map[string]interface{}{
+			"external": {
+				"caCerts":  "",
+				"id":       "",
+				"password": "",
+				"uri":      []string{},
+			},
+		})
+	} else if identityType == "LDAPAUTH" {
+		identityAgent.Modules = append(identityAgent.Modules, map[string]map[string]interface{}{
+			"ldapauth": {
+				"ldapBindPwd":               "",
+				"ldapBindDn":                "",
+				"ldapCACerts":               "",
+				"ldapConnIdleTime":          0,
+				"ldapConnMaxTime":           0,
+				"ldapFetchAttributes":       []string{},
+				"ldapFetchBinaryAttributes": []string{},
+				"ldapMaxConnections":        0,
+				"ldapRequestTimeout":        0,
+				"ldapSearchBase":            "o=ibm,c=us",
+				"ldapStartTls":              false,
+				"ldapUri":                   []string{},
+				"ldapUsernameAttribute":     "",
+				"ldapUserSearchObjectclass": []string{},
+			},
+		})
+	} else if identityType == "EXTAUTHN" {
+		identityAgent.Modules = append(identityAgent.Modules, map[string]map[string]interface{}{
+			"extauthn": {
+				"authentication": map[string]interface{}{
+					"type": "",
+					"basic": map[string]interface{}{
+						"username": "",
+						"password": "",
+					},
+				},
+
+				"caCerts":         "",
+				"uris":            []string{},
+				"fetchAttributes": []string{},
+			},
+		})
+	}
 }

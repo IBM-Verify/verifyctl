@@ -112,7 +112,7 @@ func (o *identityAgentOptions) Run(cmd *cobra.Command, args []string) error {
 	if o.boilerplate {
 		identityAgent := &integrations.IdentityAgentConfig{}
 		if o.purpose == "PROV" || o.purpose == "LDAPAUTH" || o.purpose == "EXTAUTHN" || o.purpose == "" {
-			integrations.AddModule(identityAgent, o.purpose)
+			resource.CreateIdentityAgentBoilerplate(identityAgent, o.purpose)
 		} else {
 			return fmt.Errorf("unknown purpose")
 		}
