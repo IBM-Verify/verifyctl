@@ -21,7 +21,7 @@ const (
 
 var (
 	applicationLongDesc = templates.LongDesc(cmdutil.TranslateLongDesc(applicationMessagePrefix, `
-		Delete Verify Application based on Name.
+		Delete Verify Application based on ApplicationID.
 		
 Resources managed on Verify have specific entitlements, so ensure that the application or API client used
 with the 'auth' command is configured with the appropriate entitlements.
@@ -32,14 +32,14 @@ You can identify the entitlement required by running:
 
 	applicationExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an Application
-		verifyctl delete application --name="Name"`,
+		verifyctl delete application --applicationID="applicationID"`,
 	))
 )
 
 type applicationsOptions struct {
 	options
-
-	config *config.CLIConfig
+	applicationID string
+	config        *config.CLIConfig
 }
 
 func NewApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -49,7 +49,7 @@ func NewApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cob
 
 	cmd := &cobra.Command{
 		Use:                   applicationUsage,
-		Short:                 cmdutil.TranslateShortDesc(applicationMessagePrefix, "Delete Verify Application based on an id."),
+		Short:                 cmdutil.TranslateShortDesc(applicationMessagePrefix, "Delete Verify Application based on an application ID."),
 		Long:                  applicationLongDesc,
 		Example:               applicationExamples,
 		DisableFlagsInUseLine: true,
@@ -71,7 +71,7 @@ func NewApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cob
 
 func (o *applicationsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd)
-	cmd.Flags().StringVar(&o.name, "name", o.name, i18n.Translate("name to be deleted"))
+	cmd.Flags().StringVar(&o.applicationID, "applicationID", o.applicationID, i18n.Translate("applicationID to be deleted"))
 }
 
 func (o *applicationsOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -84,8 +84,8 @@ func (o *applicationsOptions) Validate(cmd *cobra.Command, args []string) error 
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "application" && o.name == "" {
-		return errorsx.G11NError(i18n.Translate("'name' flag is required"))
+	if calledAs == "application" && o.applicationID == "" {
+		return errorsx.G11NError(i18n.Translate("'applicationID' flag is required"))
 	}
 	return nil
 }
@@ -100,7 +100,7 @@ func (o *applicationsOptions) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if cmd.CalledAs() == "application" || len(o.name) > 0 {
+	if cmd.CalledAs() == "application" || len(o.applicationID) > 0 {
 
 		return o.handleSingleApplication(cmd, args)
 	}
@@ -110,10 +110,10 @@ func (o *applicationsOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *applicationsOptions) handleSingleApplication(cmd *cobra.Command, _ []string) error {
 
 	c := applications.NewApplicationClient()
-	err := c.DeleteApplication(cmd.Context(), o.name)
+	err := c.DeleteApplicationByID(cmd.Context(), o.applicationID)
 	if err != nil {
 		return err
 	}
-	cmdutil.WriteString(cmd, "Resource deleted: "+o.name)
+	cmdutil.WriteString(cmd, "Resource deleted: "+o.applicationID)
 	return nil
 }

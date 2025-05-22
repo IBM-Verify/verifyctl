@@ -33,7 +33,7 @@ verifyctl get passwordpolicy --entitlements`))
 
 	passwordPolicyExamples = templates.Examples(cmdutil.TranslateExamples(passwordPolicyMessagePrefix, `
 # Get a specific password policy by ID
-verifyctl get passwordpolicy -o=yaml --name=testPasswordPolicy
+verifyctl get passwordpolicy -o=yaml --passwordPolicyID=testPasswordPolicyID
 
 # Get 10 policies based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get password-policies --count=2 --sort=policyName -o=yaml
@@ -42,8 +42,8 @@ verifyctl get passwordpolicy -o=yaml --name=testPasswordPolicy
 
 type passwordPolicyOptions struct {
 	options
-
-	config *config.CLIConfig
+	passwordPolicyID string
+	config           *config.CLIConfig
 }
 
 func newPasswordPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -76,7 +76,7 @@ func newPasswordPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *
 
 func (o *passwordPolicyOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, passwordPolicyResourceName)
-	cmd.Flags().StringVar(&o.name, "passwordPolicyName", o.name, i18n.Translate("passwordpolicyName to get details"))
+	cmd.Flags().StringVar(&o.passwordPolicyID, "passwordPolicyID", o.passwordPolicyID, i18n.Translate("passwordPolicyID to get details"))
 	o.addSortFlags(cmd, passwordPolicyResourceName)
 	o.addCountFlags(cmd, passwordPolicyResourceName)
 }
@@ -91,8 +91,8 @@ func (o *passwordPolicyOptions) Validate(cmd *cobra.Command, args []string) erro
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "passwordpolicy" && o.name == "" {
-		return errorsx.G11NError(i18n.Translate("'passwordPolicyName' flag is required."))
+	if calledAs == "passwordpolicy" && o.passwordPolicyID == "" {
+		return errorsx.G11NError(i18n.Translate("'passwordPolicyID' flag is required."))
 	}
 	return nil
 }
@@ -108,7 +108,7 @@ func (o *passwordPolicyOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if cmd.CalledAs() == "passwordpolicy" || len(o.name) > 0 {
+	if cmd.CalledAs() == "passwordpolicy" || len(o.passwordPolicyID) > 0 {
 		return o.handleSinglePasswordPolicy(cmd, args)
 	}
 
@@ -118,7 +118,7 @@ func (o *passwordPolicyOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *passwordPolicyOptions) handleSinglePasswordPolicy(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewPasswordPolicyClient()
-	pwd, uri, err := c.GetPasswordPolicy(cmd.Context(), o.name)
+	pwd, uri, err := c.GetPasswordPolicyByID(cmd.Context(), o.passwordPolicyID)
 	if err != nil {
 		return err
 	}

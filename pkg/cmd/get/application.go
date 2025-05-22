@@ -2,7 +2,6 @@ package get
 
 import (
 	"io"
-	"strings"
 
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/applications"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
@@ -29,7 +28,7 @@ var (
 
 	applicationExamples = templates.Examples(cmdutil.TranslateExamples(applicationsMessagePrefix, `
         # Get an application and print the output in yaml
-        verifyctl get application -o=yaml --name=testApplication
+        verifyctl get application -o=yaml --applicationID=testApplicationID
  
         # Get 10 applications based on a given search criteria and sort it in the ascending order by name.
         verifyctl get applications --count=2 --sort=applicationName -o=yaml`))
@@ -37,8 +36,8 @@ var (
 
 type applicationsOptions struct {
 	options
-
-	config *config.CLIConfig
+	applicationID string
+	config        *config.CLIConfig
 }
 
 func NewApplicationsCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -67,7 +66,7 @@ func NewApplicationsCommand(config *config.CLIConfig, streams io.ReadWriter) *co
 
 func (o *applicationsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, applicationResourceName)
-	cmd.Flags().StringVar(&o.name, "name", o.name, i18n.Translate("name to get details"))
+	cmd.Flags().StringVar(&o.applicationID, "applicationID", o.applicationID, i18n.Translate("applicationID to get details"))
 	o.addSortFlags(cmd, applicationResourceName)
 	o.addCountFlags(cmd, applicationResourceName)
 }
@@ -81,8 +80,8 @@ func (o *applicationsOptions) Validate(cmd *cobra.Command, args []string) error 
 		return nil
 	}
 	calledAs := cmd.CalledAs()
-	if calledAs == "application" && o.name == "" {
-		return errorsx.G11NError(i18n.Translate("'name' flag is required."))
+	if calledAs == "application" && o.applicationID == "" {
+		return errorsx.G11NError(i18n.Translate("'applicationID' flag is required."))
 	}
 	return nil
 }
@@ -96,7 +95,7 @@ func (o *applicationsOptions) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if cmd.CalledAs() == "application" || len(o.name) > 0 {
+	if cmd.CalledAs() == "application" || len(o.applicationID) > 0 {
 		return o.handleSingleApplicationClient(cmd, args)
 	}
 	return o.handleApplicationClientList(cmd, args)
@@ -105,7 +104,7 @@ func (o *applicationsOptions) Run(cmd *cobra.Command, args []string) error {
 func (o *applicationsOptions) handleSingleApplicationClient(cmd *cobra.Command, _ []string) error {
 	c := applications.NewApplicationClient()
 
-	appl, uri, err := c.GetApplication(cmd.Context(), o.name)
+	appl, uri, err := c.GetApplicationByID(cmd.Context(), o.applicationID)
 	if err != nil {
 		return err
 	}
@@ -113,11 +112,6 @@ func (o *applicationsOptions) handleSingleApplicationClient(cmd *cobra.Command, 
 	if o.output == "raw" {
 		cmdutil.WriteAsJSON(cmd, appl, cmd.OutOrStdout())
 		return nil
-	}
-
-	id := appl.Links.Self.Href
-	if idx := strings.LastIndex(id, "/"); idx != -1 {
-		id = id[idx+1:]
 	}
 
 	resourceObj := &resource.ResourceObject{

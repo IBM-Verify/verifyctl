@@ -1,7 +1,6 @@
 package replace
 
 import (
-	"fmt"
 	"io"
 	"os"
 
@@ -47,8 +46,8 @@ var (
 
 type applicationOptions struct {
 	options
-
-	config *config.CLIConfig
+	applicationID string
+	config        *config.CLIConfig
 }
 
 func newApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command {
@@ -78,6 +77,7 @@ func newApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cob
 
 func (o *applicationOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, applicationResourceName)
+	cmd.Flags().StringVar(&o.applicationID, "applicationID", o.applicationID, i18n.Translate("applicationID to get details"))
 	cmd.Flags().StringVarP(&o.file, "file", "f", "", i18n.Translate("Path to the YAML file containing updated application data."))
 }
 
@@ -92,6 +92,10 @@ func (o *applicationOptions) Validate(cmd *cobra.Command, args []string) error {
 
 	if len(o.file) == 0 {
 		return errorsx.G11NError(i18n.Translate("'file' option is required if no other options are used."))
+	}
+	calledAs := cmd.CalledAs()
+	if calledAs == "application" && o.applicationID == "" {
+		return errorsx.G11NError(i18n.Translate("'applicationID' flag is required."))
 	}
 	return nil
 }
@@ -159,12 +163,9 @@ func (o *applicationOptions) updateApplicationWithData(cmd *cobra.Command, data 
 			return err
 		}
 	}
-	if application.Name == "" {
-		vc.Logger.Errorf("application name is missing in YAML")
-		return fmt.Errorf("application name is missing in YAML")
-	}
+
 	client := applications.NewApplicationClient()
-	if err := client.UpdateApplication(ctx, application); err != nil {
+	if err := client.UpdateApplication(ctx, o.applicationID, application); err != nil {
 		vc.Logger.Errorf("unable to update the application; err=%v, application=%+v", err, application)
 		return err
 	}
@@ -190,7 +191,7 @@ func (o *applicationOptions) updateApplicationFromDataMap(cmd *cobra.Command, da
 	}
 
 	client := applications.NewApplicationClient()
-	if err := client.UpdateApplication(ctx, application); err != nil {
+	if err := client.UpdateApplication(ctx, o.applicationID, application); err != nil {
 		vc.Logger.Errorf("unable to update the Application; err=%v, application=%+v", err, application)
 		return err
 	}

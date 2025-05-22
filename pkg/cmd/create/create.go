@@ -90,9 +90,11 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newAttributeCommand(config, streams))
 	cmd.AddCommand(newUserCommand(config, streams))
 	cmd.AddCommand(newGroupCommand(config, streams))
-	cmd.AddCommand(newIdentitysourceCommand(config, streams))
+	cmd.AddCommand(newAccessPolicyCommand(config, streams))
+	cmd.AddCommand(newIdentitySourceCommand(config, streams))
 	cmd.AddCommand(newAPIClientCommand(config, streams))
 	cmd.AddCommand(newApplicationCommand(config, streams))
+	cmd.AddCommand(newIdentityAgentCommand(config, streams))
 	cmd.AddCommand(newPasswordPolicyCommand(config, streams))
 	cmd.AddCommand(newPersonalCertCommand(config, streams))
 	cmd.AddCommand(newSignerCertCommand(config, streams))
@@ -133,7 +135,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		return errorsx.G11NError("No 'kind' defined. Resource type cannot be identified.")
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err = o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -151,9 +153,13 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		options := &groupOptions{}
 		err = options.createGroupFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
+	case resource.ResourceTypePrefix + "AccessPolicy":
+		options := &accessPolicyOptions{}
+		err = options.createAccessPolicyFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
+
 	case resource.ResourceTypePrefix + "IdentitySource":
-		options := &identitysourceOptions{}
-		err = options.createIdentitySourceFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		options := &identitySourceOptions{}
+		err = options.createIdentitySourceFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "APIClient":
 		options := &apiClientOptions{}
@@ -162,6 +168,10 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	case resource.ResourceTypePrefix + "Applications":
 		options := &applicationOptions{}
 		err = options.createApplicationFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
+
+	case resource.ResourceTypePrefix + "IdentityAgent":
+		options := &identityAgentOptions{}
+		err = options.createIdentityAgentFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "PasswordPolicy":
 		options := &passwordPolicyOptions{}
