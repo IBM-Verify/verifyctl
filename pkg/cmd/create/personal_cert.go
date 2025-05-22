@@ -45,9 +45,9 @@ var (
 			`# Create an empty personal certificate resource.
 		verifyctl create personalCert --boilerplate
 		# Create a personal certificate using a YAML file.
-		verifyctl create personalCert -f=./personal_cert.yaml
+		verifyctl create -f=./personal_cert.yaml
 		# Create a personal certificate using a JSON file.
-	verifyctl create personalCert -f=./personal_cert.json`,
+	verifyctl create -f=./personal_cert.json`,
 		),
 	)
 )

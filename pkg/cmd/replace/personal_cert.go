@@ -35,8 +35,8 @@ var (
 	personalCertExamples = templates.Examples(cmdutil.TranslateExamples(personalCertMessagePrefix, `
 		# Generate an empty personalCert resource template
 		verifyctl replace personalCert --boilerplate
-		# Update a personal certificate from a JSON file
-		verifyctl replace personalCert -f=./personal_cert.json
+		# Update a personal certificate from a YAML file
+		verifyctl replace -f=./personal_cert.yaml
 	`))
 )
 

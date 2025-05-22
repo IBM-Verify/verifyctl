@@ -30,10 +30,10 @@ var (
 
 	signerCertExamples = templates.Examples(cmdutil.TranslateExamples(signerCertMessagePrefix, `
 		# Get a specific Signer certificate by lable
-		verifyctl get signerCert -o=yaml --name=testsignerCert
+		verifyctl get signerCert -o=yaml --signerCertLabel=testsignerCert
 
-		# Get 10 policies based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get Signer-certificate --count=2 --sort=label -o=yaml
+		# Get 2 policies based on a given search criteria and sort it in the ascending order by name.
+		verifyctl get signerCerts --count=2 --sort=signerCertLabel -o=yaml
 		`))
 )
 

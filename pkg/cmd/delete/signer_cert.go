@@ -27,7 +27,7 @@ var (
 
 	signerCertExamples = templates.Examples(cmdutil.TranslateExamples(signerCertMessagePrefix, `
 		# Delete a signer certificate by label
-		verifyctl delete signerCert --name=certificateLabel
+		verifyctl delete signerCert --signerCertLabel=certificateLabel
 	`))
 )
 

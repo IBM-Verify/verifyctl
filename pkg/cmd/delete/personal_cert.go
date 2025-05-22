@@ -27,7 +27,7 @@ var (
 
 	personalCertExamples = templates.Examples(cmdutil.TranslateExamples(personalCertMessagePrefix, `
 		# Delete a personal certificate by label
-		verifyctl delete personalCert --name=certificateLabel
+		verifyctl delete personalCert --personalCertLabel=certificateLabel
 	`))
 )
 

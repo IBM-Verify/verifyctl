@@ -30,10 +30,10 @@ var (
 
 	personalCertExamples = templates.Examples(cmdutil.TranslateExamples(personalCertMessagePrefix, `
 		# Get a specific personal certificate by lable
-		verifyctl get personalCert -o=yaml --name=testpersonalCert
+		verifyctl get personalCert -o=yaml --personalCertLabel=testpersonalCert
  
-		# Get 10 policies based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get personal-certificate --count=2 --sort=label -o=yaml
+		# Get 2 policies based on a given search criteria and sort it in the ascending order by name.
+		verifyctl get personalCerts --count=2 --sort=personalCertLabel -o=yaml
 		`))
 )
 
