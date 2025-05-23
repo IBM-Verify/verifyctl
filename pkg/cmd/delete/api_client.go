@@ -36,7 +36,7 @@ You can identify the entitlement required by running:
 		verifyctl delete apiclient --clientName="clientName",
 
 		# Delete an API client by ID
-		verifyctl delete apiclient --clientId="12345"`,
+		verifyctl delete apiclient --clientID="12345"`,
 	))
 )
 
@@ -75,7 +75,7 @@ func NewAPIClientCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra
 
 func (o *apiclientsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd)
-	cmd.Flags().StringVar(&o.id, "clientId", o.id, i18n.Translate("clientId to be deleted"))
+	cmd.Flags().StringVar(&o.id, "clientID", o.id, i18n.Translate("clientID to be deleted"))
 }
 
 func (o *apiclientsOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -105,9 +105,7 @@ func (o *apiclientsOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// invoke the operation
 	if cmd.CalledAs() == "apiclient" {
-		// deal with single API client
 		return o.handleSingleAPIClient(cmd, args)
 	}
 	return nil
