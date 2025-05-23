@@ -35,7 +35,7 @@ You can identify the entitlement required by running:
 		# Get an user and print the output in yaml
 		verifyctl get user -o=yaml --userName=testUser
 
-		# Get 10 users based on a given search criteria and sort it in the ascending order by name.
+		# Get 2 users based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get users --count=2 --sort=userName -o=yaml`))
 )
 

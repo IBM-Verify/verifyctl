@@ -46,7 +46,7 @@ You can identify the entitlement required by running:
 		verifyctl replace group --boilerplate
 
 		# Update a group from a JSON file
-		verifyctl replace group -f=./group-12345.json`))
+		verifyctl replace -f=./group-12345.json`))
 )
 
 type groupOptions struct {

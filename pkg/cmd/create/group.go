@@ -7,6 +7,7 @@ import (
 
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
+	"gopkg.in/yaml.v3"
 
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
@@ -46,7 +47,7 @@ You can identify the entitlement required by running:
 		verifyctl create group --boilerplate
 
 		# Create a group using a JSON file.
-		verifyctl create group -f=./group.json`))
+		verifyctl create -f=./group.json`))
 )
 
 type groupOptions struct {
@@ -134,7 +135,7 @@ func (o *groupOptions) createGroup(cmd *cobra.Command) error {
 	// get the contents of the file
 	b, err := os.ReadFile(o.file)
 	if err != nil {
-		vc.Logger.Errorf("unable to read file; filename=%s, err=%v", o.file, err)
+		vc.Logger.Errorf("Unable to read file; filename=%s, err=%v", o.file, err)
 		return err
 	}
 
@@ -148,8 +149,8 @@ func (o *groupOptions) createGroupWithData(cmd *cobra.Command, data []byte) erro
 
 	// unmarshal to group
 	group := &directory.Group{}
-	if err := json.Unmarshal(data, &group); err != nil {
-		vc.Logger.Errorf("unable to unmarshal the group; err=%v", err)
+	if err := yaml.Unmarshal(data, &group); err != nil {
+		vc.Logger.Errorf("Unable to unmarshal the group; err=%v", err)
 		return err
 	}
 
@@ -171,19 +172,19 @@ func (o *groupOptions) createGroupFromDataMap(cmd *cobra.Command, data map[strin
 	group := &directory.Group{}
 	b, err := json.Marshal(data)
 	if err != nil {
-		vc.Logger.Errorf("failed to marshal the data map; err=%v", err)
+		vc.Logger.Errorf("Failed to marshal the data map; err=%v", err)
 		return err
 	}
 
 	if err := json.Unmarshal(b, group); err != nil {
-		vc.Logger.Errorf("unable to unmarshal to an group; err=%v", err)
+		vc.Logger.Errorf("Unable to unmarshal to an group; err=%v", err)
 		return err
 	}
 
 	client := directory.NewGroupClient()
 	resourceURI, err := client.CreateGroup(ctx, group)
 	if err != nil {
-		vc.Logger.Errorf("unable to create the group; err=%v, group=%+v", err, group)
+		vc.Logger.Errorf("Unable to create the group; err=%v, group=%+v", err, group)
 		return err
 	}
 

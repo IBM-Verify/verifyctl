@@ -35,7 +35,7 @@ You can identify the entitlement required by running:
 		# Get an group and print the output in yaml
 		verifyctl get group -o=yaml --displayName=admin
 
-		# Get 10 groups based on a given search criteria and sort it in the ascending order by name.
+		# Get 2 groups based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get groups --count=2 --sort=groupName -o=yaml`))
 )
 

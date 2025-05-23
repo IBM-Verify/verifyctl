@@ -35,7 +35,7 @@ verifyctl get passwordpolicy --entitlements`))
 # Get a specific password policy by ID
 verifyctl get passwordpolicy -o=yaml --passwordPolicyID=testPasswordPolicyID
 
-# Get 10 policies based on a given search criteria and sort it in the ascending order by name.
+# Get 2 policies based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get password-policies --count=2 --sort=policyName -o=yaml
 `))
 )

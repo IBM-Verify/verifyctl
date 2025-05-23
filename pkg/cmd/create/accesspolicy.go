@@ -7,6 +7,7 @@ import (
 
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
+	"gopkg.in/yaml.v3"
 
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
@@ -147,7 +148,7 @@ func (o *accessPolicyOptions) createAccessPolicyWithData(cmd *cobra.Command, dat
 
 	// unmarshal to accessPolicy
 	accessPolicy := &security.Policy{}
-	if err := json.Unmarshal(data, &accessPolicy); err != nil {
+	if err := yaml.Unmarshal(data, &accessPolicy); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the accessPolicy; err=%v", err)
 		return err
 	}

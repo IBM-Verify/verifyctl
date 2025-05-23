@@ -67,6 +67,7 @@ func newIdentitySourceCommand(config *config.CLIConfig, streams io.ReadWriter) *
 		Long:                  identitySourceLongDesc,
 		Example:               identitySourceExamples,
 		DisableFlagsInUseLine: true,
+		SilenceUsage:          true,
 		Run: func(cmd *cobra.Command, args []string) {
 			cmdutil.ExitOnError(cmd, o.Complete(cmd, args))
 			cmdutil.ExitOnError(cmd, o.Validate(cmd, args))

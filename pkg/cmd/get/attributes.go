@@ -35,7 +35,7 @@ You can identify the entitlement required by running:
 		# Get an attribute and print the output in yaml
 		verifyctl get attribute -o=yaml --id=work_email
 
-		# Get 10 attributes based on a given search criteria and sort it in the ascending order by name.
+		# Get 2 attributes based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get attributes --search="tags=\"sso\"" --limit=10 --page=1 --sort=+name -o=yaml`))
 )
 

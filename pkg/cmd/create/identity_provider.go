@@ -8,6 +8,7 @@ import (
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/authentication"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
+	"gopkg.in/yaml.v3"
 
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
@@ -148,7 +149,7 @@ func (o *identitySourceOptions) createIdentitySourceWithData(cmd *cobra.Command,
 
 	// unmarshal to identitySource
 	identitySource := &authentication.IdentitySource{}
-	if err := json.Unmarshal(data, &identitySource); err != nil {
+	if err := yaml.Unmarshal(data, &identitySource); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the Identity Source err=%v", err)
 		return err
 	}

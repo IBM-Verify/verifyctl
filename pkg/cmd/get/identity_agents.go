@@ -35,7 +35,7 @@ You can identify the entitlement required by running:
 		# Get an identityAgent and print the output in yaml
 		verifyctl get identityagent -o=yaml --identityAgentID=testIdentityAgent
 
-		# Get 10 identityAgents based on a given search criteria and sort it in the ascending order by name.
+		# Get 2 identityAgents based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get identityagents --count=2 --sort=identityAgentName -o=yaml`))
 )
 
