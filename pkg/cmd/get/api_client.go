@@ -3,11 +3,11 @@ package get
 import (
 	"io"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
 	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
@@ -33,9 +33,11 @@ You can identify the entitlement required by running:
 
 	apiclientsExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Get an apiclient and print the output in yaml
-		verifyctl get apiclient -o=yaml --name=testApiclient
+		verifyctl get apiclient -o=yaml --clientName=testApiclient
+		verifyctl get apiclient -o=yaml --clientID=12345
 
-		# Get 10 apiclients based on a given search criteria and sort it in the ascending order by name.
+
+		# Get 2 apiclients based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get apiclients --count=2 --sort=apiclientName -o=yaml`))
 )
 
@@ -76,6 +78,7 @@ func NewAPIClientsCommand(config *config.CLIConfig, streams io.ReadWriter) *cobr
 func (o *apiclientsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, apiclientResourceName)
 	cmd.Flags().StringVar(&o.name, "clientName", o.name, i18n.Translate("clientName to get details"))
+	cmd.Flags().StringVar(&o.id, "clientID", o.id, i18n.Translate("clientID to get details"))
 	o.addSortFlags(cmd, apiclientResourceName)
 	o.addCountFlags(cmd, apiclientResourceName)
 }
@@ -90,8 +93,11 @@ func (o *apiclientsOptions) Validate(cmd *cobra.Command, args []string) error {
 	}
 
 	calledAs := cmd.CalledAs()
-	if calledAs == "apiclient" && o.name == "" {
-		return errorsx.G11NError("'clientName' flag is required.")
+	if calledAs == "apiclient" && o.name == "" && o.id == "" {
+		return errorsx.G11NError("either 'clientName' or 'clientID' flag is required.")
+	}
+	if o.name != "" && o.id != "" {
+		return errorsx.G11NError("only one of 'clientName' or 'clientID' can be provided")
 	}
 	return nil
 }
@@ -102,22 +108,30 @@ func (o *apiclientsOptions) Run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err := o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
 
-	if cmd.CalledAs() == "apiclient" || len(o.name) > 0 {
-		return o.handleSingleAPIClient(cmd, auth, args)
+	if cmd.CalledAs() == "apiclient" || len(o.name) > 0 || len(o.id) > 0 {
+		return o.handleSingleAPIClient(cmd, args)
 	}
 
-	return o.handleAPIClientList(cmd, auth, args)
+	return o.handleAPIClientList(cmd, args)
 }
 
-func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAPIClient()
-	apic, uri, err := c.GetAPIClient(cmd.Context(), auth, o.name)
+	var apic *security.APIClientConfig
+	var uri string
+	var err error
+
+	if o.id != "" {
+		apic, uri, err = c.GetAPIClientByID(cmd.Context(), o.id)
+	} else {
+		apic, uri, err = c.GetAPIClientByName(cmd.Context(), o.name)
+	}
 	if err != nil {
 		return err
 	}
@@ -147,10 +161,10 @@ func (o *apiclientsOptions) handleSingleAPIClient(cmd *cobra.Command, auth *conf
 	return nil
 }
 
-func (o *apiclientsOptions) handleAPIClientList(cmd *cobra.Command, auth *config.AuthConfig, _ []string) error {
+func (o *apiclientsOptions) handleAPIClientList(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAPIClient()
-	apiclis, uri, err := c.GetAPIClients(cmd.Context(), auth, o.search, o.sort, o.page, o.limit)
+	apiclis, uri, err := c.GetAPIClients(cmd.Context(), o.search, o.sort, o.page, o.limit)
 	if err != nil {
 		return err
 	}
