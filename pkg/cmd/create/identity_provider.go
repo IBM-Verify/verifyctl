@@ -113,7 +113,7 @@ func (o *identitySourceOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "IdentitySource",
 			APIVersion: "2.0",
-			Data:       &authentication.IdentitySource{},
+			Data:       authentication.IdentitySourceExample(),
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())

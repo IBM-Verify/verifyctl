@@ -2,7 +2,6 @@ package create
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 
@@ -111,20 +110,18 @@ func (o *identityAgentOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if o.boilerplate {
-		identityAgent := &integrations.IdentityAgentConfig{}
 		if o.purpose == "PROV" || o.purpose == "LDAPAUTH" || o.purpose == "EXTAUTHN" || o.purpose == "" {
-			integrations.AddModule(identityAgent, o.purpose)
-		} else {
-			return fmt.Errorf("unknown purpose")
-		}
-		resourceObj := &resource.ResourceObject{
-			Kind:       resource.ResourceTypePrefix + "IdentityAgent",
-			APIVersion: "1.0",
-			Data:       identityAgent,
-		}
+			resourceObj := &resource.ResourceObject{
+				Kind:       resource.ResourceTypePrefix + "IdentityAgent",
+				APIVersion: "1.0",
+				Data:       integrations.IdentityAgentExample(o.purpose),
+			}
 
-		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
-		return nil
+			cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
+			return nil
+		} else {
+			return errorsx.G11NError("unknown purpose")
+		}
 	}
 
 	_, err := o.config.GetCurrentAuth()

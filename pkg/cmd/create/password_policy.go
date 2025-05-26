@@ -119,7 +119,7 @@ func (o *passwordPolicyOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "PasswordPolicy",
 			APIVersion: "3.0",
-			Data:       &security.PasswordPolicy{},
+			Data:       security.PasswordPolicyExample(),
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
