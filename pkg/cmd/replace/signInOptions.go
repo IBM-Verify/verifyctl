@@ -102,7 +102,7 @@ func (o *signInOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "SignInOptions",
 			APIVersion: "2.0",
-			Data:       resource.GetSignInOptionsBoilerplate(),
+			Data:       authentication.SignInOptionsExample(),
 		}
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
 		return nil
