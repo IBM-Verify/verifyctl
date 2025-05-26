@@ -108,9 +108,7 @@ func (o *attributesOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// invoke the operation
 	if cmd.CalledAs() == "attribute" || len(o.id) > 0 {
-		// deal with single attribute
 		return o.handleSingleAttribute(cmd, args)
 	}
 

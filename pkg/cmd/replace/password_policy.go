@@ -46,7 +46,7 @@ You can identify the entitlement required by running:
         verifyctl replace passwordPolicy --boilerplate
        
         # Update a password policy from a JSON file
-        verifyctl replace -f=./password_policy.yaml`))
+        verifyctl.go replace passwordPolicy -f "password_Policy_update.yaml"`))
 )
 
 type passwordPolicyOptions struct {

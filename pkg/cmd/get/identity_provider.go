@@ -35,7 +35,7 @@ You can identify the entitlement required by running:
 		# Get an identitySource and print the output in yaml
 		verifyctl get identitysource -o=yaml --identitySourceID="identitySourceID"
 
-		# Get 10 identitySources based on a given search criteria and sort it in the ascending order by name.
+		# Get 2 identitySources based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get identitysources --count=2 --sort=identitysourceName -o=yaml`))
 )
 
@@ -107,9 +107,7 @@ func (o *identitySourcesOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// invoke the operation
 	if cmd.CalledAs() == "identitysource" || len(o.identitySourceID) > 0 {
-		// deal with single identitySource
 		return o.handleSingleIdentitySource(cmd, args)
 	}
 

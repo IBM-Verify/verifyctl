@@ -107,9 +107,7 @@ func (o *groupsOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// invoke the operation
 	if cmd.CalledAs() == "group" || len(o.name) > 0 {
-		// deal with single group
 		return o.handleSingleGroup(cmd, args)
 	}
 

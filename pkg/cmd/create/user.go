@@ -46,8 +46,10 @@ You can identify the entitlement required by running:
 		# Create an empty user resource. This can be piped into a file.
 		verifyctl create user --boilerplate
 
+		# Create a user using a YAML file.
+		verifyctl create -f "./user.yaml
+
 		# Create a user using a JSON file.
-		verifyctl create -f="./user.json" OR
 		verifyctl create -f "./user.json"`))
 )
 

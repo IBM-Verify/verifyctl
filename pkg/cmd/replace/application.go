@@ -41,7 +41,8 @@ var (
         verifyctl replace application --boilerplate
 		
         # Update an application from a YAML file
-        verifyctl replace application -f=./application.yml`))
+        verifyctl replace application --applicationID 98765 -f "application2.yaml"
+`))
 )
 
 type applicationOptions struct {

@@ -43,9 +43,12 @@ var (
 	apiClientExamples = templates.Examples(cmdutil.TranslateExamples(apiClientMessagePrefix, `
         # Create an empty API client resource.
         verifyctl create apiclient --boilerplate
+
+		 # Create an API client using a YAML file.
+        verifyctl create -f=./apiclient.yaml
  
         # Create an API client using a JSON file.
-        verifyctl create apiclient -f=./apiclient.json`))
+        verifyctl create -f=./apiclient.json`))
 )
 
 type apiClientOptions struct {
@@ -170,7 +173,6 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, data m
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// Convert map data to JSON
 	apiclient := &security.APIClientConfig{}
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -183,7 +185,6 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, data m
 		return err
 	}
 
-	// Validate required fields
 	if apiclient.ClientName == "" {
 		return errorsx.G11NError("clientName is required")
 	}
@@ -191,7 +192,6 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, data m
 		return errorsx.G11NError("entitlements list is required")
 	}
 
-	// Create API client
 	client := security.NewAPIClient()
 	resourceURI, err := client.CreateAPIClient(ctx, apiclient)
 	if err != nil {
@@ -199,7 +199,6 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, data m
 		return err
 	}
 
-	// Directly return the created resource URI
 	cmdutil.WriteString(cmd, "Resource created: "+resourceURI)
 	return nil
 }

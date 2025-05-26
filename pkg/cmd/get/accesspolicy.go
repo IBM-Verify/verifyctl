@@ -35,7 +35,7 @@ You can identify the entitlement required by running:
 		# Get an accessPolicy and print the output in yaml
 		verifyctl get accesspolicy -o=yaml --ID=testAccesspolicyID
 
-		# Get 10 accessPolicies based on a given search criteria and sort it in the ascending order by name.
+		# Get 2 accessPolicies based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get accesspolicies --count=2 --sort=accessPolicyName -o=yaml`))
 )
 
@@ -76,6 +76,8 @@ func NewAccesspoliciesCommand(config *config.CLIConfig, streams io.ReadWriter) *
 func (o *accessPoliciesOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, accessPolicyResourceName)
 	cmd.Flags().StringVar(&o.accessPolicyID, "accessPolicyID", o.accessPolicyID, i18n.Translate("accessPolicyID to get details"))
+	o.addSortFlags(cmd, accessPolicyResourceName)
+	o.addCountFlags(cmd, accessPolicyResourceName)
 
 }
 
@@ -108,7 +110,6 @@ func (o *accessPoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 
 	// invoke the operation
 	if cmd.CalledAs() == "accesspolicy" || len(o.accessPolicyID) > 0 {
-		// deal with single accessPolicy
 		return o.handleSingleAccesspolicy(cmd, args)
 	}
 

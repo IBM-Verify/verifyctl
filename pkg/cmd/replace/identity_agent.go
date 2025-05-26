@@ -45,8 +45,8 @@ You can identify the entitlement required by running:
         # Generate an empty identityAgent resource template
         verifyctl replace identityagent --boilerplate
        
-        # Update a identity agent from a JSON file
-        verifyctl replace identityagent -f=./identity_agent.json`))
+        # Update a identity agent from a YAML file
+        verifyctl replace -f=./identity_agent.yaml`))
 )
 
 type identityAgentOptions struct {
