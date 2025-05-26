@@ -111,7 +111,7 @@ func (o *accessPolicyOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "AccessPolicy",
 			APIVersion: "5.0",
-			Data:       (&security.Policy{}).Example(),
+			Data:       security.AccessPolicyExample(),
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
