@@ -110,12 +110,13 @@ func (o *apiClientOptions) Run(cmd *cobra.Command, args []string) error {
 		cmdutil.WriteString(cmd, entitlementsMessage+"  "+apiClientEntitlements)
 		return nil
 	}
-
+	apiClientConfig := &security.APIClientConfig{}
+	resource.CreateAPIClientBoilerplate(apiClientConfig)
 	if o.boilerplate {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "ApiClient",
 			APIVersion: "1.0",
-			Data:       &security.APIClientConfig{},
+			Data:       apiClientConfig,
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
