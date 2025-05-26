@@ -99,17 +99,17 @@ func (o *applicationOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if o.boilerplate {
-		applicationBoilerplate := &applications.Application{}
 		if o.applicationType == "saml" || o.applicationType == "oidc" || o.applicationType == "aclc" || o.applicationType == "bookmark" || o.applicationType == "" {
-			resource.CreateApplicationBoilerplate(applicationBoilerplate, o.applicationType)
+			resourceObj := &resource.ResourceObject{
+				Kind:       resource.ResourceTypePrefix + "Applications",
+				APIVersion: "1.0",
+				Data:       applications.ApplicationExample(o.applicationType),
+			}
+			cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
+			return nil
+		} else {
+			return errorsx.G11NError(i18n.Translate("unknown application type"))
 		}
-		resourceObj := &resource.ResourceObject{
-			Kind:       resource.ResourceTypePrefix + "Applications",
-			APIVersion: "1.0",
-			Data:       applicationBoilerplate,
-		}
-		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
-		return nil
 	}
 
 	_, err := o.config.SetAuthToContext(cmd.Context())
