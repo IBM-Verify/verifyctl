@@ -46,8 +46,11 @@ You can identify the entitlement required by running:
 		# Create an empty identitySource resource. This can be piped into a file.
 		verifyctl create identitysource --boilerplate
 
+		# Create a identitySource using a YAML file.
+		verifyctl create -f=./identitysource.yaml
+
 		# Create a identitySource using a JSON file.
-		verifyctl create identitysource -f=./identitysource.json`))
+		verifyctl create -f=./identitysource.json`))
 )
 
 type identitySourceOptions struct {
@@ -139,7 +142,6 @@ func (o *identitySourceOptions) createIdentitySource(cmd *cobra.Command) error {
 		return err
 	}
 
-	// create identitySource with data
 	return o.createIdentitySourceWithData(cmd, b)
 }
 
@@ -147,7 +149,6 @@ func (o *identitySourceOptions) createIdentitySourceWithData(cmd *cobra.Command,
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// unmarshal to identitySource
 	identitySource := &authentication.IdentitySource{}
 	if err := yaml.Unmarshal(data, &identitySource); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the Identity Source err=%v", err)
@@ -168,7 +169,6 @@ func (o *identitySourceOptions) createIdentitySourceFromDataMap(cmd *cobra.Comma
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// unmarshal to identitySource
 	identitySource := &authentication.IdentitySource{}
 	b, err := json.Marshal(data)
 	if err != nil {

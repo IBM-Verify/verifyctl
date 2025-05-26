@@ -47,7 +47,7 @@ You can identify the entitlement required by running:
 		verifyctl create attribute --boilerplate
 		
 		# Create an attribute using the API model in JSON format.
-		verifyctl create attribute -f=./customEmail.json`))
+		verifyctl create -f=./customEmail.json`))
 )
 
 type attributeOptions struct {

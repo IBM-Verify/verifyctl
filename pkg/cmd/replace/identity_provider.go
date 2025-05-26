@@ -47,7 +47,7 @@ You can identify the entitlement required by running:
 		verifyctl replace identitysource --boilerplate
 
 		# Update a identitySource from a JSON file
-		verifyctl replace identitysource -f=./identitysource-12345.json --identitySourceID=identitySourceID`))
+		verifyctl replace identitysource --identitySourceID 1234 -f "identitySource.yaml"`))
 )
 
 type identitySourceOptions struct {

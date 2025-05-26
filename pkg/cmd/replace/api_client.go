@@ -42,7 +42,7 @@ var (
         verifyctl replace apiclient --boilerplate
 		
         # Update an apiclient from a YAML file
-        verifyctl replace apiclient -f=./apiclient.yml`))
+        verifyctl replace -f=./apiclient.yml`))
 )
 
 type apiclientOptions struct {

@@ -30,7 +30,7 @@ var (
         # Get an application and print the output in yaml
         verifyctl get application -o=yaml --applicationID=testApplicationID
  
-        # Get 10 applications based on a given search criteria and sort it in the ascending order by name.
+        # Get 2 applications based on a given search criteria and sort it in the ascending order by name.
         verifyctl get applications --count=2 --sort=applicationName -o=yaml`))
 )
 
