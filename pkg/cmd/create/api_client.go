@@ -10,6 +10,7 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/config"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
+	"gopkg.in/yaml.v2"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
@@ -43,9 +44,13 @@ var (
 	apiClientExamples = templates.Examples(cmdutil.TranslateExamples(apiClientMessagePrefix, `
         # Create an empty API client resource.
         verifyctl create apiclient --boilerplate
+
+		
+		# Create an API client using a YAML file.
+        verifyctl create -f=./apiclient.yaml
  
         # Create an API client using a JSON file.
-        verifyctl create apiclient -f=./apiclient.json`))
+        verifyctl create -f=./apiclient.json`))
 )
 
 type apiClientOptions struct {
@@ -105,12 +110,13 @@ func (o *apiClientOptions) Run(cmd *cobra.Command, args []string) error {
 		cmdutil.WriteString(cmd, entitlementsMessage+"  "+apiClientEntitlements)
 		return nil
 	}
-
+	apiClientConfig := &security.APIClientConfig{}
+	resource.CreateAPIClientBoilerplate(apiClientConfig)
 	if o.boilerplate {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "ApiClient",
 			APIVersion: "1.0",
-			Data:       &security.APIClientConfig{},
+			Data:       apiClientConfig,
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
@@ -143,7 +149,7 @@ func (o *apiClientOptions) createAPIClientWithData(cmd *cobra.Command, data []by
 	vc := contextx.GetVerifyContext(ctx)
 
 	apiclient := &security.APIClientConfig{}
-	if err := json.Unmarshal(data, &apiclient); err != nil {
+	if err := yaml.Unmarshal(data, &apiclient); err != nil {
 		vc.Logger.Errorf("unable to unmarshal API client; err=%v", err)
 		return err
 	}
@@ -170,7 +176,6 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, data m
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// Convert map data to JSON
 	apiclient := &security.APIClientConfig{}
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -183,7 +188,6 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, data m
 		return err
 	}
 
-	// Validate required fields
 	if apiclient.ClientName == "" {
 		return errorsx.G11NError("clientName is required")
 	}
@@ -191,7 +195,6 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, data m
 		return errorsx.G11NError("entitlements list is required")
 	}
 
-	// Create API client
 	client := security.NewAPIClient()
 	resourceURI, err := client.CreateAPIClient(ctx, apiclient)
 	if err != nil {
@@ -199,7 +202,6 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, data m
 		return err
 	}
 
-	// Directly return the created resource URI
 	cmdutil.WriteString(cmd, "Resource created: "+resourceURI)
 	return nil
 }

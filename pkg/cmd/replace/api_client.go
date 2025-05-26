@@ -12,6 +12,7 @@ import (
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
@@ -42,7 +43,7 @@ var (
         verifyctl replace apiclient --boilerplate
 		
         # Update an apiclient from a YAML file
-        verifyctl replace apiclient -f=./apiclient.yml`))
+        verifyctl replace -f=./apiclient.yml`))
 )
 
 type apiclientOptions struct {
@@ -129,7 +130,6 @@ func (o *apiclientOptions) updateAPIClient(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// read the file
 	b, err := os.ReadFile(o.file)
 	if err != nil {
 		vc.Logger.Errorf("unable to read file; filename=%s, err=%v", o.file, err)
@@ -143,9 +143,8 @@ func (o *apiclientOptions) updateAPIClientWithData(cmd *cobra.Command, data []by
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// unmarshal to api client object
 	apiclient := &security.APIClientConfig{}
-	if err := json.Unmarshal(data, &apiclient); err != nil {
+	if err := yaml.Unmarshal(data, &apiclient); err != nil {
 		vc.Logger.Errorf("unable to unmarshal to an API client; err=%v", err)
 		return err
 	}
