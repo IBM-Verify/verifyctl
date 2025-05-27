@@ -181,7 +181,7 @@ func (o *attributesOptions) handleAttributeList(cmd *cobra.Command, _ []string) 
 			URI:   uri,
 			Limit: attrs.Limit,
 			Count: attrs.Count,
-			Total: attrs.Total,
+			Total: len(items),
 			Page:  attrs.Page,
 		},
 		Items: items,

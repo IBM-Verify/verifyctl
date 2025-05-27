@@ -180,7 +180,7 @@ func (o *usersOptions) handleUserList(cmd *cobra.Command, _ []string) error {
 		APIVersion: "2.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: int(usrs.TotalResults),
+			Total: len(items),
 		},
 		Items: items,
 	}

@@ -176,7 +176,7 @@ func (o *groupsOptions) handleGroupList(cmd *cobra.Command, _ []string) error {
 		APIVersion: "2.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: int(grps.TotalResults),
+			Total: len(items),
 		},
 		Items: items,
 	}
