@@ -35,8 +35,8 @@ You can identify the entitlement required by running:
 		# Get an identityAgent and print the output in yaml
 		verifyctl get identityagent -o=yaml --identityAgentID=testIdentityAgent
 
-		# Get 2 identityAgents based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get identityagents --count=2 --sort=identityAgentName -o=yaml`))
+		# Get 2 identityAgents based on a given page and limit number.
+		verifyctl get identityagents --limit=2 --page=1 -o=yaml`))
 )
 
 type identityAgentsOptions struct {
@@ -77,7 +77,7 @@ func (o *identityAgentsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, identityAgentResourceName)
 	cmd.Flags().StringVar(&o.identityAgentID, "identityAgentID", o.identityAgentID, i18n.Translate("identityAgentID to get details"))
 	o.addSortFlags(cmd, identityAgentResourceName)
-	o.addCountFlags(cmd, identityAgentResourceName)
+	o.addPaginationFlags(cmd, identityAgentResourceName)
 }
 
 func (o *identityAgentsOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -178,7 +178,7 @@ func (o *identityAgentsOptions) handleIdentityAgentList(cmd *cobra.Command, _ []
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: 10,
+			Total: len(items),
 		},
 		Items: items,
 	}

@@ -35,8 +35,8 @@ You can identify the entitlement required by running:
 		# Get an identitySource and print the output in yaml
 		verifyctl get identitysource -o=yaml --identitySourceID="identitySourceID"
 
-		# Get 2 identitySources based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get identitysources --count=2 --sort=identitysourceName -o=yaml`))
+		# Get 2 identitySources
+		verifyctl get identitysources --limit=1 --page=1 -o=yaml`))
 )
 
 type identitySourcesOptions struct {
@@ -78,6 +78,7 @@ func (o *identitySourcesOptions) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&o.identitySourceID, "identitySourceID", o.identitySourceID, i18n.Translate("IdentitySourceID to get details"))
 	o.addSortFlags(cmd, identitySourceResourceName)
 	o.addCountFlags(cmd, identitySourceResourceName)
+	o.addPaginationFlags(cmd, identitySourceResourceName)
 }
 
 func (o *identitySourcesOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -149,7 +150,7 @@ func (o *identitySourcesOptions) handleSingleIdentitySource(cmd *cobra.Command, 
 func (o *identitySourcesOptions) handleIdentitySourceList(cmd *cobra.Command, _ []string) error {
 
 	c := authentication.NewIdentitySourceClient()
-	iss, uri, err := c.GetIdentitySources(cmd.Context(), o.sort, o.count)
+	iss, uri, err := c.GetIdentitySources(cmd.Context(), o.sort, o.count, o.page, o.limit)
 	if err != nil {
 		return err
 	}
@@ -176,7 +177,7 @@ func (o *identitySourcesOptions) handleIdentitySourceList(cmd *cobra.Command, _ 
 		APIVersion: "2.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: int(iss.Total),
+			Total: len(items),
 		},
 		Items: items,
 	}

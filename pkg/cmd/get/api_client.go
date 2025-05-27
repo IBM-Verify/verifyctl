@@ -37,8 +37,8 @@ You can identify the entitlement required by running:
 		verifyctl get apiclient -o=yaml --clientID=12345
 
 
-		# Get 2 apiclients based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get apiclients --count=2 --sort=apiclientName -o=yaml`))
+		# Get 2 apiclients 
+		verifyctl get apiclients --limit=2 --page=1 -o=yaml`))
 )
 
 type apiclientsOptions struct {
@@ -80,7 +80,7 @@ func (o *apiclientsOptions) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&o.name, "clientName", o.name, i18n.Translate("clientName to get details"))
 	cmd.Flags().StringVar(&o.id, "clientID", o.id, i18n.Translate("clientID to get details"))
 	o.addSortFlags(cmd, apiclientResourceName)
-	o.addCountFlags(cmd, apiclientResourceName)
+	o.addPaginationFlags(cmd, apiclientResourceName)
 }
 
 func (o *apiclientsOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -192,7 +192,7 @@ func (o *apiclientsOptions) handleAPIClientList(cmd *cobra.Command, _ []string) 
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: int(*apiclis.Total),
+			Total: len(items),
 		},
 		Items: items,
 	}
