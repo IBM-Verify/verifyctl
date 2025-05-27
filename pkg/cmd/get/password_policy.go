@@ -179,7 +179,7 @@ func (o *passwordPolicyOptions) handlePasswordPolicyList(cmd *cobra.Command, _ [
 		APIVersion: "3.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: pwds.TotalResults,
+			Total: len(items),
 		},
 		Items: items,
 	}
