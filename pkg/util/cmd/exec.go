@@ -23,7 +23,6 @@ func ExitOnError(cmd *cobra.Command, err error) {
 	}
 
 	_, _ = io.WriteString(cmd.ErrOrStderr(), err.Error()+"\n")
-	_ = cmd.Usage()
 	os.Exit(1)
 }
 

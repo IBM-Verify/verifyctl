@@ -12,6 +12,7 @@ import (
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
@@ -46,7 +47,7 @@ You can identify the entitlement required by running:
 		verifyctl create attribute --boilerplate
 		
 		# Create an attribute using the API model in JSON format.
-		verifyctl create attribute -f=./customEmail.json`))
+		verifyctl create -f=./customEmail.json`))
 )
 
 type attributeOptions struct {
@@ -150,7 +151,7 @@ func (o *attributeOptions) createAttributeWithData(cmd *cobra.Command, data []by
 
 	// unmarshal to attribute
 	attribute := &directory.Attribute{}
-	if err := json.Unmarshal(data, &attribute); err != nil {
+	if err := yaml.Unmarshal(data, &attribute); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the attribute; err=%v", err)
 		return err
 	}
