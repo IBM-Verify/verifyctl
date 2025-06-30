@@ -189,13 +189,13 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	o.config.AddAuth(&config.AuthConfig{
-		Tenant: o.tenant,
+		Tenant: authResource.Tenant,
 		Token:  token,
 		User:   authResource.User,
 	})
 
 	// set current tenant
-	o.config.SetCurrentTenant(o.tenant)
+	o.config.SetCurrentTenant(authResource.Tenant)
 
 	// persist contents
 	if _, err := o.config.PersistFile(); err != nil {
