@@ -84,15 +84,21 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(NewThemesCommand(config, streams))
 	cmd.AddCommand(NewUsersCommand(config, streams))
 	cmd.AddCommand(NewGroupsCommand(config, streams))
-	cmd.AddCommand(NewIdentitysourceCommand(config, streams))
+	cmd.AddCommand(NewAccesspoliciesCommand(config, streams))
+	cmd.AddCommand(NewIdentitySourceCommand(config, streams))
 	cmd.AddCommand(NewAPIClientsCommand(config, streams))
+	cmd.AddCommand(NewApplicationsCommand(config, streams))
+	cmd.AddCommand(NewIdentityAgentsCommand(config, streams))
+	cmd.AddCommand(newPasswordPolicyCommand(config, streams))
+	cmd.AddCommand(newPersonalCertCommand(config, streams))
+	cmd.AddCommand(newSignerCertCommand(config, streams))
 
 	return cmd
 }
 
 func (o *options) addCommonFlags(cmd *cobra.Command, resourceName string) {
 	cmd.Flags().BoolVar(&o.entitlements, "entitlements", o.entitlements, i18n.TranslateWithArgs("List the entitlements that can be configured to grant access to the %s. This is useful to know what to configure on the application or API client used to generate the login token. When this flag is used, the others are ignored.", resourceName))
-	cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Select the format of the output. The values supported are 'json' , 'yaml' and 'raw'. Default: 'json'."))
+	cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Select the format of the output. The values supported are 'json' , 'yaml' and 'raw'. Default: 'yaml'."))
 }
 
 func (o *options) addIdFlag(cmd *cobra.Command, resourceName string) {

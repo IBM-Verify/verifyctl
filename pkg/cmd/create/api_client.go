@@ -5,9 +5,9 @@ import (
 	"io"
 	"os"
 
+	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
-	"github.com/ibm-verify/verifyctl/pkg/module/security"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
 
@@ -43,9 +43,12 @@ var (
 	apiClientExamples = templates.Examples(cmdutil.TranslateExamples(apiClientMessagePrefix, `
         # Create an empty API client resource.
         verifyctl create apiclient --boilerplate
+
+		 # Create an API client using a YAML file.
+        verifyctl create -f=./apiclient.yaml
  
         # Create an API client using a JSON file.
-        verifyctl create apiclient -f=./apiclient.json`))
+        verifyctl create -f=./apiclient.json`))
 )
 
 type apiClientOptions struct {
@@ -110,22 +113,22 @@ func (o *apiClientOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "ApiClient",
 			APIVersion: "1.0",
-			Data:       &security.Client{},
+			Data:       &security.APIClientConfig{},
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
 		return nil
 	}
 
-	auth, err := o.config.GetCurrentAuth()
+	_, err := o.config.GetCurrentAuth()
 	if err != nil {
 		return err
 	}
 
-	return o.createAPIClient(cmd, auth)
+	return o.createAPIClient(cmd)
 }
 
-func (o *apiClientOptions) createAPIClient(cmd *cobra.Command, auth *config.AuthConfig) error {
+func (o *apiClientOptions) createAPIClient(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -135,10 +138,10 @@ func (o *apiClientOptions) createAPIClient(cmd *cobra.Command, auth *config.Auth
 		return err
 	}
 
-	return o.createAPIClientWithData(cmd, auth, b)
+	return o.createAPIClientWithData(cmd, b)
 }
 
-func (o *apiClientOptions) createAPIClientWithData(cmd *cobra.Command, auth *config.AuthConfig, data []byte) error {
+func (o *apiClientOptions) createAPIClientWithData(cmd *cobra.Command, data []byte) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
@@ -156,7 +159,7 @@ func (o *apiClientOptions) createAPIClientWithData(cmd *cobra.Command, auth *con
 	}
 
 	client := security.NewAPIClient()
-	resourceURI, err := client.CreateAPIClient(ctx, auth, apiclient)
+	resourceURI, err := client.CreateAPIClient(ctx, apiclient)
 	if err != nil {
 		vc.Logger.Errorf("failed to create API client; err=%v", err)
 		return err
@@ -166,11 +169,10 @@ func (o *apiClientOptions) createAPIClientWithData(cmd *cobra.Command, auth *con
 	return nil
 }
 
-func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, auth *config.AuthConfig, data map[string]interface{}) error {
+func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, data map[string]interface{}) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// Convert map data to JSON
 	apiclient := &security.APIClientConfig{}
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -183,7 +185,6 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, auth *
 		return err
 	}
 
-	// Validate required fields
 	if apiclient.ClientName == "" {
 		return errorsx.G11NError("clientName is required")
 	}
@@ -191,15 +192,13 @@ func (o *apiClientOptions) createAPIClientFromDataMap(cmd *cobra.Command, auth *
 		return errorsx.G11NError("entitlements list is required")
 	}
 
-	// Create API client
 	client := security.NewAPIClient()
-	resourceURI, err := client.CreateAPIClient(ctx, auth, apiclient)
+	resourceURI, err := client.CreateAPIClient(ctx, apiclient)
 	if err != nil {
 		vc.Logger.Errorf("failed to create API client; err=%v", err)
 		return err
 	}
 
-	// Directly return the created resource URI
 	cmdutil.WriteString(cmd, "Resource created: "+resourceURI)
 	return nil
 }

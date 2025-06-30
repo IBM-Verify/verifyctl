@@ -35,7 +35,7 @@ You can identify the entitlement required by running:
 		# Get an attribute and print the output in yaml
 		verifyctl get attribute -o=yaml --id=work_email
 
-		# Get 10 attributes based on a given search criteria and sort it in the ascending order by name.
+		# Get 2 attributes based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get attributes --search="tags=\"sso\"" --limit=10 --page=1 --sort=+name -o=yaml`))
 )
 
@@ -108,9 +108,7 @@ func (o *attributesOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// invoke the operation
 	if cmd.CalledAs() == "attribute" || len(o.id) > 0 {
-		// deal with single attribute
 		return o.handleSingleAttribute(cmd, args)
 	}
 
@@ -183,7 +181,7 @@ func (o *attributesOptions) handleAttributeList(cmd *cobra.Command, _ []string) 
 			URI:   uri,
 			Limit: attrs.Limit,
 			Count: attrs.Count,
-			Total: attrs.Total,
+			Total: len(items),
 			Page:  attrs.Page,
 		},
 		Items: items,
