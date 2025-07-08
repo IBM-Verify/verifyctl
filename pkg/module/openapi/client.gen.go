@@ -34,6 +34,20 @@ const (
 	APIClientConfigRequestIPFilterOpDeny  APIClientConfigRequestIPFilterOp = "deny"
 )
 
+// Defines values for AccessPolicyResult0Action.
+const (
+	AccessPolicyResult0ActionACTIONALLOW           AccessPolicyResult0Action = "ACTION_ALLOW"
+	AccessPolicyResult0ActionACTIONALLOWOVERRIDE   AccessPolicyResult0Action = "ACTION_ALLOW_OVERRIDE"
+	AccessPolicyResult0ActionACTIONCONTINUE        AccessPolicyResult0Action = "ACTION_CONTINUE"
+	AccessPolicyResult0ActionACTIONDENY            AccessPolicyResult0Action = "ACTION_DENY"
+	AccessPolicyResult0ActionACTIONDENYANDREDIRECT AccessPolicyResult0Action = "ACTION_DENY_AND_REDIRECT"
+	AccessPolicyResult0ActionACTIONDENYOVERRIDE    AccessPolicyResult0Action = "ACTION_DENY_OVERRIDE"
+	AccessPolicyResult0ActionACTIONMFAALWAYS       AccessPolicyResult0Action = "ACTION_MFA_ALWAYS"
+	AccessPolicyResult0ActionACTIONMFAOVERRIDE     AccessPolicyResult0Action = "ACTION_MFA_OVERRIDE"
+	AccessPolicyResult0ActionACTIONMFAPERSESSION   AccessPolicyResult0Action = "ACTION_MFA_PER_SESSION"
+	AccessPolicyResult0ActionACTIONREDIRECT        AccessPolicyResult0Action = "ACTION_REDIRECT"
+)
+
 // Defines values for AddressType.
 const (
 	AddressTypeWork AddressType = "work"
@@ -192,6 +206,30 @@ const (
 	MetaV2DeactivatedTimestamp MetaV2Deactivated = "timestamp"
 )
 
+// Defines values for Metadata0EnforcementType.
+const (
+	Metadata0EnforcementTypeAdaptiveNativeAppMobile Metadata0EnforcementType = "adaptiveNativeAppMobile"
+	Metadata0EnforcementTypeAdaptiveNativeAppWeb    Metadata0EnforcementType = "adaptiveNativeAppWeb"
+	Metadata0EnforcementTypeFedSSO                  Metadata0EnforcementType = "fedSSO"
+	Metadata0EnforcementTypeNativeApp               Metadata0EnforcementType = "nativeApp"
+	Metadata0EnforcementTypeNativeAppMobile         Metadata0EnforcementType = "nativeAppMobile"
+	Metadata0EnforcementTypeNativeAppWeb            Metadata0EnforcementType = "nativeAppWeb"
+)
+
+// Defines values for Metadata0Scope.
+const (
+	Metadata0ScopeAdministrators Metadata0Scope = "administrators"
+	Metadata0ScopeDevelopers     Metadata0Scope = "developers"
+)
+
+// Defines values for Metadata0State.
+const (
+	Metadata0StateACTIVE Metadata0State = "ACTIVE"
+	Metadata0StateDRAFT  Metadata0State = "DRAFT"
+	Metadata0StateDRY    Metadata0State = "DRY"
+	Metadata0StateIDLE   Metadata0State = "IDLE"
+)
+
 // Defines values for NotificationsNotifyType.
 const (
 	NotificationsNotifyTypeEMAIL NotificationsNotifyType = "EMAIL"
@@ -283,6 +321,30 @@ const (
 	PlanPackagePendingDeploymentStateSTAGEFROMDRAFT PlanPackagePendingDeploymentState = "STAGE_FROM_DRAFT"
 	PlanPackagePendingDeploymentStateSUPERSEDE      PlanPackagePendingDeploymentState = "SUPERSEDE"
 	PlanPackagePendingDeploymentStateUPDATE         PlanPackagePendingDeploymentState = "UPDATE"
+)
+
+// Defines values for PolicyMetadataEnforcementType.
+const (
+	PolicyMetadataEnforcementTypeAdaptiveNativeAppMobile PolicyMetadataEnforcementType = "adaptiveNativeAppMobile"
+	PolicyMetadataEnforcementTypeAdaptiveNativeAppWeb    PolicyMetadataEnforcementType = "adaptiveNativeAppWeb"
+	PolicyMetadataEnforcementTypeFedSSO                  PolicyMetadataEnforcementType = "fedSSO"
+	PolicyMetadataEnforcementTypeNativeApp               PolicyMetadataEnforcementType = "nativeApp"
+	PolicyMetadataEnforcementTypeNativeAppMobile         PolicyMetadataEnforcementType = "nativeAppMobile"
+	PolicyMetadataEnforcementTypeNativeAppWeb            PolicyMetadataEnforcementType = "nativeAppWeb"
+)
+
+// Defines values for PolicyMetadataScope.
+const (
+	PolicyMetadataScopeAdministrators PolicyMetadataScope = "administrators"
+	PolicyMetadataScopeDevelopers     PolicyMetadataScope = "developers"
+)
+
+// Defines values for PolicyMetadataState.
+const (
+	PolicyMetadataStateACTIVE PolicyMetadataState = "ACTIVE"
+	PolicyMetadataStateDRAFT  PolicyMetadataState = "DRAFT"
+	PolicyMetadataStateDRY    PolicyMetadataState = "DRY"
+	PolicyMetadataStateIDLE   PolicyMetadataState = "IDLE"
 )
 
 // Defines values for ServletContextDefaultSessionTrackingModes.
@@ -522,6 +584,62 @@ type APIClientScopes struct {
 
 	// Name the name of the scope
 	Name *string `json:"name,omitempty"`
+}
+
+// AccessPolicyCondition defines model for AccessPolicyCondition.
+type AccessPolicyCondition struct {
+	Type *string `json:"type,omitempty"`
+}
+
+// AccessPolicyRequest The request payload to create or update a policy
+type AccessPolicyRequest struct {
+	// ContainsFirstFactor Policy contains firstFactor rules or not.
+	ContainsFirstFactor *bool `json:"containsFirstFactor,omitempty"`
+
+	// Description The description of the policy
+	Description *string `json:"description,omitempty"`
+
+	// Meta Metadata for a access policy
+	Meta *Metadata0 `json:"meta,omitempty"`
+
+	// Name The name of the policy
+	Name        string               `json:"name"`
+	Rules       *[]AccessPolicyRule0 `json:"rules,omitempty"`
+	Validations *PolicyValidations   `json:"validations,omitempty"`
+}
+
+// AccessPolicyResult0 The result of an access policy
+type AccessPolicyResult0 struct {
+	Action *AccessPolicyResult0Action `json:"action,omitempty"`
+
+	// AuthnMethods The authentication methods
+	AuthnMethods      []string            `json:"authnMethods"`
+	ServerSideActions *[]ServerSideAction `json:"serverSideActions,omitempty"`
+}
+
+// AccessPolicyResult0Action defines model for AccessPolicyResult0.Action.
+type AccessPolicyResult0Action string
+
+// AccessPolicyRule0 An access policy rule
+type AccessPolicyRule0 struct {
+	// AlwaysRun Should this rule always run
+	AlwaysRun  bool                     `json:"alwaysRun"`
+	Conditions *[]AccessPolicyCondition `json:"conditions,omitempty"`
+
+	// Description The description of the rule
+	Description *string `json:"description,omitempty"`
+
+	// FirstFactor Is this a first factor rule
+	FirstFactor bool `json:"firstFactor"`
+
+	// ID The rule identifier
+	ID *string `json:"id,omitempty"`
+
+	// Name The name of the rule
+	Name string `json:"name"`
+
+	// Result The result of an access policy
+	Result *AccessPolicyResult0 `json:"result,omitempty"`
 }
 
 // Address defines model for Address.
@@ -1285,6 +1403,15 @@ type Forbidden0 struct {
 	MessageID string `json:"messageId"`
 }
 
+// Forbidden3 The message response to the given request
+type Forbidden3 struct {
+	// MessageDescription Requester locale specific descriptive message.
+	MessageDescription string `json:"messageDescription"`
+
+	// MessageID The message key identifier.
+	MessageID string `json:"messageId"`
+}
+
 // Function defines model for Function.
 type Function struct {
 	// Custom The custom function
@@ -1761,6 +1888,39 @@ type MetaV2 struct {
 // MetaV2Deactivated A readonly string that indicates why the account is deactivated.  Valid values are "api", "timestamp", and "cleanup".  The value "api" means that the user was deactivated by using an API.  The value "timestamp" means that the user was deactivated by the system because the account expired.  The value "cleanup" means that the user was deactivated by the system during account cleanup processing.
 type MetaV2Deactivated string
 
+// Metadata0 Metadata for a access policy
+type Metadata0 struct {
+	// EnforcementType The enforcement type of the policy
+	EnforcementType *Metadata0EnforcementType `json:"enforcementType,omitempty"`
+
+	// EvaluationContext Sub-policy evaluation details
+	EvaluationContext *map[string]string `json:"evaluationContext,omitempty"`
+
+	// Label A label for the revision
+	Label *string `json:"label,omitempty"`
+
+	// Schema The schema version of this policy
+	Schema *string `json:"schema,omitempty"`
+
+	// Scope Which scopes are permitted to apply this policy
+	Scope *[]Metadata0Scope `json:"scope,omitempty"`
+
+	// State The state of the revision
+	State Metadata0State `json:"state"`
+
+	// TenantDefaultPolicy should this policy be the default
+	TenantDefaultPolicy *bool `json:"tenantDefaultPolicy,omitempty"`
+}
+
+// Metadata0EnforcementType The enforcement type of the policy
+type Metadata0EnforcementType string
+
+// Metadata0Scope defines model for Metadata0.Scope.
+type Metadata0Scope string
+
+// Metadata0State The state of the revision
+type Metadata0State string
+
 // Name defines model for Name.
 type Name struct {
 	// FamilyName The family name of the user, or the last name in most Western languages. For example, Jensen is the family name from the full name Ms. Barbara J Jensen, PhD. Maximum length is 80 characters.
@@ -1779,6 +1939,15 @@ type Name struct {
 // NotFound0 defines model for NotFound_0.
 type NotFound0 struct {
 	// MessageDescription A requester locale-specific descriptive message.
+	MessageDescription string `json:"messageDescription"`
+
+	// MessageID The message key identifier.
+	MessageID string `json:"messageId"`
+}
+
+// NotFound2 The message response to the given request
+type NotFound2 struct {
+	// MessageDescription Requester locale specific descriptive message.
 	MessageDescription string `json:"messageDescription"`
 
 	// MessageID The message key identifier.
@@ -2005,6 +2174,100 @@ type PlanPackageDocumentType string
 // PlanPackagePendingDeploymentState defines model for PlanPackage.PendingDeploymentState.
 type PlanPackagePendingDeploymentState string
 
+// PolicyMetadata Metadata for a policy
+type PolicyMetadata struct {
+	// Created The time when this revision was created
+	Created *int64 `json:"created,omitempty"`
+
+	// CreatedBy The user who created this revision
+	CreatedBy       *string                        `json:"createdBy,omitempty"`
+	EnforcementType *PolicyMetadataEnforcementType `json:"enforcementType,omitempty"`
+
+	// Label A label for the revision
+	Label *string `json:"label,omitempty"`
+
+	// LastActive When was this revision's state last 'ACTIVE'
+	LastActive *int64 `json:"lastActive,omitempty"`
+
+	// Modified The time when this revision was last modified
+	Modified *int64 `json:"modified,omitempty"`
+
+	// ModifiedBy The user who last modified this revision
+	ModifiedBy *string `json:"modifiedBy,omitempty"`
+
+	// Predefined Is the policy predefined
+	Predefined *bool `json:"predefined,omitempty"`
+
+	// ReferencedBy Which policies reference this policy
+	ReferencedBy *[]int64 `json:"referencedBy,omitempty"`
+
+	// References Which policies does this policy reference
+	References *[]int64 `json:"references,omitempty"`
+
+	// Revision The revision number for this policy
+	Revision *int32 `json:"revision,omitempty"`
+
+	// Schema The schema version of this policy
+	Schema *string `json:"schema,omitempty"`
+
+	// Scope Which scopes are permitted to apply this policy
+	Scope *[]PolicyMetadataScope `json:"scope,omitempty"`
+
+	// State The state of the revision
+	State PolicyMetadataState `json:"state"`
+
+	// TenantDefaultPolicy should this policy be the default
+	TenantDefaultPolicy *bool `json:"tenantDefaultPolicy,omitempty"`
+}
+
+// PolicyMetadataEnforcementType defines model for PolicyMetadata.EnforcementType.
+type PolicyMetadataEnforcementType string
+
+// PolicyMetadataScope defines model for PolicyMetadata.Scope.
+type PolicyMetadataScope string
+
+// PolicyMetadataState The state of the revision
+type PolicyMetadataState string
+
+// PolicyValidations defines model for PolicyValidations.
+type PolicyValidations struct {
+	SubscriptionsNeeded *[]string `json:"subscriptionsNeeded,omitempty"`
+}
+
+// PolicyVaultList0 A paginated list of policies
+type PolicyVaultList0 struct {
+	// Count The  number of resources returned
+	Count int32 `json:"count"`
+
+	// Limit The limit of the number of resources
+	Limit int32 `json:"limit"`
+
+	// Page The current page of results
+	Page     int32      `json:"page"`
+	Policies *[]Policy0 `json:"policies,omitempty"`
+
+	// Total The total number of resources found
+	Total int32 `json:"total"`
+}
+
+// Policy0 A policy
+type Policy0 struct {
+	// Description The description of the policy
+	Description *string `json:"description,omitempty"`
+
+	// ID The policy identifier
+	ID *int64 `json:"id,omitempty"`
+
+	// Meta Metadata for a policy
+	Meta *PolicyMetadata `json:"meta,omitempty"`
+
+	// Name The name of the policy
+	Name                  string               `json:"name"`
+	RequiredSubscriptions *[]string            `json:"requiredSubscriptions,omitempty"`
+	Rules                 *[]AccessPolicyRule0 `json:"rules,omitempty"`
+	Validations           *PolicyValidations   `json:"validations,omitempty"`
+}
+
 // PostEval defines model for PostEval.
 type PostEval struct {
 	// Custom A custom rule for transforming. This will tranform the attribute mapping. Only one of 'id' or 'custom' can be set on an attribute mapping.
@@ -2090,6 +2353,12 @@ type SchemaAttribute struct {
 
 	// ScimName The SCIM name that is associated with the schema attribute
 	ScimName string `json:"scimName"`
+}
+
+// ServerSideAction The server side actions for the policy
+type ServerSideAction struct {
+	ActionID *string `json:"actionId,omitempty"`
+	Version  *string `json:"version,omitempty"`
 }
 
 // ServletContext defines model for ServletContext.
@@ -2437,6 +2706,15 @@ type TransformObject struct {
 
 	// StatusCode StatusCode is an incoming transform parameter.
 	StatusCode *int64 `json:"statusCode,omitempty"`
+}
+
+// Unauthorized1 The message response to the given request
+type Unauthorized1 struct {
+	// MessageDescription Requester locale specific descriptive message.
+	MessageDescription string `json:"messageDescription"`
+
+	// MessageID The message key identifier.
+	MessageID string `json:"messageId"`
 }
 
 // UserGroupV1 Represents a user group
@@ -2875,6 +3153,18 @@ type GetInstancesV2Params struct {
 // GetInstancesV2ParamsFilter defines parameters for GetInstancesV2.
 type GetInstancesV2ParamsFilter string
 
+// ListAccessPoliciesParams defines parameters for ListAccessPolicies.
+type ListAccessPoliciesParams struct {
+	// Pagination Controls the results that are returned in a page.<br><br>You can use the following query parameters:<br><br><b>count</b> - Optional. Use to define the total number of results that are returned from the data store. The maximum allowed value is 1000. If excluded will be set to limit.<br><br><b>page</b> - Use to identify the requested page, or the offset.<br><br><b>limit</b> - Use to define the total number of results that are returned per page. The maximum allowed value is 1000.<br><br>A maximum of 200 results are returned if no pagination query parameters are passed.<br><br><b>Note</b>: The pagination parameter value must be HTML encoded. Use the prefix "pagination=" in the query parameter.<br><br><b>Example</b>: Paginate on count=10&page=1&limit=5<br>pagination=count%3D10%26page%3D1%26limit%3D5
+	Pagination *string `form:"pagination,omitempty" json:"pagination,omitempty"`
+
+	// Search Returns results based on the search criteria.<br><br>Valid operators for Strings are = , != and contains. Use double quotation marks for the search values.<br>Valid operators for Booleans are = and !=<br>Valid operators for Numbers are >=, >, &lt;=, &lt;, = and !=<br><br><b>Note</b>: The search parameter value must be HTML encoded. Use the prefix "search=" in the query parameter.<br><br><b>Example</b>: Search on id contains "fd45"&enabled=true<br>search=id%20contains%20%22fd45%22%26enabled%3Dtrue
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+
+	// Filter Displays results based on the filter criteria.<br><br>Filter values to be inclusive or exclusive only. It cannot be combined.<br><br>Use a comma (,) to separate multiple filter parameters.<br><br><b>Note</b>: The filter parameter value must be HTML encoded. Use the prefix "filter=" in the query parameter.<br><br><b>Examples</b><br>Filter to return only id : filter=id<br>Filter to exclude id and enabled : filter=%21id,enabled
+	Filter *string `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
 // PostOauth2TokenFormdataRequestBody defines body for PostOauth2Token for application/x-www-form-urlencoded ContentType.
 type PostOauth2TokenFormdataRequestBody = TokenRequest
 
@@ -2919,6 +3209,15 @@ type CreateIdentitySourceV2JSONRequestBody = IdentitySourceInstancesData
 
 // UpdateIdentitySourceV2JSONRequestBody defines body for UpdateIdentitySourceV2 for application/json ContentType.
 type UpdateIdentitySourceV2JSONRequestBody = IdentitySourceInstancesData
+
+// CreateAccessPolicyJSONRequestBody defines body for CreateAccessPolicy for application/json ContentType.
+type CreateAccessPolicyJSONRequestBody = AccessPolicyRequest
+
+// CreateAccessPolicyRevisionJSONRequestBody defines body for CreateAccessPolicyRevision for application/json ContentType.
+type CreateAccessPolicyRevisionJSONRequestBody = AccessPolicyRequest
+
+// UpdateAccessPolicyJSONRequestBody defines body for UpdateAccessPolicy for application/json ContentType.
+type UpdateAccessPolicyJSONRequestBody = AccessPolicyRequest
 
 // Getter for additional properties for Header. Returns the specified
 // element and whether it was found
@@ -3216,6 +3515,30 @@ type ClientInterface interface {
 	UpdateIdentitySourceV2WithBody(ctx context.Context, instanceID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateIdentitySourceV2(ctx context.Context, instanceID string, body UpdateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListAccessPolicies request
+	ListAccessPolicies(ctx context.Context, params *ListAccessPoliciesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateAccessPolicyWithBody request with any body
+	CreateAccessPolicyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAccessPolicy(ctx context.Context, body CreateAccessPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAccessPolicy request
+	DeleteAccessPolicy(ctx context.Context, policyID int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAccessPolicy request
+	GetAccessPolicy(ctx context.Context, policyID int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateAccessPolicyRevisionWithBody request with any body
+	CreateAccessPolicyRevisionWithBody(ctx context.Context, policyID int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAccessPolicyRevision(ctx context.Context, policyID int64, body CreateAccessPolicyRevisionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAccessPolicyWithBody request with any body
+	UpdateAccessPolicyWithBody(ctx context.Context, policyID int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateAccessPolicy(ctx context.Context, policyID int64, body UpdateAccessPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) PostOauth2TokenWithBody(ctx context.Context, params *PostOauth2TokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3820,6 +4143,114 @@ func (c *Client) UpdateIdentitySourceV2WithBody(ctx context.Context, instanceID 
 
 func (c *Client) UpdateIdentitySourceV2(ctx context.Context, instanceID string, body UpdateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateIdentitySourceV2Request(c.Server, instanceID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAccessPolicies(ctx context.Context, params *ListAccessPoliciesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAccessPoliciesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAccessPolicyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAccessPolicyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAccessPolicy(ctx context.Context, body CreateAccessPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAccessPolicyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAccessPolicy(ctx context.Context, policyID int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAccessPolicyRequest(c.Server, policyID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAccessPolicy(ctx context.Context, policyID int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAccessPolicyRequest(c.Server, policyID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAccessPolicyRevisionWithBody(ctx context.Context, policyID int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAccessPolicyRevisionRequestWithBody(c.Server, policyID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAccessPolicyRevision(ctx context.Context, policyID int64, body CreateAccessPolicyRevisionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAccessPolicyRevisionRequest(c.Server, policyID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAccessPolicyWithBody(ctx context.Context, policyID int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAccessPolicyRequestWithBody(c.Server, policyID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAccessPolicy(ctx context.Context, policyID int64, body UpdateAccessPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAccessPolicyRequest(c.Server, policyID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -6327,6 +6758,289 @@ func NewUpdateIdentitySourceV2RequestWithBody(server string, instanceID string, 
 	return req, nil
 }
 
+// NewListAccessPoliciesRequest generates requests for ListAccessPolicies
+func NewListAccessPoliciesRequest(server string, params *ListAccessPoliciesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v5.0/policyvault/accesspolicy")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Pagination != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "pagination", runtime.ParamLocationQuery, *params.Pagination); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Search != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "search", runtime.ParamLocationQuery, *params.Search); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Filter != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "filter", runtime.ParamLocationQuery, *params.Filter); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateAccessPolicyRequest calls the generic CreateAccessPolicy builder with application/json body
+func NewCreateAccessPolicyRequest(server string, body CreateAccessPolicyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAccessPolicyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateAccessPolicyRequestWithBody generates requests for CreateAccessPolicy with any type of body
+func NewCreateAccessPolicyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v5.0/policyvault/accesspolicy")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteAccessPolicyRequest generates requests for DeleteAccessPolicy
+func NewDeleteAccessPolicyRequest(server string, policyID int64) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "policyId", runtime.ParamLocationPath, policyID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v5.0/policyvault/accesspolicy/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAccessPolicyRequest generates requests for GetAccessPolicy
+func NewGetAccessPolicyRequest(server string, policyID int64) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "policyId", runtime.ParamLocationPath, policyID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v5.0/policyvault/accesspolicy/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateAccessPolicyRevisionRequest calls the generic CreateAccessPolicyRevision builder with application/json body
+func NewCreateAccessPolicyRevisionRequest(server string, policyID int64, body CreateAccessPolicyRevisionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAccessPolicyRevisionRequestWithBody(server, policyID, "application/json", bodyReader)
+}
+
+// NewCreateAccessPolicyRevisionRequestWithBody generates requests for CreateAccessPolicyRevision with any type of body
+func NewCreateAccessPolicyRevisionRequestWithBody(server string, policyID int64, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "policyId", runtime.ParamLocationPath, policyID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v5.0/policyvault/accesspolicy/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdateAccessPolicyRequest calls the generic UpdateAccessPolicy builder with application/json body
+func NewUpdateAccessPolicyRequest(server string, policyID int64, body UpdateAccessPolicyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAccessPolicyRequestWithBody(server, policyID, "application/json", bodyReader)
+}
+
+// NewUpdateAccessPolicyRequestWithBody generates requests for UpdateAccessPolicy with any type of body
+func NewUpdateAccessPolicyRequestWithBody(server string, policyID int64, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "policyId", runtime.ParamLocationPath, policyID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v5.0/policyvault/accesspolicy/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -6510,6 +7224,30 @@ type ClientWithResponsesInterface interface {
 	UpdateIdentitySourceV2WithBodyWithResponse(ctx context.Context, instanceID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIdentitySourceV2Object, error)
 
 	UpdateIdentitySourceV2WithResponse(ctx context.Context, instanceID string, body UpdateIdentitySourceV2JSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIdentitySourceV2Object, error)
+
+	// ListAccessPoliciesWithResponse request
+	ListAccessPoliciesWithResponse(ctx context.Context, params *ListAccessPoliciesParams, reqEditors ...RequestEditorFn) (*ListAccessPoliciesObject, error)
+
+	// CreateAccessPolicyWithBodyWithResponse request with any body
+	CreateAccessPolicyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAccessPolicyObject, error)
+
+	CreateAccessPolicyWithResponse(ctx context.Context, body CreateAccessPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAccessPolicyObject, error)
+
+	// DeleteAccessPolicyWithResponse request
+	DeleteAccessPolicyWithResponse(ctx context.Context, policyID int64, reqEditors ...RequestEditorFn) (*DeleteAccessPolicyObject, error)
+
+	// GetAccessPolicyWithResponse request
+	GetAccessPolicyWithResponse(ctx context.Context, policyID int64, reqEditors ...RequestEditorFn) (*GetAccessPolicyObject, error)
+
+	// CreateAccessPolicyRevisionWithBodyWithResponse request with any body
+	CreateAccessPolicyRevisionWithBodyWithResponse(ctx context.Context, policyID int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAccessPolicyRevisionObject, error)
+
+	CreateAccessPolicyRevisionWithResponse(ctx context.Context, policyID int64, body CreateAccessPolicyRevisionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAccessPolicyRevisionObject, error)
+
+	// UpdateAccessPolicyWithBodyWithResponse request with any body
+	UpdateAccessPolicyWithBodyWithResponse(ctx context.Context, policyID int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAccessPolicyObject, error)
+
+	UpdateAccessPolicyWithResponse(ctx context.Context, policyID int64, body UpdateAccessPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAccessPolicyObject, error)
 }
 
 type PostOauth2TokenObject struct {
@@ -7452,6 +8190,151 @@ func (r UpdateIdentitySourceV2Object) StatusCode() int {
 	return 0
 }
 
+type ListAccessPoliciesObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PolicyVaultList0
+	JSON401      *Unauthorized1
+	JSON403      *Forbidden3
+	JSON404      *NotFound2
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAccessPoliciesObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAccessPoliciesObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAccessPolicyObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *Policy0
+	JSON401      *Unauthorized1
+	JSON403      *Forbidden3
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAccessPolicyObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAccessPolicyObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAccessPolicyObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized1
+	JSON403      *Forbidden3
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAccessPolicyObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAccessPolicyObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAccessPolicyObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Policy0
+	JSON401      *Unauthorized1
+	JSON403      *Forbidden3
+	JSON404      *NotFound2
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAccessPolicyObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAccessPolicyObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAccessPolicyRevisionObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *Policy0
+	JSON401      *Unauthorized1
+	JSON403      *Forbidden3
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAccessPolicyRevisionObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAccessPolicyRevisionObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateAccessPolicyObject struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Policy0
+	JSON401      *Unauthorized1
+	JSON403      *Forbidden3
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAccessPolicyObject) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAccessPolicyObject) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // PostOauth2TokenWithBodyWithResponse request with arbitrary body returning *PostOauth2TokenObject
 func (c *ClientWithResponses) PostOauth2TokenWithBodyWithResponse(ctx context.Context, params *PostOauth2TokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOauth2TokenObject, error) {
 	rsp, err := c.PostOauth2TokenWithBody(ctx, params, contentType, body, reqEditors...)
@@ -7897,6 +8780,84 @@ func (c *ClientWithResponses) UpdateIdentitySourceV2WithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseUpdateIdentitySourceV2Object(rsp)
+}
+
+// ListAccessPoliciesWithResponse request returning *ListAccessPoliciesObject
+func (c *ClientWithResponses) ListAccessPoliciesWithResponse(ctx context.Context, params *ListAccessPoliciesParams, reqEditors ...RequestEditorFn) (*ListAccessPoliciesObject, error) {
+	rsp, err := c.ListAccessPolicies(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAccessPoliciesObject(rsp)
+}
+
+// CreateAccessPolicyWithBodyWithResponse request with arbitrary body returning *CreateAccessPolicyObject
+func (c *ClientWithResponses) CreateAccessPolicyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAccessPolicyObject, error) {
+	rsp, err := c.CreateAccessPolicyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAccessPolicyObject(rsp)
+}
+
+func (c *ClientWithResponses) CreateAccessPolicyWithResponse(ctx context.Context, body CreateAccessPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAccessPolicyObject, error) {
+	rsp, err := c.CreateAccessPolicy(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAccessPolicyObject(rsp)
+}
+
+// DeleteAccessPolicyWithResponse request returning *DeleteAccessPolicyObject
+func (c *ClientWithResponses) DeleteAccessPolicyWithResponse(ctx context.Context, policyID int64, reqEditors ...RequestEditorFn) (*DeleteAccessPolicyObject, error) {
+	rsp, err := c.DeleteAccessPolicy(ctx, policyID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAccessPolicyObject(rsp)
+}
+
+// GetAccessPolicyWithResponse request returning *GetAccessPolicyObject
+func (c *ClientWithResponses) GetAccessPolicyWithResponse(ctx context.Context, policyID int64, reqEditors ...RequestEditorFn) (*GetAccessPolicyObject, error) {
+	rsp, err := c.GetAccessPolicy(ctx, policyID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAccessPolicyObject(rsp)
+}
+
+// CreateAccessPolicyRevisionWithBodyWithResponse request with arbitrary body returning *CreateAccessPolicyRevisionObject
+func (c *ClientWithResponses) CreateAccessPolicyRevisionWithBodyWithResponse(ctx context.Context, policyID int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAccessPolicyRevisionObject, error) {
+	rsp, err := c.CreateAccessPolicyRevisionWithBody(ctx, policyID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAccessPolicyRevisionObject(rsp)
+}
+
+func (c *ClientWithResponses) CreateAccessPolicyRevisionWithResponse(ctx context.Context, policyID int64, body CreateAccessPolicyRevisionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAccessPolicyRevisionObject, error) {
+	rsp, err := c.CreateAccessPolicyRevision(ctx, policyID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAccessPolicyRevisionObject(rsp)
+}
+
+// UpdateAccessPolicyWithBodyWithResponse request with arbitrary body returning *UpdateAccessPolicyObject
+func (c *ClientWithResponses) UpdateAccessPolicyWithBodyWithResponse(ctx context.Context, policyID int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAccessPolicyObject, error) {
+	rsp, err := c.UpdateAccessPolicyWithBody(ctx, policyID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAccessPolicyObject(rsp)
+}
+
+func (c *ClientWithResponses) UpdateAccessPolicyWithResponse(ctx context.Context, policyID int64, body UpdateAccessPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAccessPolicyObject, error) {
+	rsp, err := c.UpdateAccessPolicy(ctx, policyID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAccessPolicyObject(rsp)
 }
 
 // ParsePostOauth2TokenObject parses an HTTP response from a PostOauth2TokenWithResponse call
@@ -9434,6 +10395,253 @@ func ParseUpdateIdentitySourceV2Object(rsp *http.Response) (*UpdateIdentitySourc
 	response := &UpdateIdentitySourceV2Object{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListAccessPoliciesObject parses an HTTP response from a ListAccessPoliciesWithResponse call
+func ParseListAccessPoliciesObject(rsp *http.Response) (*ListAccessPoliciesObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAccessPoliciesObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PolicyVaultList0
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden3
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound2
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAccessPolicyObject parses an HTTP response from a CreateAccessPolicyWithResponse call
+func ParseCreateAccessPolicyObject(rsp *http.Response) (*CreateAccessPolicyObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAccessPolicyObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Policy0
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden3
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAccessPolicyObject parses an HTTP response from a DeleteAccessPolicyWithResponse call
+func ParseDeleteAccessPolicyObject(rsp *http.Response) (*DeleteAccessPolicyObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAccessPolicyObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden3
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAccessPolicyObject parses an HTTP response from a GetAccessPolicyWithResponse call
+func ParseGetAccessPolicyObject(rsp *http.Response) (*GetAccessPolicyObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAccessPolicyObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Policy0
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden3
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound2
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAccessPolicyRevisionObject parses an HTTP response from a CreateAccessPolicyRevisionWithResponse call
+func ParseCreateAccessPolicyRevisionObject(rsp *http.Response) (*CreateAccessPolicyRevisionObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAccessPolicyRevisionObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Policy0
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden3
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAccessPolicyObject parses an HTTP response from a UpdateAccessPolicyWithResponse call
+func ParseUpdateAccessPolicyObject(rsp *http.Response) (*UpdateAccessPolicyObject, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAccessPolicyObject{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Policy0
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized1
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden3
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
