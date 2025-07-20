@@ -36,7 +36,6 @@ You can identify the entitlement required by running:
 		verifyctl get apiclient -o=yaml --clientName=testApiclient
 		verifyctl get apiclient -o=yaml --clientID=12345
 
-
 		# Get 2 apiclients 
 		verifyctl get apiclients --limit=2 --page=1 -o=yaml`))
 )

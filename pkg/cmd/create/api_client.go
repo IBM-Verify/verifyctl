@@ -10,6 +10,7 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/config"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
+	"gopkg.in/yaml.v3"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
@@ -44,7 +45,7 @@ var (
         # Create an empty API client resource.
         verifyctl create apiclient --boilerplate
 
-		 # Create an API client using a YAML file.
+		    # Create an API client using a YAML file.
         verifyctl create -f=./apiclient.yaml
  
         # Create an API client using a JSON file.
@@ -108,12 +109,11 @@ func (o *apiClientOptions) Run(cmd *cobra.Command, args []string) error {
 		cmdutil.WriteString(cmd, entitlementsMessage+"  "+apiClientEntitlements)
 		return nil
 	}
-
 	if o.boilerplate {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "ApiClient",
 			APIVersion: "1.0",
-			Data:       &security.APIClientConfig{},
+			Data:       security.APIClientExample(),
 		}
 
 		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
@@ -146,7 +146,7 @@ func (o *apiClientOptions) createAPIClientWithData(cmd *cobra.Command, data []by
 	vc := contextx.GetVerifyContext(ctx)
 
 	apiclient := &security.APIClientConfig{}
-	if err := json.Unmarshal(data, &apiclient); err != nil {
+	if err := yaml.Unmarshal(data, &apiclient); err != nil {
 		vc.Logger.Errorf("unable to unmarshal API client; err=%v", err)
 		return err
 	}
