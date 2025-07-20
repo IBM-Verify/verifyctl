@@ -151,7 +151,7 @@ func (o *identitySourcesOptions) handleSingleIdentitySource(cmd *cobra.Command, 
 func (o *identitySourcesOptions) handleIdentitySourceList(cmd *cobra.Command, _ []string) error {
 
 	c := authentication.NewIdentitySourceClient()
-	iss, uri, err := c.GetIdentitySources(cmd.Context(), o.sort, o.count)
+	iss, uri, err := c.GetIdentitySources(cmd.Context(), o.sort, o.count, 0, 0)
 	if err != nil {
 		return err
 	}

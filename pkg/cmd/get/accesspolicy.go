@@ -151,7 +151,7 @@ func (o *accessPoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, _ [
 func (o *accessPoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAccessPolicyClient()
-	accessPolicies, uri, err := c.GetAccessPolicies(cmd.Context())
+	accessPolicies, uri, err := c.GetAccessPolicies(cmd.Context(), 0, 0)
 	if err != nil {
 		return err
 	}
