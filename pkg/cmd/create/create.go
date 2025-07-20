@@ -91,7 +91,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 	cmd.AddCommand(newUserCommand(config, streams))
 	cmd.AddCommand(newGroupCommand(config, streams))
 	cmd.AddCommand(newAccessPolicyCommand(config, streams))
-	cmd.AddCommand(newIdentitysourceCommand(config, streams))
+	cmd.AddCommand(newIdentitySourceCommand(config, streams))
 	cmd.AddCommand(newAPIClientCommand(config, streams))
 	cmd.AddCommand(newApplicationCommand(config, streams))
 	cmd.AddCommand(newPasswordPolicyCommand(config, streams))
@@ -132,7 +132,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		return errorsx.G11NError("No 'kind' defined. Resource type cannot be identified.")
 	}
 
-	auth, err := o.config.SetAuthToContext(cmd.Context())
+	_, err = o.config.SetAuthToContext(cmd.Context())
 	if err != nil {
 		return err
 	}
@@ -155,8 +155,8 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		err = options.createAccessPolicyFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "IdentitySource":
-		options := &identitysourceOptions{}
-		err = options.createIdentitySourceFromDataMap(cmd, auth, resourceObject.Data.(map[string]interface{}))
+		options := &identitySourceOptions{}
+		err = options.createIdentitySourceFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
 	case resource.ResourceTypePrefix + "APIClient":
 		options := &apiClientOptions{}
