@@ -187,6 +187,6 @@ func (o *passwordPolicyOptions) updatePasswordPolicyFromDataMap(cmd *cobra.Comma
 		return err
 	}
 
-	cmdutil.WriteString(cmd, "Resource updated")
+	cmdutil.WriteString(cmd, "Password Policy updated successfully")
 	return nil
 }
