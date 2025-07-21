@@ -50,7 +50,7 @@ You can identify the entitlement required by running:
 verifyctl create passwordpolicy --boilerplate
 
 # Create a password policy using the API model in YAML format.
-verifyctl create passwordpolicy -f=./password_Policy.yaml`,
+verifyctl create -f=./password_Policy.yaml`,
 		),
 	)
 )

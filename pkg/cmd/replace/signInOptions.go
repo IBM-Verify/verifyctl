@@ -35,10 +35,10 @@ var (
 
 	signInOptionsExamples = templates.Examples(cmdutil.TranslateExamples(signInOptionsMessagePrefix, `
 		# Generate an empty sign-in options template
-		verifyctl replace sign-in-options --boilerplate
+		verifyctl replace --boilerplate
  
-		# Update sign-in options for an identity provider from a JSON file
-		verifyctl replace sign-in-options -f=./signin-options.json`))
+		# Update sign-in options for an identity provider from a YAML file
+		verifyctl replace -f=./signin-options.yaml`))
 )
 
 type signInOptions struct {

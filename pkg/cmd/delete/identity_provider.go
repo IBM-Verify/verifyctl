@@ -101,9 +101,7 @@ func (o *identitySourcesOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// invoke the operation
 	if cmd.CalledAs() == "identitysource" || len(o.identitySourceID) > 0 {
-		// deal with single identitySource
 		return o.handleSingleIdentitySource(cmd, args)
 	}
 	return nil

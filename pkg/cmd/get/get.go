@@ -98,7 +98,7 @@ func NewCommand(config *config.CLIConfig, streams io.ReadWriter, groupID string)
 
 func (o *options) addCommonFlags(cmd *cobra.Command, resourceName string) {
 	cmd.Flags().BoolVar(&o.entitlements, "entitlements", o.entitlements, i18n.TranslateWithArgs("List the entitlements that can be configured to grant access to the %s. This is useful to know what to configure on the application or API client used to generate the login token. When this flag is used, the others are ignored.", resourceName))
-	cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Select the format of the output. The values supported are 'json' , 'yaml' and 'raw'. Default: 'json'."))
+	cmd.Flags().StringVarP(&o.output, "output", "o", "", i18n.Translate("Select the format of the output. The values supported are 'json' , 'yaml' and 'raw'. Default: 'yaml'."))
 }
 
 func (o *options) addIdFlag(cmd *cobra.Command, resourceName string) {

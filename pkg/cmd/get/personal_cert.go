@@ -32,9 +32,8 @@ var (
 		# Get a specific personal certificate by lable
 		verifyctl get personalCert -o=yaml --personalCertLabel=testpersonalCert
  
-		# Get 2 policies based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get personalCerts --count=2 --sort=personalCertLabel -o=yaml
-		`))
+		# Get all certificates
+		verifyctl get personalCerts -o=yaml	`))
 )
 
 type personalCertOptions struct {
@@ -70,8 +69,6 @@ func newPersonalCertCommand(config *config.CLIConfig, streams io.ReadWriter) *co
 func (o *personalCertOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, personalCertResourceName)
 	cmd.Flags().StringVar(&o.label, "personalCertLabel", o.label, i18n.Translate("personalCertName to get details"))
-	o.addSortFlags(cmd, personalCertResourceName)
-	o.addCountFlags(cmd, personalCertResourceName)
 }
 
 func (o *personalCertOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -179,7 +176,8 @@ func (o *personalCertOptions) handlePersonalCertList(cmd *cobra.Command, _ []str
 		Kind:       resource.ResourceTypePrefix + "List",
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
-			URI: uri,
+			URI:   uri,
+			Total: len(items),
 		},
 		Items: items,
 	}

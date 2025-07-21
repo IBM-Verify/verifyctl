@@ -7,6 +7,7 @@ import (
 
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
+	"gopkg.in/yaml.v3"
 
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/directory"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
@@ -45,8 +46,11 @@ You can identify the entitlement required by running:
 		# Create an empty user resource. This can be piped into a file.
 		verifyctl create user --boilerplate
 
+		# Create a user using a YAML file.
+		verifyctl create -f "./user.yaml
+
 		# Create a user using a JSON file.
-		verifyctl create user -f=./user.json`))
+		verifyctl create -f "./user.json"`))
 )
 
 type userOptions struct {
@@ -134,7 +138,7 @@ func (o *userOptions) createUser(cmd *cobra.Command) error {
 	// get the contents of the file
 	b, err := os.ReadFile(o.file)
 	if err != nil {
-		vc.Logger.Errorf("unable to read file; filename=%s, err=%v", o.file, err)
+		vc.Logger.Errorf("Unable to read file; filename=%s, err=%v", o.file, err)
 		return err
 	}
 
@@ -148,7 +152,7 @@ func (o *userOptions) createUserWithData(cmd *cobra.Command, data []byte) error 
 
 	// unmarshal to user
 	user := &directory.User{}
-	if err := json.Unmarshal(data, &user); err != nil {
+	if err := yaml.Unmarshal(data, &user); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the user; err=%v", err)
 		return err
 	}

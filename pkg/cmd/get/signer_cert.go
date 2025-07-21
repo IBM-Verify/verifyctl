@@ -32,8 +32,8 @@ var (
 		# Get a specific Signer certificate by lable
 		verifyctl get signerCert -o=yaml --signerCertLabel=testsignerCert
 
-		# Get 2 policies based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get signerCerts --count=2 --sort=signerCertLabel -o=yaml
+		# Get all certificates
+		verifyctl get signerCerts -o=yaml
 		`))
 )
 
@@ -70,8 +70,7 @@ func newSignerCertCommand(config *config.CLIConfig, streams io.ReadWriter) *cobr
 func (o *signerCertOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, signerCertResourceName)
 	cmd.Flags().StringVar(&o.label, "signerCertLabel", o.label, i18n.Translate("signerCertName to get details"))
-	o.addSortFlags(cmd, signerCertResourceName)
-	o.addCountFlags(cmd, signerCertResourceName)
+
 }
 
 func (o *signerCertOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -183,7 +182,8 @@ func (o *signerCertOptions) handleSignerCertList(cmd *cobra.Command, _ []string)
 		Kind:       resource.ResourceTypePrefix + "List",
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
-			URI: uri,
+			URI:   uri,
+			Total: len(items),
 		},
 		Items: items,
 	}
