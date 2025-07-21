@@ -45,7 +45,7 @@ You can identify the entitlement required by running:
 		# Create an empty accessPolicy resource. This can be piped into a file.
 		verifyctl create accesspolicy --boilerplate
 
-		# Create a accessPolicy using a TAML file.
+		# Create a accessPolicy using a YAML file.
 		verifyctl create -f=./accesspolicy.yaml
 
 		# Create a accessPolicy using a JSON file.

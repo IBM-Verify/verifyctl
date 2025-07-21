@@ -46,7 +46,7 @@ You can identify the entitlement required by running:
 		verifyctl replace user --boilerplate
 		
 		# Update a user from a JSON file
-		verifyctl replace -f=./user-12345.json OR verifyctl replace -f ./user-12345.json`))
+		verifyctl replace -f=./user-12345.json`))
 )
 
 type userOptions struct {
