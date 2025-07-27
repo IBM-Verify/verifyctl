@@ -6,9 +6,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/workflow"
-	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
 
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
@@ -29,7 +29,6 @@ const (
 // ModelTransformRequest represents the request structure for model transformation
 type ModelTransformRequest struct {
 	ModelFile    io.Reader `json:"-"`
-	SourceFormat string    `json:"sourceFormat" yaml:"sourceFormat"`
 	TargetFormat string    `json:"targetFormat" yaml:"targetFormat"`
 }
 
@@ -59,11 +58,11 @@ You can identify the entitlement required by running:
         # Create an empty transform resource. This can be piped into a file.
         verifyctl create transform --boilerplate
 
-        # Transform a model using a file.
-        verifyctl create transform -f=./model.onnx --source-format=onnx --target-format=tensorrt
+        # Transform a model using a file 
+        verifyctl create transform -f=./model.json --target-format=bpmn -o /out.xml
 
         # Transform a model using a JSON configuration file.
-        verifyctl create transform -c=./transform-config.json`))
+        verifyctl create transform -c=./transform-config.json -o /out.xml`))
 )
 
 type transformOptions struct {
@@ -71,7 +70,6 @@ type transformOptions struct {
 
 	config       *config.CLIConfig
 	modelFile    string
-	sourceFormat string
 	targetFormat string
 	configFile   string
 	outputFile   string
@@ -107,8 +105,7 @@ func newTransformCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra
 func (o *transformOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, transformResourceName)
 	cmd.Flags().StringVarP(&o.modelFile, "file", "f", "", "Path to the model file to transform.")
-	cmd.Flags().StringVarP(&o.sourceFormat, "source-format", "s", "", "Source format of the model (e.g., onnx, tensorflow, pytorch).")
-	cmd.Flags().StringVarP(&o.targetFormat, "target-format", "t", "", "Target format for the model (e.g., tensorrt, onnx, coreml).")
+	cmd.Flags().StringVarP(&o.targetFormat, "target-format", "t", "", "Target format for the model (e.g., tensorrt, onnx, coreml, bpmn).")
 	cmd.Flags().StringVarP(&o.configFile, "config", "c", "", "Path to the JSON configuration file containing transform parameters.")
 	cmd.Flags().StringVarP(&o.outputFile, "output", "o", "", "Path to save the transformed model (default: stdout).")
 }
@@ -116,10 +113,6 @@ func (o *transformOptions) AddFlags(cmd *cobra.Command) {
 func (o *transformOptions) addCommonFlags(cmd *cobra.Command, resourceName string) {
 	cmd.Flags().BoolVar(&o.boilerplate, "boilerplate", false, "Generate an empty "+resourceName+" resource.")
 	cmd.Flags().BoolVar(&o.entitlements, "entitlements", false, "Display the entitlements required for this resource.")
-}
-
-func (o *transformOptions) Complete(cmd *cobra.Command, args []string) error {
-	return nil
 }
 
 func (o *transformOptions) Validate(cmd *cobra.Command, args []string) error {
@@ -139,13 +132,11 @@ func (o *transformOptions) Validate(cmd *cobra.Command, args []string) error {
 		return errorsx.G11NError("The 'file' option is required if no config file is provided.")
 	}
 
-	if len(o.sourceFormat) == 0 {
-		return errorsx.G11NError("The 'source-format' option is required if no config file is provided.")
-	}
-
 	if len(o.targetFormat) == 0 {
 		return errorsx.G11NError("The 'target-format' option is required if no config file is provided.")
 	}
+
+	// filename is auto-detected in Complete(), so no need to validate it as required
 
 	// Validate model file exists
 	if _, err := os.Stat(o.modelFile); os.IsNotExist(err) {
@@ -162,16 +153,16 @@ func (o *transformOptions) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if o.boilerplate {
-		resourceObj := &resource.ResourceObject{
-			Kind:       resource.ResourceTypePrefix + "ModelTransform",
-			APIVersion: "2.0",
-			Data: &workflow.ModelTransformRequest{
-				SourceFormat: "onnx",
-				TargetFormat: "tensorrt",
-			},
+		resourceObj := &workflow.ModelTransformRequest{
+			TargetFormat: "bpmn",
+			ModelPath:    "/path/dsl.json",
 		}
 
-		cmdutil.WriteAsYAML(cmd, resourceObj, cmd.OutOrStdout())
+		encoder := json.NewEncoder(cmd.OutOrStdout())
+		encoder.SetIndent("", "  ") // Pretty print
+		if err := encoder.Encode(resourceObj); err != nil {
+			return errorsx.G11NError("failed to write boilerplate JSON: %v", err)
+		}
 		return nil
 	}
 
@@ -194,8 +185,10 @@ func (o *transformOptions) transformModel(cmd *cobra.Command) error {
 		// Transform using config file
 		result, err = o.transformModelWithConfig(cmd)
 	} else {
-		// Transform using direct parameters
-		result, err = o.transformModelFromFile(ctx, o.modelFile, o.sourceFormat, o.targetFormat)
+		// Derive filename
+		fileName := filepath.Base(o.modelFile)
+		// Transform using direct parameter
+		result, err = o.transformModelFromFile(ctx, o.modelFile, o.targetFormat, fileName)
 	}
 
 	if err != nil {
@@ -224,47 +217,54 @@ func (o *transformOptions) transformModel(cmd *cobra.Command) error {
 	return nil
 }
 
-func (o *transformOptions) transformModelFromFile(ctx context.Context, filePath, sourceFormat, targetFormat string) ([]byte, error) {
-
+func (o *transformOptions) transformModelFromFile(ctx context.Context, filePath, targetFormat, filename string) ([]byte, error) {
 	// This is where you would call the actual ModelTransformClient
-
 	client := workflow.NewModelTransformClient()
-	return client.TransformModelFromFile(ctx, filePath, sourceFormat, targetFormat)
+
+	// Open the file
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, errorsx.G11NError("unable to open model file; err=%v", err)
+	}
+	defer file.Close()
+
+	// Call the client with filename
+	return client.TransformModel(ctx, file, targetFormat, filename)
 }
 
 func (o *transformOptions) transformModelWithConfig(cmd *cobra.Command) ([]byte, error) {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// Read the config file
 	configData, err := os.ReadFile(o.configFile)
 	if err != nil {
 		vc.Logger.Errorf("unable to read config file; filename=%s, err=%v", o.configFile, err)
 		return nil, errorsx.G11NError("unable to read config file; filename=%s, err=%v", o.configFile, err)
 	}
 
-	// Parse the config
 	var transformReq workflow.ModelTransformRequest
 	if err := json.Unmarshal(configData, &transformReq); err != nil {
 		vc.Logger.Errorf("unable to parse config file; err=%v", err)
 		return nil, errorsx.G11NError("unable to parse config file; err=%v", err)
 	}
 
-	// Determine model file path - use from command line
 	modelFilePath := o.modelFile
 	if modelFilePath == "" {
-		return nil, errorsx.G11NError("model file must be specified via --file option when using config file")
+		modelFilePath = transformReq.ModelPath
+	}
+	if modelFilePath == "" {
+		return nil, errorsx.G11NError("model file must be specified via --file option or in config")
 	}
 
-	// This is where you would call the actual ModelTransformClient
-
-	client := workflow.NewModelTransformClient()
 	file, err := os.Open(modelFilePath)
 	if err != nil {
-		return nil, err
+		return nil, errorsx.G11NError("unable to open model file; err=%v", err)
 	}
 	defer file.Close()
-	transformReq.ModelFile = file
-	return client.TransformModelFromRequest(ctx, &transformReq)
 
+	// Derive filename
+	fileName := filepath.Base(modelFilePath)
+
+	client := workflow.NewModelTransformClient()
+	return client.TransformModel(ctx, file, transformReq.TargetFormat, fileName)
 }
