@@ -10,6 +10,7 @@ import (
 	"github.com/ibm-verify/verifyctl/pkg/config"
 	cmdutil "github.com/ibm-verify/verifyctl/pkg/util/cmd"
 	"github.com/ibm-verify/verifyctl/pkg/util/templates"
+	"gopkg.in/yaml.v3"
 
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
 	errorsx "github.com/ibm-verify/verify-sdk-go/pkg/core/errors"
@@ -149,7 +150,7 @@ func (o *identityAgentOptions) createIdentityAgentWithData(cmd *cobra.Command, d
 	vc := contextx.GetVerifyContext(ctx)
 
 	identityAgentConfig := &integrations.IdentityAgentConfig{}
-	if err := json.Unmarshal(data, &identityAgentConfig); err != nil {
+	if err := yaml.Unmarshal(data, &identityAgentConfig); err != nil {
 		vc.Logger.Errorf("unable to unmarshal Identity Agent; err=%v", err)
 		return err
 	}

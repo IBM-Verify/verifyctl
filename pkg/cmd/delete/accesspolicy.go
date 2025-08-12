@@ -101,9 +101,7 @@ func (o *accessPoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// invoke the operation
 	if cmd.CalledAs() == "accesspolicy" || len(o.accessPolicyID) > 0 {
-		// deal with single accessPolicy
 		return o.handleSingleAccessPolicy(cmd, args)
 	}
 	return nil

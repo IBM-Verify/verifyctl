@@ -45,8 +45,7 @@ var (
         # Create an empty API client resource.
         verifyctl create apiclient --boilerplate
 
-		
-		# Create an API client using a YAML file.
+		    # Create an API client using a YAML file.
         verifyctl create -f=./apiclient.yaml
  
         # Create an API client using a JSON file.

@@ -35,8 +35,8 @@ You can identify the entitlement required by running:
 		# Get an accessPolicy and print the output in yaml
 		verifyctl get accesspolicy -o=yaml --ID=testAccesspolicyID
 
-		# Get 10 accessPolicies based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get accesspolicies --count=2 --sort=accessPolicyName -o=yaml`))
+		# Get 2 accessPolicies .
+		verifyctl get accesspolicies --limit=2 --page=1 -o=yaml`))
 )
 
 type accessPoliciesOptions struct {
@@ -76,7 +76,8 @@ func NewAccesspoliciesCommand(config *config.CLIConfig, streams io.ReadWriter) *
 func (o *accessPoliciesOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, accessPolicyResourceName)
 	cmd.Flags().StringVar(&o.accessPolicyID, "accessPolicyID", o.accessPolicyID, i18n.Translate("accessPolicyID to get details"))
-
+	o.addSortFlags(cmd, accessPolicyResourceName)
+	o.addPaginationFlags(cmd, accessPolicyResourceName)
 }
 
 func (o *accessPoliciesOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -108,7 +109,6 @@ func (o *accessPoliciesOptions) Run(cmd *cobra.Command, args []string) error {
 
 	// invoke the operation
 	if cmd.CalledAs() == "accesspolicy" || len(o.accessPolicyID) > 0 {
-		// deal with single accessPolicy
 		return o.handleSingleAccesspolicy(cmd, args)
 	}
 
@@ -151,7 +151,7 @@ func (o *accessPoliciesOptions) handleSingleAccesspolicy(cmd *cobra.Command, _ [
 func (o *accessPoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewAccessPolicyClient()
-	accessPolicies, uri, err := c.GetAccessPolicies(cmd.Context(), 0, 0)
+	accessPolicies, uri, err := c.GetAccessPolicies(cmd.Context(), o.page, o.limit)
 	if err != nil {
 		return err
 	}
@@ -179,7 +179,7 @@ func (o *accessPoliciesOptions) handleAccesspolicyList(cmd *cobra.Command, _ []s
 		APIVersion: "5.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: int(accessPolicies.Total),
+			Total: len(items),
 		},
 		Items: items,
 	}

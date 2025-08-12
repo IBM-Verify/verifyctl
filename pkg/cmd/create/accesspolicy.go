@@ -7,6 +7,7 @@ import (
 
 	"github.com/ibm-verify/verifyctl/pkg/cmd/resource"
 	"github.com/ibm-verify/verifyctl/pkg/config"
+	"gopkg.in/yaml.v3"
 
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/security"
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
@@ -44,8 +45,11 @@ You can identify the entitlement required by running:
 		# Create an empty accessPolicy resource. This can be piped into a file.
 		verifyctl create accesspolicy --boilerplate
 
+		# Create a accessPolicy using a YAML file.
+		verifyctl create -f=./accesspolicy.yaml
+
 		# Create a accessPolicy using a JSON file.
-		verifyctl create accesspolicy -f=./accesspolicy.json`))
+		verifyctl create -f=./accesspolicy.json`))
 )
 
 type accessPolicyOptions struct {
@@ -130,14 +134,12 @@ func (o *accessPolicyOptions) createAccessPolicy(cmd *cobra.Command) error {
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// get the contents of the file
 	b, err := os.ReadFile(o.file)
 	if err != nil {
 		vc.Logger.Errorf("unable to read file; filename=%s, err=%v", o.file, err)
 		return err
 	}
 
-	// create accessPolicy with data
 	return o.createAccessPolicyWithData(cmd, b)
 }
 
@@ -145,9 +147,8 @@ func (o *accessPolicyOptions) createAccessPolicyWithData(cmd *cobra.Command, dat
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// unmarshal to accessPolicy
 	accessPolicy := &security.Policy{}
-	if err := json.Unmarshal(data, &accessPolicy); err != nil {
+	if err := yaml.Unmarshal(data, &accessPolicy); err != nil {
 		vc.Logger.Errorf("unable to unmarshal the accessPolicy; err=%v", err)
 		return err
 	}
@@ -166,7 +167,6 @@ func (o *accessPolicyOptions) createAccessPolicyFromDataMap(cmd *cobra.Command, 
 	ctx := cmd.Context()
 	vc := contextx.GetVerifyContext(ctx)
 
-	// unmarshal to accessPolicy
 	accessPolicy := &security.Policy{}
 	b, err := json.Marshal(data)
 	if err != nil {

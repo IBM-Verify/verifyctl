@@ -30,8 +30,8 @@ var (
         # Get an application and print the output in yaml
         verifyctl get application -o=yaml --applicationID=testApplicationID
  
-        # Get 10 applications based on a given search criteria and sort it in the ascending order by name.
-        verifyctl get applications --count=2 --sort=applicationName -o=yaml`))
+        # Get 2 applications
+        verifyctl get applications --limit=2 --page=1 -o=yaml`))
 )
 
 type applicationsOptions struct {
@@ -68,7 +68,7 @@ func (o *applicationsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, applicationResourceName)
 	cmd.Flags().StringVar(&o.applicationID, "applicationID", o.applicationID, i18n.Translate("applicationID to get details"))
 	o.addSortFlags(cmd, applicationResourceName)
-	o.addCountFlags(cmd, applicationResourceName)
+	o.addPaginationFlags(cmd, applicationResourceName)
 }
 
 func (o *applicationsOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -164,7 +164,7 @@ func (o *applicationsOptions) handleApplicationClientList(cmd *cobra.Command, _ 
 		APIVersion: "1.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: int(*appls.TotalCount),
+			Total: len(items),
 		},
 		Items: items,
 	}

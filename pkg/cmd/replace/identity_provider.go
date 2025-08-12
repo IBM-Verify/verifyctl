@@ -47,7 +47,7 @@ You can identify the entitlement required by running:
 		verifyctl replace identitysource --boilerplate
 
 		# Update a identitySource from a JSON file
-		verifyctl replace identitysource -f=./identitysource-12345.json --identitySourceID=identitySourceID`))
+		verifyctl replace identitysource --identitySourceID 1234 -f "identitySource.yaml"`))
 )
 
 type identitySourceOptions struct {
@@ -67,6 +67,7 @@ func newIdentitySourceCommand(config *config.CLIConfig, streams io.ReadWriter) *
 		Long:                  identitySourceLongDesc,
 		Example:               identitySourceExamples,
 		DisableFlagsInUseLine: true,
+		SilenceUsage:          true,
 		Run: func(cmd *cobra.Command, args []string) {
 			cmdutil.ExitOnError(cmd, o.Complete(cmd, args))
 			cmdutil.ExitOnError(cmd, o.Validate(cmd, args))

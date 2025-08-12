@@ -35,7 +35,7 @@ You can identify the entitlement required by running:
 		# Get an group and print the output in yaml
 		verifyctl get group -o=yaml --displayName=admin
 
-		# Get 10 groups based on a given search criteria and sort it in the ascending order by name.
+		# Get 2 groups based on a given search criteria and sort it in the ascending order by name.
 		verifyctl get groups --count=2 --sort=groupName -o=yaml`))
 )
 
@@ -107,9 +107,7 @@ func (o *groupsOptions) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// invoke the operation
 	if cmd.CalledAs() == "group" || len(o.name) > 0 {
-		// deal with single group
 		return o.handleSingleGroup(cmd, args)
 	}
 
@@ -178,7 +176,7 @@ func (o *groupsOptions) handleGroupList(cmd *cobra.Command, _ []string) error {
 		APIVersion: "2.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: int(grps.TotalResults),
+			Total: len(items),
 		},
 		Items: items,
 	}

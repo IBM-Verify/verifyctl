@@ -35,8 +35,8 @@ verifyctl get passwordpolicy --entitlements`))
 # Get a specific password policy by ID
 verifyctl get passwordpolicy -o=yaml --passwordPolicyID=testPasswordPolicyID
 
-# Get 10 policies based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get password-policies --count=2 --sort=policyName -o=yaml
+# Get all policies
+		verifyctl get passwordpolicies -o=yaml
 `))
 )
 
@@ -77,8 +77,6 @@ func newPasswordPolicyCommand(config *config.CLIConfig, streams io.ReadWriter) *
 func (o *passwordPolicyOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, passwordPolicyResourceName)
 	cmd.Flags().StringVar(&o.passwordPolicyID, "passwordPolicyID", o.passwordPolicyID, i18n.Translate("passwordPolicyID to get details"))
-	o.addSortFlags(cmd, passwordPolicyResourceName)
-	o.addCountFlags(cmd, passwordPolicyResourceName)
 }
 
 func (o *passwordPolicyOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -151,7 +149,7 @@ func (o *passwordPolicyOptions) handleSinglePasswordPolicy(cmd *cobra.Command, _
 func (o *passwordPolicyOptions) handlePasswordPolicyList(cmd *cobra.Command, _ []string) error {
 
 	c := security.NewPasswordPolicyClient()
-	pwds, uri, err := c.GetPasswordPolicies(cmd.Context(), o.sort, o.count)
+	pwds, uri, err := c.GetPasswordPolicies(cmd.Context(), "", "")
 	if err != nil {
 		return err
 	}
@@ -179,7 +177,7 @@ func (o *passwordPolicyOptions) handlePasswordPolicyList(cmd *cobra.Command, _ [
 		APIVersion: "3.0",
 		Metadata: &resource.ResourceObjectMetadata{
 			URI:   uri,
-			Total: pwds.TotalResults,
+			Total: len(items),
 		},
 		Items: items,
 	}

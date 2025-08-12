@@ -32,7 +32,7 @@ You can identify the entitlement required by running:
 
 	usersExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an user
-		verifyctl delete user --name=userName`,
+		verifyctl delete user --userName=userName`,
 	))
 )
 
