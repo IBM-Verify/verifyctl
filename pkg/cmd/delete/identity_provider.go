@@ -32,7 +32,7 @@ You can identify the entitlement required by running:
 
 	identitySourcesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an identitySource
-		verifyctl delete identitysource --identitySourceID=identitySourceID`,
+		verifyctl delete identitysource --identitySource "identitySourceID"`,
 	))
 )
 

@@ -34,13 +34,13 @@ You can identify the entitlement required by running:
 
 	themesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# List themes
-		verifyctl get themes --outfile=./themes.yaml --page=1 --limit=100
+		verifyctl get themes --outfile "themes.yaml" --page 1 --limit 100
 		
 		# Download a single theme as a zip file
-		verifyctl get theme --id=mythemeid --outfile=./theme.zip
+		verifyctl get theme --id "mythemeid" --outfile "theme.zip"
 		
 		# Download a single theme and uncompress it to a directory
-		verifyctl get theme --id=mythemeid --unpack --outdir=./mythemeid`))
+		verifyctl get theme --id "mythemeid" --unpack --outdir "mythemeid"`))
 )
 
 type themesOptions struct {

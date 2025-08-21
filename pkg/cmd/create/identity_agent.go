@@ -46,7 +46,7 @@ var (
         verifyctl create identityagent --boilerplate
  
         # Create an Identity Agent using a JSON file.
-        verifyctl create identityagent -f=./identityagent.json`))
+        verifyctl create identityagent -f "identityagent.json"`))
 )
 
 type identityAgentOptions struct {

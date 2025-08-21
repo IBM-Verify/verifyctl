@@ -33,10 +33,10 @@ The flags supported by each resource type may differ and can be determined using
 
 	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Get an application
-		verifyctl get application -o=yaml --id=1098012
+		verifyctl get application -o "yaml" --id "1098012"
 
 		# Get all users that match department "2A". There may be limits introduced by the API.
-		verifyctl get users --filter="urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department eq \"2A\"" --attributes="userName,emails,urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager" -o yaml`))
+		verifyctl get users --filter "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department eq \"2A\"" --attributes "userName,emails,urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager" -o "yaml"`))
 
 	entitlementsMessage = i18n.Translate("Choose any of the following entitlements to configure your application or API client:\n")
 )

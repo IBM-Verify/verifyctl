@@ -33,10 +33,10 @@ You can identify the entitlement required by running:
 
 	accessPoliciesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Get an accessPolicy and print the output in yaml
-		verifyctl get accesspolicy -o=yaml --ID=testAccesspolicyID
+		verifyctl get accesspolicy -o "yaml" --ID "testAccesspolicyID"
 
 		# Get 2 accessPolicies .
-		verifyctl get accesspolicies --limit=2 --page=1 -o=yaml`))
+		verifyctl get accesspolicies --limit 2 --page 1 -o "yaml"`))
 )
 
 type accessPoliciesOptions struct {

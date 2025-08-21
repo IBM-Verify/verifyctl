@@ -30,10 +30,10 @@ var (
 
 	personalCertExamples = templates.Examples(cmdutil.TranslateExamples(personalCertMessagePrefix, `
 		# Get a specific personal certificate by lable
-		verifyctl get personalCert -o=yaml --personalCertLabel=testpersonalCert
+		verifyctl get personalCert -o "yaml" --personalCertLabel "testpersonalCert"
  
 		# Get all certificates
-		verifyctl get personalCerts -o=yaml	`))
+		verifyctl get personalCerts -o "yaml"`))
 )
 
 type personalCertOptions struct {

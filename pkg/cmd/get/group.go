@@ -33,10 +33,10 @@ You can identify the entitlement required by running:
 
 	groupsExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Get an group and print the output in yaml
-		verifyctl get group -o=yaml --displayName=admin
+		verifyctl get group -o "yaml" --displayName "admin"
 
 		# Get 2 groups based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get groups --count=2 --sort=groupName -o=yaml`))
+		verifyctl get groups --count 2 --sort "groupName" -o "yaml"`))
 )
 
 type groupsOptions struct {

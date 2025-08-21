@@ -28,7 +28,7 @@ var (
 
 	applicationExamples = templates.Examples(cmdutil.TranslateExamples(applicationsMessagePrefix, `
         # Get an application and print the output in yaml
-        verifyctl get application -o=yaml --applicationID=testApplicationID
+        verifyctl get application -o=yaml --applicationID "testApplicationID"
  
         # Get 2 applications
         verifyctl get applications --limit=2 --page=1 -o=yaml`))

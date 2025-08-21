@@ -43,7 +43,7 @@ The auth resource file can be generated using:
 		#
 		# The connection created is permitted to perform actions based on the entitlements that
 		# are configured on the OAuth client and the entitlements of the user based on assigned groups and roles.
-		verifyctl auth -f=login.yaml
+		verifyctl auth -f "login.yaml"
 	`))
 )
 

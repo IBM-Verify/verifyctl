@@ -34,14 +34,14 @@ You can identify the entitlement required by running:
 
 	themesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Update theme using a zip file
-		verifyctl set theme --id=mythemeid --file=./mytheme.zip
+		verifyctl set theme --id "mythemeid" --file "mytheme.zip"
 
 		# Update theme by pointing at a directory with the theme directory structure, starting
 		# with 'templates' directory
-		verifyctl set theme --id=mythemeid --dir=./mytheme
+		verifyctl set theme --id "mythemeid" --dir "mytheme"
 		
 		# Upload a theme template file
-		verifyctl set theme --id=mythemeid --file=./mylogo.png --path=common/logo/default/logo.png`))
+		verifyctl set theme --id "mythemeid" --file "mylogo.png" --path "common/logo/default/logo.png"`))
 )
 
 type themesOptions struct {

@@ -33,7 +33,7 @@ You can identify the entitlement required by running:
 
 	identityAgentExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an Identity Agent by ID
-		verifyctl delete identityagent --identityAgentID="12345"`,
+		verifyctl delete identityagent --identityAgentID "12345"`,
 	))
 )
 

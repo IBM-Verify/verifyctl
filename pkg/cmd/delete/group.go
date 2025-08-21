@@ -32,7 +32,7 @@ You can identify the entitlement required by running:
 
 	groupsExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete a group
-		verifyctl delete group --displayName=Sales`,
+		verifyctl delete group --displayName "Sales"`,
 	))
 )
 

@@ -44,7 +44,7 @@ Certain resources may offer additional options and can be determined using:
 
 	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Update an application
-		verifyctl replace -f=./app-1098012.json`))
+		verifyctl replace -f "app.json"`))
 
 	entitlementsMessage = i18n.Translate("Choose any of the following entitlements to configure your application or API client:\n")
 )

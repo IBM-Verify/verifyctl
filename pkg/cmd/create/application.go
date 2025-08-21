@@ -36,7 +36,7 @@ var (
         verifyctl create application --boilerplate
 
         # Create an application using a YAML file.
-        verifyctl create -f=./application.yaml`))
+        verifyctl create -f "application.yaml"`))
 )
 
 type applicationOptions struct {

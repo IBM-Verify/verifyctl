@@ -45,7 +45,7 @@ You can identify the entitlement required by running:
 		verifyctl replace accesspolicy --boilerplate
 		
 		# Update a accessPolicy from a YAML file
-		verifyctl replace -f=./accesspolicy-12345.yaml`))
+		verifyctl replace -f "accesspolicy.yaml"`))
 )
 
 type accessPolicyOptions struct {

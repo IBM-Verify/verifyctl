@@ -33,8 +33,8 @@ Certain resources may offer additional options and can be determined using:
   verifyctl delete [resource-type] -h`))
 
 	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
-		# Delete an user
-		verifyctl delete [resource-type] --name=userName`))
+		# Delete an application
+		verifyctl delete application --applicationID "applicationID"`))
 
 	entitlementsMessage = i18n.Translate("Choose any of the following entitlements to configure your application or API client:\n")
 )

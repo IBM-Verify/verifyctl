@@ -38,7 +38,7 @@ var (
 		verifyctl replace --boilerplate
  
 		# Update sign-in options for an identity provider from a YAML file
-		verifyctl replace -f=./signin-options.yaml`))
+		verifyctl replace -f "signin-options.yaml"`))
 )
 
 type signInOptions struct {

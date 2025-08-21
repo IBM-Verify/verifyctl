@@ -46,10 +46,10 @@ var (
         verifyctl create apiclient --boilerplate
 
 		    # Create an API client using a YAML file.
-        verifyctl create -f=./apiclient.yaml
+        verifyctl create -f "apiclient.yaml"
  
         # Create an API client using a JSON file.
-        verifyctl create -f=./apiclient.json`))
+        verifyctl create -f "apiclient.json"`))
 )
 
 type apiClientOptions struct {

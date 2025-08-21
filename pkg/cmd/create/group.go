@@ -47,7 +47,7 @@ You can identify the entitlement required by running:
 		verifyctl create group --boilerplate
 
 		# Create a group using a JSON file.
-		verifyctl create -f=./group.json`))
+		verifyctl create -f "group.json"`))
 )
 
 type groupOptions struct {

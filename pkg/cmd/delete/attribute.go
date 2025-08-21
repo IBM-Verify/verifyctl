@@ -31,7 +31,7 @@ var (
 
 	attributeExamples = templates.Examples(cmdutil.TranslateExamples(attributeMessagePrefix, `
         # Delete an attribute by ID
-        verifyctl delete attribute --id=some-attribute-id
+        verifyctl delete attribute --id "some-attribute-id"
     `))
 )
 
