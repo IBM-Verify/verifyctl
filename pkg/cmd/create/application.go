@@ -101,7 +101,7 @@ func (o *applicationOptions) Run(cmd *cobra.Command, args []string) error {
 	if o.boilerplate {
 		if o.applicationType == "saml" || o.applicationType == "oidc" || o.applicationType == "aclc" || o.applicationType == "bookmark" || o.applicationType == "" {
 			resourceObj := &resource.ResourceObject{
-				Kind:       resource.ResourceTypePrefix + "Applications",
+				Kind:       resource.ResourceTypePrefix + "Application",
 				APIVersion: "1.0",
 				Data:       applications.ApplicationExample(o.applicationType),
 			}
