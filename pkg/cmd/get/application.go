@@ -31,7 +31,10 @@ var (
         verifyctl get application -o=yaml --applicationID "testApplicationID"
  
         # Get 2 applications
-        verifyctl get applications --limit=2 --page=1 -o=yaml`))
+        verifyctl get applications --limit=2 --page=1 -o=yaml
+
+		# To sort applications [To sort results, supported values are 'name' and 'entityid'. Prepend the attribute with '+' or '-' sign for ascending and descending sorted order respectively. If not specified, sorted in ascending order on entityid. The entity id corresponds to application id]
+		verifyctl get applications --sort "-name"`))
 )
 
 type applicationsOptions struct {
