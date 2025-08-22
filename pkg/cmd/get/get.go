@@ -51,8 +51,10 @@ type options struct {
 	search       string
 	count        string
 	//properties   string
-	id   string
-	name string
+	id        string
+	name      string
+	sortBy    string
+	sortOrder string
 
 	config *config.CLIConfig
 }
