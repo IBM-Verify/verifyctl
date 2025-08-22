@@ -35,8 +35,8 @@ You can identify the entitlement required by running:
 		# Get an group and print the output in yaml
 		verifyctl get group -o "yaml" --displayName "admin"
 
-		# Get 2 groups based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get groups --count 2 --sort "groupName" -o "yaml"`))
+		# Get 2 groups and sort it in the [ascending/descending] order by id.
+		verifyctl get groups --count 2 --sortBy id --sortOrder descending`))
 )
 
 type groupsOptions struct {
@@ -76,7 +76,8 @@ func NewGroupsCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Co
 func (o *groupsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, groupResourceName)
 	cmd.Flags().StringVar(&o.name, "displayName", o.name, i18n.Translate("Group displayName to get details"))
-	o.addSortFlags(cmd, groupResourceName)
+	cmd.Flags().StringVar(&o.sortBy, "sortBy", o.name, i18n.Translate("fieldName on which sorting would be applied"))
+	cmd.Flags().StringVar(&o.sortOrder, "sortOrder", o.name, i18n.Translate("sorting order"))
 	o.addCountFlags(cmd, groupResourceName)
 }
 
@@ -149,7 +150,7 @@ func (o *groupsOptions) handleSingleGroup(cmd *cobra.Command, _ []string) error 
 func (o *groupsOptions) handleGroupList(cmd *cobra.Command, _ []string) error {
 
 	c := directory.NewGroupClient()
-	grps, uri, err := c.GetGroups(cmd.Context(), o.sort, o.count)
+	grps, uri, err := c.GetGroups(cmd.Context(), o.sortBy, o.sortOrder, o.count)
 	if err != nil {
 		return err
 	}
