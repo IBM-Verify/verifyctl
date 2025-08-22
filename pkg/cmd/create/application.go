@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/ibm-verify/verify-sdk-go/pkg/config/applications"
 	contextx "github.com/ibm-verify/verify-sdk-go/pkg/core/context"
@@ -73,7 +74,7 @@ func newApplicationCommand(config *config.CLIConfig, streams io.ReadWriter) *cob
 func (o *applicationOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, applicationResourceName)
 	cmd.Flags().StringVarP(&o.file, "file", "f", "", i18n.Translate("Path to the yaml file containing application data"))
-	cmd.Flags().StringVarP(&o.applicationType, "applicationType", "t", "", i18n.Translate("Application type [OIDC, ACLC, SAML, BOOKMARK]"))
+	cmd.Flags().StringVarP(&o.applicationType, "applicationType", "t", "", i18n.Translate("Application type [oidc, aclc, saml, bookmark]"))
 }
 
 func (o *applicationOptions) Complete(cmd *cobra.Command, args []string) error {
@@ -93,6 +94,7 @@ func (o *applicationOptions) Validate(cmd *cobra.Command, args []string) error {
 }
 
 func (o *applicationOptions) Run(cmd *cobra.Command, args []string) error {
+	o.applicationType = strings.ToLower(o.applicationType)
 	if o.entitlements {
 		cmdutil.WriteString(cmd, entitlementsMessage+" "+applicationEntitlements)
 		return nil
