@@ -112,9 +112,9 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "User",
 			APIVersion: "2.0",
-			Data: &directory.User{
-				ID:       "<id>",
-				UserName: "<name>",
+			Data: &directory.UserPatchRequest{
+				UserName:         "<name>",
+				SCIMPatchRequest: directory.UserPatchExample(),
 			},
 		}
 
