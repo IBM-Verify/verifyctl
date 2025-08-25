@@ -32,7 +32,7 @@ You can identify the entitlement required by running:
 
 	accessPoliciesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an accessPolicy
-		verifyctl delete accesspolicy --ID=accesspolicyID`,
+		verifyctl delete accesspolicy --ID "accesspolicyID"`,
 	))
 )
 

@@ -46,7 +46,7 @@ You can identify the entitlement required by running:
 		verifyctl replace attribute --boilerplate
 		
 		# Create an attribute using the API model in JSON format.
-		verifyctl replace -f=./customEmail.json`))
+		verifyctl replace -f "customEmail.json"`))
 )
 
 type attributeOptions struct {

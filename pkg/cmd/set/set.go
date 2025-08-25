@@ -34,7 +34,7 @@ The flags supported by each resource type may differ and can be determined using
 
 	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Set an application and write it to a file
-		verifyctl set application --file ./app-1098012.yaml`))
+		verifyctl set application --file "app-1098012.yaml"`))
 
 	entitlementsMessage = i18n.Translate("Choose any of the following entitlements to configure your application or API client:\n")
 )

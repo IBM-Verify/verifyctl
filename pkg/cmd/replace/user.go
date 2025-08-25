@@ -46,7 +46,7 @@ You can identify the entitlement required by running:
 		verifyctl replace user --boilerplate
 		
 		# Update a user from a JSON file
-		verifyctl replace -f=./user-12345.json`))
+		verifyctl replace -f "user-12345.json"`))
 )
 
 type userOptions struct {
@@ -112,9 +112,9 @@ func (o *userOptions) Run(cmd *cobra.Command, args []string) error {
 		resourceObj := &resource.ResourceObject{
 			Kind:       resource.ResourceTypePrefix + "User",
 			APIVersion: "2.0",
-			Data: &directory.User{
-				ID:       "<id>",
-				UserName: "<name>",
+			Data: &directory.UserPatchRequest{
+				UserName:         "<name>",
+				SCIMPatchRequest: directory.UserPatchExample(),
 			},
 		}
 

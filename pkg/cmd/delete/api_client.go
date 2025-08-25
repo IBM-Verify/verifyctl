@@ -33,10 +33,10 @@ You can identify the entitlement required by running:
 
 	apiclientExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an API client by name
-		verifyctl delete apiclient --clientName="clientName",
+		verifyctl delete apiclient --clientName "clientName",
 
 		# Delete an API client by ID
-		verifyctl delete apiclient --clientID="12345"`,
+		verifyctl delete apiclient --clientID "12345"`,
 	))
 )
 

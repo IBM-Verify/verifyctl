@@ -47,10 +47,10 @@ You can identify the entitlement required by running:
 		verifyctl create identitysource --boilerplate
 
 		# Create a identitySource using a YAML file.
-		verifyctl create -f=./identitysource.yaml
+		verifyctl create -f "identitysource.yaml"
 
 		# Create a identitySource using a JSON file.
-		verifyctl create -f=./identitysource.json`))
+		verifyctl create -f "identitysource.json"`))
 )
 
 type identitySourceOptions struct {

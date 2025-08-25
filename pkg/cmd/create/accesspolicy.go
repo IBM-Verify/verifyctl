@@ -46,10 +46,10 @@ You can identify the entitlement required by running:
 		verifyctl create accesspolicy --boilerplate
 
 		# Create a accessPolicy using a YAML file.
-		verifyctl create -f=./accesspolicy.yaml
+		verifyctl create -f "accesspolicy.yaml"
 
 		# Create a accessPolicy using a JSON file.
-		verifyctl create -f=./accesspolicy.json`))
+		verifyctl create -f "accesspolicy.json"`))
 )
 
 type accessPolicyOptions struct {

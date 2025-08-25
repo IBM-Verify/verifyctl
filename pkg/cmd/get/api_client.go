@@ -33,11 +33,11 @@ You can identify the entitlement required by running:
 
 	apiclientsExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Get an apiclient and print the output in yaml
-		verifyctl get apiclient -o=yaml --clientName=testApiclient
-		verifyctl get apiclient -o=yaml --clientID=12345
+		verifyctl get apiclient -o yaml --clientName "testApiclient"
+		verifyctl get apiclient -o yaml --clientID "12345"
 
 		# Get 2 apiclients 
-		verifyctl get apiclients --limit=2 --page=1 -o=yaml`))
+		verifyctl get apiclients --limit 2 --page 1 -o "yaml"`))
 )
 
 type apiclientsOptions struct {

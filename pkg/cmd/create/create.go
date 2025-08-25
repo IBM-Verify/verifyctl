@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	usage         = "create -f=FILENAME [options]"
+	usage         = "create -f FILENAME"
 	messagePrefix = "Create"
 )
 
@@ -44,10 +44,7 @@ Certain resources may offer additional options and can be determined using:
 
 	examples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Create an application
-		verifyctl create -f=./app-1098012.json`))
-
-	// # Create and get an attribute
-	// verifyctl create -f=./attribute.yml -o=yaml
+		verifyctl create -f "app.json"`))
 
 	entitlementsMessage = i18n.Translate("Choose any of the following entitlements to configure your application or API client:\n")
 )
@@ -165,7 +162,7 @@ func (o *options) Run(cmd *cobra.Command, args []string) error {
 		options := &apiClientOptions{}
 		err = options.createAPIClientFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 
-	case resource.ResourceTypePrefix + "Applications":
+	case resource.ResourceTypePrefix + "Application":
 		options := &applicationOptions{}
 		err = options.createApplicationFromDataMap(cmd, resourceObject.Data.(map[string]interface{}))
 

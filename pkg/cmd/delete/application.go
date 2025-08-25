@@ -32,7 +32,7 @@ You can identify the entitlement required by running:
 
 	applicationExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Delete an Application
-		verifyctl delete application --applicationID="applicationID"`,
+		verifyctl delete application --applicationID "applicationID"`,
 	))
 )
 

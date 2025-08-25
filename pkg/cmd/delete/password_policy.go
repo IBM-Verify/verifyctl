@@ -30,7 +30,7 @@ verifyctl delete passwordpolicy --entitlements`))
 
 	passwordPolicyExamples = templates.Examples(cmdutil.TranslateExamples(passwordPolicyMessagePrefix, `
 # Delete a password policy by passwordPolicyID
-verifyctl delete passwordpolicy --passwordPolicyID=passwordPolicyID
+verifyctl delete passwordpolicy --passwordPolicyID "passwordPolicyID"
 `))
 )
 

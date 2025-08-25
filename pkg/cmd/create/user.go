@@ -47,10 +47,10 @@ You can identify the entitlement required by running:
 		verifyctl create user --boilerplate
 
 		# Create a user using a YAML file.
-		verifyctl create -f "./user.yaml
+		verifyctl create -f "user.yaml"
 
 		# Create a user using a JSON file.
-		verifyctl create -f "./user.json"`))
+		verifyctl create -f "user.json"`))
 )
 
 type userOptions struct {

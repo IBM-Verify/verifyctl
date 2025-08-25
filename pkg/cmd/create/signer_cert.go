@@ -45,9 +45,9 @@ var (
 			`# Create an empty signer certificate resource.
 		verifyctl create signerCert --boilerplate
 		# Create a signer certificate using a YAML file.
-		verifyctl create -f=./signer_cert.yaml
+		verifyctl create -f "signer_cert.yaml"
 		# Create a signer certificate using a JSON file.
-	verifyctl create -f=./signer_cert.json`,
+		verifyctl create -f "signer_cert.json"`,
 		),
 	)
 )

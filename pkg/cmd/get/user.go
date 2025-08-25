@@ -33,10 +33,10 @@ You can identify the entitlement required by running:
 
 	usersExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Get an user and print the output in yaml
-		verifyctl get user -o=yaml --userName=testUser
+		verifyctl get user -o "yaml" --userName "testUser"
 
-		# Get 2 users based on a given search criteria and sort it in the ascending order by name.
-		verifyctl get users --count=2 --sort=userName -o=yaml`))
+		# Get 2 users and sort it in the [ascending/descending] order by userName.
+		verifyctl get users --count 2 --sortBy userName --sortOrder descending`))
 )
 
 type usersOptions struct {
@@ -76,7 +76,8 @@ func NewUsersCommand(config *config.CLIConfig, streams io.ReadWriter) *cobra.Com
 func (o *usersOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, userResourceName)
 	cmd.Flags().StringVar(&o.name, "userName", o.name, i18n.Translate("userName to get details"))
-	o.addSortFlags(cmd, userResourceName)
+	cmd.Flags().StringVar(&o.sortBy, "sortBy", o.name, i18n.Translate("fieldName on which sorting would be applied"))
+	cmd.Flags().StringVar(&o.sortOrder, "sortOrder", o.name, i18n.Translate("sorting order"))
 	o.addCountFlags(cmd, userResourceName)
 }
 
@@ -152,7 +153,7 @@ func (o *usersOptions) handleSingleUser(cmd *cobra.Command, _ []string) error {
 func (o *usersOptions) handleUserList(cmd *cobra.Command, _ []string) error {
 
 	c := directory.NewUserClient()
-	usrs, uri, err := c.GetUsers(cmd.Context(), o.sort, o.count)
+	usrs, uri, err := c.GetUsers(cmd.Context(), o.sortBy, o.sortOrder, o.count)
 	if err != nil {
 		return err
 	}

@@ -33,10 +33,10 @@ You can identify the entitlement required by running:
 
 	identitySourcesExamples = templates.Examples(cmdutil.TranslateExamples(messagePrefix, `
 		# Get an identitySource and print the output in yaml
-		verifyctl get identitysource -o=yaml --identitySourceID="identitySourceID"
+		verifyctl get identitysource -o "yaml" --identitySourceID "identitySourceID"
 
 		# Get 2 identitySources
-		verifyctl get identitysources --limit=1 --page=1 -o=yaml`))
+		verifyctl get identitysources --limit 1 --page 1 -o "yaml"`))
 )
 
 type identitySourcesOptions struct {

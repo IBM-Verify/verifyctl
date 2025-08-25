@@ -33,10 +33,10 @@ verifyctl get passwordpolicy --entitlements`))
 
 	passwordPolicyExamples = templates.Examples(cmdutil.TranslateExamples(passwordPolicyMessagePrefix, `
 # Get a specific password policy by ID
-verifyctl get passwordpolicy -o=yaml --passwordPolicyID=testPasswordPolicyID
+verifyctl get passwordpolicy -o "yaml" --passwordPolicyID "testPasswordPolicyID"
 
 # Get all policies
-		verifyctl get passwordpolicies -o=yaml
+		verifyctl get passwordpolicies -o "yaml"
 `))
 )
 
