@@ -6,6 +6,7 @@ import (
 	"github.com/ibm-verify/verify-sdk-go/pkg/i18n"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/auth"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/create"
+	"github.com/ibm-verify/verifyctl/pkg/cmd/flow"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/delete"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/get"
 	"github.com/ibm-verify/verifyctl/pkg/cmd/logs"
@@ -44,6 +45,8 @@ func NewRootCmd(config *config.CLIConfig, streams io.ReadWriter) *cobra.Command 
 	cmd.AddCommand(replace.NewCommand(config, streams, resourceGroupID))
 	cmd.AddCommand(delete.NewCommand(config, streams, resourceGroupID))
 	cmd.AddCommand(logs.NewCommand(config, streams, debugGroupID))
+	cmd.AddCommand(logs.NewCommand(config, streams, debugGroupID))
+	cmd.AddCommand(flow.NewCommand(config, streams,resourceGroupID))
 
 	// add groups
 	groups := []*cobra.Group{
