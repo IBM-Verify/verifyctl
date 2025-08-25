@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	usage         = "create -f FILENAME [options]"
+	usage         = "create -f FILENAME"
 	messagePrefix = "Create"
 )
 

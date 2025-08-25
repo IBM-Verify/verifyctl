@@ -77,7 +77,7 @@ func (o *groupsOptions) AddFlags(cmd *cobra.Command) {
 	o.addCommonFlags(cmd, groupResourceName)
 	cmd.Flags().StringVar(&o.name, "displayName", o.name, i18n.Translate("Group displayName to get details"))
 	cmd.Flags().StringVar(&o.sortBy, "sortBy", o.name, i18n.Translate("fieldName on which sorting would be applied"))
-	cmd.Flags().StringVar(&o.sortOrder, "sortOrder", o.name, i18n.Translate("sorting order"))
+	cmd.Flags().StringVar(&o.sortOrder, "sortOrder", o.name, i18n.Translate("sorting order [ascending/descending]"))
 	o.addCountFlags(cmd, groupResourceName)
 }
 

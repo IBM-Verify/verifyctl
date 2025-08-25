@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	usage         = "replace -f=FILENAME [options]"
+	usage         = "replace -f=FILENAME"
 	messagePrefix = "Replace"
 )
 

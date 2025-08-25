@@ -33,7 +33,7 @@ var (
         # Get 2 applications
         verifyctl get applications --limit=2 --page=1 -o=yaml
 
-		# To sort applications [To sort results, supported values are 'name' and 'entityid'. Prepend the attribute with '+' or '-' sign for ascending and descending sorted order respectively. If not specified, sorted in ascending order on entityid. The entity id corresponds to application id]
+		# To sort applications [To sort results, supported values are 'name' and 'applicationID'. Prepend the attribute with '+' or '-' sign for ascending and descending sorted order respectively. If not specified, sorted in ascending order on applicationID.]
 		verifyctl get applications --sort "-name"`))
 )
 
@@ -139,6 +139,11 @@ func (o *applicationsOptions) handleSingleApplicationClient(cmd *cobra.Command, 
 
 func (o *applicationsOptions) handleApplicationClientList(cmd *cobra.Command, _ []string) error {
 	c := applications.NewApplicationClient()
+	if o.sort == "+applicationID" {
+		o.sort = "+entityid"
+	} else if o.sort == "-applicationID" {
+		o.sort = "-entityid"
+	}
 	appls, uri, err := c.GetApplications(cmd.Context(), o.search, o.sort, o.page, o.limit)
 	if err != nil {
 		return err
